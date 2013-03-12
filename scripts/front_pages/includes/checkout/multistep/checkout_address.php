@@ -28,7 +28,8 @@ if (count($cart['products']) < 1) {
 					$user['state']				=$billing_address['state'];
 				}
 				$user['email']				=$billing_address['email'];
-				$user['telephone']			=$billing_address['telephone'];
+				$user['telephone']			=$billing_address['phone'];
+				$user['mobile']				=$billing_address['mobile'];
 				$user['country']			=$billing_address['country'];
 				
 			} else {	
@@ -53,6 +54,7 @@ if (count($cart['products']) < 1) {
 				}
 				$user['email']				=$GLOBALS['TSFE']->fe_user->user['email'];
 				$user['telephone']			=$GLOBALS['TSFE']->fe_user->user['telephone'];
+				$user['mobile']				=$GLOBALS['TSFE']->fe_user->user['mobile'];
 				$user['country']			=$GLOBALS['TSFE']->fe_user->user['country'];
 			}
 		}
