@@ -80,7 +80,7 @@ if (count($cart['products']) < 1) {
 			if ($this->ms['MODULES']['CHECKOUT_ENABLE_BIRTHDAY']) {
 				$user['birthday']		=$this->post['birthday'];
 			}
-			$user['phone']				=$this->post['telephone'];
+			$user['telephone']			=$this->post['telephone'];
 			$user['mobile']				=$this->post['mobile'];			
 			$user['gender']				=$this->post['gender'];
 			$user['street_name']		=$this->post['street_name'];
