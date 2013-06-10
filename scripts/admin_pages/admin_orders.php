@@ -1,7 +1,8 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $all_orders_status=mslib_fe::getAllOrderStatus();
-if ($this->post['tx_multishop_pi1']['edit_order']==1 and is_numeric($this->post['tx_multishop_pi1']['orders_id']))
-{
+if ($this->post['tx_multishop_pi1']['edit_order']==1 and is_numeric($this->post['tx_multishop_pi1']['orders_id'])) {
 	$url=$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$this->post['tx_multishop_pi1']['orders_id'].'&action=edit_order&tx_multishop_pi1[is_proposal]='.$this->post['tx_multishop_pi1']['is_proposal']);
 	$GLOBALS['TSFE']->additionalHeaderData[] ='
 	<script type="text/javascript">
@@ -122,21 +123,31 @@ switch ($this->post['tx_multishop_pi1']['action']) {
 				}
 			}
 		}
-	break;	
+	break;
+	default:
+		// post processing by third party plugins
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_orders.php']['adminOrdersPostHookProc'])) {
+			$params = array();
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_orders.php']['adminOrdersPostHookProc'] as $funcRef) {
+				t3lib_div::callUserFunction($funcRef, $params, $this);
+			}
+		}	
+	break;
 }
 
-// post processing by third party plugins
-if ($this->post['tx_multishop_pi1']['action'])
-{
-	if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_orders.php']['adminOrdersPostHookProc']))
-	{
-		$params = array();
-		foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_orders.php']['adminOrdersPostHookProc'] as $funcRef)
-		{
-			t3lib_div::callUserFunction($funcRef, $params, $this);
-		}
-	}
+// now parse all the objects in the tmpl file
+if ($this->conf['admin_orders_tmpl_path']) {
+	$template = $this->cObj->fileResource($this->conf['admin_orders_tmpl_path']);
+} else {
+	$template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath($this->extKey).'templates/admin_orders.tmpl');
 }
+
+// Extract the subparts from the template
+$subparts=array();
+$subparts['template'] 			= $this->cObj->getSubpart($template, '###TEMPLATE###');
+$subparts['orders_results'] 	= $this->cObj->getSubpart($subparts['template'], '###RESULTS###');
+$subparts['orders_listing'] 	= $this->cObj->getSubpart($subparts['orders_results'], '###ORDERS_LISTING###');
+$subparts['orders_noresults'] 	= $this->cObj->getSubpart($subparts['template'], '###NORESULTS###');
 
 if ($this->post['Search'] and ($this->post['paid_orders_only'] != $this->cookie['paid_orders_only'])) {	
 	$this->cookie['paid_orders_only'] = $this->post['paid_orders_only'];
@@ -195,11 +206,13 @@ if ($p >0) {
 	$offset=0;
 }
 // orders search
+$option_item = '<select name="type_search"><option value="all">'.$this->pi_getLL('all').'</option>';
 foreach ($option_search as $key=>$val) {
 	$option_item .= '<option value="'. $key .'" '. ($this->post['type_search'] == $key ? "selected" : "") .'>'.$val.'</option>';
 }
+$option_item .= '</select>';
 
-$orders_status_list = '';
+$orders_status_list = '<select name="orders_status_search"><option value="0" '.((!$order_status_search_selected)?'selected':'').'>'.$this->pi_getLL('all_orders_status', 'All orders status').'</option>';
 if (is_array($all_orders_status)) {
 	$order_status_search_selected = false;
 	foreach ($all_orders_status as $row) {
@@ -210,67 +223,31 @@ if (is_array($all_orders_status)) {
 		}
 	}
 }
-$formTopSearch = '<div id="search-orders">
-	<input name="id" type="hidden" value="'.$this->shop_pid.'" />
-	<input name="tx_multishop_pi1[page_section]" type="hidden" value="admin_orders" />	
-	<table width="100%">
-		<tr>
-			<td valign="top">
-			<div class="formfield-container-wrapper">
-				<div class="formfield-wrapper">
-					<label>'.ucfirst($this->pi_getLL('keyword')).'</label>
-					<input type="text" name="skeyword" value="'.( $this->post['skeyword'] ? $this->post['skeyword'] : "" ).'">
-					<select name="type_search"><option value="all">'.$this->pi_getLL('all').'</option>
-					'. $option_item .'
-					</select>
-					<select name="orders_status_search"><option value="0" '.((!$order_status_search_selected)?'selected':'').'>'.$this->pi_getLL('all_orders_status', 'All orders status').'</option>
-					'. $orders_status_list .'
-					</select>
-					<input type="submit" name="Search" value="'.htmlspecialchars($this->pi_getLL('search')).'"></input>					
-				</div>
-				<div class="formfield-wrapper">
-					<label for="order_date_from">'.$this->pi_getLL('from').':</label><input type="text" name="order_date_from" id="order_date_from" value="'.$this->post['order_date_from'].'"><label for="order_date_till">'.$this->pi_getLL('to').':</label><input type="text" name="order_date_till" id="order_date_till" value="'.$this->post['order_date_till'].'">
-					<label for="search_by_status_last_modified">'.$this->pi_getLL('filter_by_date_status_last_modified','Filter by date status last modified').'</label>
-					<input type="checkbox" class="PrettyInput" id="search_by_status_last_modified" name="search_by_status_last_modified" value="1"'.($this->post['search_by_status_last_modified']?' checked':'').' >										
-				</div>
-				<div class="formfield-wrapper">				
-					<label for="paid_orders_only">'.$this->pi_getLL('show_paid_orders_only').'</label>
-					<input type="checkbox" class="PrettyInput" id="paid_orders_only" name="paid_orders_only" value="1"'.($this->cookie['paid_orders_only']?' checked':'').' >					
-				</div>
-			</div>
-			</td>
-			<td nowrap valign="top" align="right" class="searchLimit">
-				<div style="float:right;">
-					<label>'.$this->pi_getLL('limit_number_of_records_to').':</label>
-					<select name="limit">';
-					$limits=array();
-					$limits[]='10';
-					$limits[]='15';
-					$limits[]='20';
-					$limits[]='25';
-					$limits[]='30';
-					$limits[]='40';
-					$limits[]='48';					
-					$limits[]='50';
-					$limits[]='100';
-					$limits[]='150';
-					$limits[]='200';
-					$limits[]='250';
-					$limits[]='300';
-					$limits[]='350';
-					$limits[]='400';
-					$limits[]='450';
-					$limits[]='500';
-					foreach ($limits as $limit) {
-						$formTopSearch .='<option value="'.$limit.'"'.($limit==$this->post['limit']?' selected':'').'>'.$limit.'</option>';
-					}
-					$formTopSearch .='
-					</select>
-				</div>			
-			</td>
-		</tr>
-	</table>
-</div>';
+$orders_status_list .= '</select>';
+
+$limit_selectbox = '<select name="limit">';
+$limits=array();
+$limits[]='10';
+$limits[]='15';
+$limits[]='20';
+$limits[]='25';
+$limits[]='30';
+$limits[]='40';
+$limits[]='48';					
+$limits[]='50';
+$limits[]='100';
+$limits[]='150';
+$limits[]='200';
+$limits[]='250';
+$limits[]='300';
+$limits[]='350';
+$limits[]='400';
+$limits[]='450';
+$limits[]='500';
+foreach ($limits as $limit) {
+	$limit_selectbox .='<option value="'.$limit.'"'.($limit==$this->post['limit']?' selected':'').'>'.$limit.'</option>';
+}
+$limit_selectbox .='</select>';
 
 $filter		=array();
 $from		=array();
@@ -363,7 +340,45 @@ if (!$this->masterShop) {
 }
 //$orderby[]='orders_id desc';	
 $select[]='o.*, osd.name as orders_status';
-$orderby[]='o.orders_id desc';
+//$orderby[]='o.orders_id desc';
+
+switch ($this->get['tx_multishop_pi1']['order_by']) {
+	case 'billing_name':
+		$order_by='o.billing_name';
+		break;
+	case 'crdate':
+		$order_by='o.crdate';
+		break;
+	case 'grand_total':
+		$order_by='o.grand_total';
+		break;
+	case 'shipping_method_label':
+		$order_by='o.shipping_method_label';
+		break;
+	case 'payment_method_label':
+		$order_by='o.payment_method_label';
+		break;
+	case 'status_last_modified':
+		$order_by='o.status_last_modified';
+		break;
+	case 'orders_id':
+	default:
+		$order_by='o.orders_id';
+		break;
+}
+switch ($this->get['tx_multishop_pi1']['order']) {
+	case 'a':
+		$order='asc';
+		$order_link='d';
+		break;
+	case 'd':
+	default:
+		$order='desc';
+		$order_link='a';
+		break;
+}
+$orderby[]=$order_by.' '.$order;
+
 if ($this->post['tx_multishop_pi1']['by_phone']) {
 	$filter[]='o.by_phone=1';
 }
@@ -376,103 +391,36 @@ $pageset=mslib_fe::getOrdersPageSet($filter,$offset,$this->post['limit'],$orderb
 $tmporders=$pageset['orders'];		
 if ($pageset['total_rows'] > 0) {
 	require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/orders/orders_listing_table.php');	
-	// pagination
-	if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['ORDERS_LISTING_LIMIT']) {
-		require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/orders/pagination.php');	
-	}
-	// pagination eof
 } else {
-	$tmp=$this->pi_getLL('no_orders_found').'.';
-}
-$tabs 						 = array();
-$tabs['Orders_By_Date'] 	 = array($this->pi_getLL('orders'),$tmp);
-$tmp 						 = '';
-$content 					.= '
-<script type="text/javascript">
-        function submitToHighslide(form) {
-
-           // identify the submit button to start the animation from
-           var anchor;
-           for (var i = 0; i < form.elements.length; i++) {
-              if (form.elements[i].type == "submit") {
-                anchor = form.elements[i];
-                break;
-             }
-          }
-
-          // open an expander and submit our form when the iframe is ready
-          hs.overrides.push("onAfterExpand");
-          hs.htmlExpand(anchor, {
-             objectType: "iframe",
-             src: "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&action=edit_order').'",
-             width: 380,
-             height: 90,
-             onAfterExpand: function(expander) {
-                form.target = expander.iframe.name;
-                form.submit();
-             }
-          });
-
-          // return false to delay the sumbit until the iframe is ready
-          return false;
-       }
-       
-jQuery(document).ready(function($) {
-	jQuery(".tab_content").hide(); 
-	jQuery("ul.tabs li:first").addClass("active").show();
-	jQuery(".tab_content:first").show();
-	jQuery("ul.tabs li").click(function() {
-		jQuery("ul.tabs li").removeClass("active");
-		jQuery(this).addClass("active"); 
-		jQuery(".tab_content").hide();
-		var activeTab = jQuery(this).find("a").attr("href");
-		jQuery(activeTab).fadeIn(0);
-		return false;
-	});
-             		
-    jQuery(\'#order_date_from\').datetimepicker({
-    	dateFormat: \'dd/mm/yy\',
-        showSecond: true,
-		timeFormat: \'hh:mm:ss\'         		
-    });
-             		
-	jQuery(\'#order_date_till\').datetimepicker({
-    	dateFormat: \'dd/mm/yy\',
-        showSecond: true,
-		timeFormat: \'hh:mm:ss\'         		
-    });
- 
-});
-</script>
-<div id="tab-container">
-    <ul class="tabs" id="admin_orders">';
-
-$count = 0;
-foreach ($tabs as $key => $value) {
-	$count++;
-	$content.='<li'.(($count==1)?' class="active"':'').'><a href="#'.$key.'">'.$value[0].'</a></li>';
+	$subpartArray = array();
+	$subpartArray['###LABEL_NO_RESULTS###'] = $this->pi_getLL('no_orders_found').'.';
+	$no_results = $this->cObj->substituteMarkerArrayCached($subparts['orders_noresults'], array(), $subpartArray);
 }
 
-$content.='
-    </ul>
-    <div class="tab_container">
-	<form action="'.mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_orders').'" name="orders_search" id="orders_search" method="post">
-	'. $formTopSearch;
+$subpartArray = array();
+$subpartArray['###AJAX_ADMIN_EDIT_ORDER_URL###'] = mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&action=edit_order');
+$subpartArray['###FORM_SEARCH_ACTION_URL###'] = mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_orders');
+$subpartArray['###SHOP_PID###'] = $this->shop_pid;
+$subpartArray['###LABEL_KEYWORD###'] = ucfirst($this->pi_getLL('keyword'));
+$subpartArray['###VALUE_KEYWORD###'] = ( $this->post['skeyword'] ? $this->post['skeyword'] : "" );
+$subpartArray['###OPTION_ITEM_SELECTBOX###'] = $option_item;
+$subpartArray['###ORDERS_STATUS_LIST_SELECTBOX###'] = $orders_status_list;
+$subpartArray['###VALUE_SEARCH###'] = htmlspecialchars($this->pi_getLL('search'));
+$subpartArray['###LABEL_DATE_FROM###'] = $this->pi_getLL('from');
+$subpartArray['###VALUE_DATE_FORM###'] = $this->post['order_date_from'];
+$subpartArray['###LABEL_DATE_TO###'] = $this->pi_getLL('to');
+$subpartArray['###VALUE_DATE_TO###'] = $this->post['order_date_till'];
+$subpartArray['###LABEL_FILTER_LAST_MODIFIED###'] = $this->pi_getLL('filter_by_date_status_last_modified','Filter by date status last modified');
+$subpartArray['###FILTER_BY_LAST_MODIFIED_CHECKED###'] = ($this->post['search_by_status_last_modified']?' checked':'');
+$subpartArray['###LABEL_PAID_ORDERS_ONLY###'] = $this->pi_getLL('show_paid_orders_only');
+$subpartArray['###PAID_ORDERS_ONLY_CHECKED###'] = ($this->cookie['paid_orders_only']?' checked':'');
+$subpartArray['###LABEL_RESULTS_LIMIT_SELECTBOX###'] = $this->pi_getLL('limit_number_of_records_to');
+$subpartArray['###RESULTS_LIMIT_SELECTBOX###'] = $limit_selectbox;
 
-$count = 0;	
-foreach ($tabs as $key => $value) {
-	$count++;
-	$content.='
-        <div style="display: block;" id="'.$key.'" class="tab_content">
-			'.$value[1].'
-        </div>
-	';
-}
+$subpartArray['###RESULTS###'] = $order_results;
+$subpartArray['###NORESULTS###'] = $no_results;
+$content .= $this->cObj->substituteMarkerArrayCached($subparts['template'], array(), $subpartArray);
 
-$content.='	
-	</form>	
-    </div>
-</div>';
 $content.='<p class="extra_padding_bottom"><a class="msadmin_button" href="'.mslib_fe::typolink().'">'.t3lib_div::strtoupper($this->pi_getLL('admin_close_and_go_back_to_catalog')).'</a></p>';
 //$content='<div class="fullwidth_div">'.mslib_fe::shadowBox($content).'</div>';
 $content='<div class="fullwidth_div">'.$content.'</div>';

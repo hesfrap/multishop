@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $tmp='';							  
 $str="SELECT *, os.name as orders_status from tx_multishop_orders o left join tx_multishop_orders_status os on o.status=os.id where o.by_phone = 1 order by orders_id desc";
 $qry=$GLOBALS['TYPO3_DB']->sql_query($str);

@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $active_shop = mslib_fe::getActiveShop();
 
 $GLOBALS['TSFE']->additionalHeaderData[] ='

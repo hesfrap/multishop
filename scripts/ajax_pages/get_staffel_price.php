@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $pid = $this->get['pid'];
 $qty = $this->get['quantity'];
 

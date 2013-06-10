@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $hash=$this->get['tx_multishop_pi1']['hash'];
 $invoice=mslib_fe::getInvoice($hash,'hash');
 if ($invoice['orders_id'])

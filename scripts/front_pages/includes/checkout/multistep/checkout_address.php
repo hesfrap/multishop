@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $cart = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->cart_page_uid);
 if (count($cart['products']) < 1) {
 	$content.='<div class="noitems_message">'.$this->pi_getLL('there_are_no_products_in_your_cart').'</div>';
@@ -29,7 +31,7 @@ if (count($cart['products']) < 1) {
 				}
 				$user['email']				=$billing_address['email'];
 				$user['telephone']			=$billing_address['phone'];
-				$user['mobile']				=$billing_address['mobile'];
+				$user['mobile']             =$billing_address['mobile']; 
 				$user['country']			=$billing_address['country'];
 				
 			} else {	
@@ -54,7 +56,7 @@ if (count($cart['products']) < 1) {
 				}
 				$user['email']				=$GLOBALS['TSFE']->fe_user->user['email'];
 				$user['telephone']			=$GLOBALS['TSFE']->fe_user->user['telephone'];
-				$user['mobile']				=$GLOBALS['TSFE']->fe_user->user['mobile'];
+                $user['mobile']             =$GLOBALS['TSFE']->fe_user->user['mobile'];				
 				$user['country']			=$GLOBALS['TSFE']->fe_user->user['country'];
 			}
 		}

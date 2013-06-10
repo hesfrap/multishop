@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if (!$this->ms['image_paths']['products']['original']) die('Protection. $ms image_paths products original variable is empty');
 set_time_limit(86400); 
 ignore_user_abort(true);

@@ -97,6 +97,7 @@ switch ($_REQUEST['action'])
 		$format=explode("x",$this->ms['MODULES']['PRODUCT_IMAGE_SIZE_ENLARGED']);
 		$this->ms['product_image_formats']['enlarged']['width']	=$format[0];
 		$this->ms['product_image_formats']['enlarged']['height']	=$format[1];	
+
 		if (!$this->ms['MODULES']['NUMBER_OF_PRODUCT_IMAGES']) $this->ms['MODULES']['NUMBER_OF_PRODUCT_IMAGES']=5;
 		$content.='<h2>Log</h2>';
 		$data=array();

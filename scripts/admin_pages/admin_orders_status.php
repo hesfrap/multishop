@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->get['tx_multishop_pi1']['action'])
 {
 	switch ($this->get['tx_multishop_pi1']['action'])
@@ -86,7 +88,7 @@ $content.=$tmpcontent.'
 </form>
 ';
 
-$str="SELECT o.id, o.default_status, od.name from tx_multishop_orders_status o, tx_multishop_orders_status_description od where o.page_uid='".$this->shop_pid."' and o.deleted=0 and o.id=od.orders_status_id and od.language_id='0' order by o.id desc";
+$str="SELECT o.id, o.default_status, od.name from tx_multishop_orders_status o, tx_multishop_orders_status_description od where (o.page_uid='0' or o.page_uid='".$this->shop_pid."') and o.deleted=0 and o.id=od.orders_status_id and od.language_id='0' order by o.id desc";
 $qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 $zones=array();	
 while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {

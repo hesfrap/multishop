@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $active_shop = mslib_fe::getActiveShop();
 
 $GLOBALS['TSFE']->additionalHeaderData[] ='
@@ -66,7 +68,7 @@ if ($_REQUEST['sub']=='update_payment_method' and $_REQUEST['payment_method_id']
 		$data=unserialize($row['vars']);
 		foreach ($this->post as $key => $value)
 		{
-			$data[$key]=$this->post[$key];
+			$data[$key]=trim($this->post[$key]);
 		}
 		// now update the baby
 		$updateArray=array();
@@ -325,12 +327,16 @@ elseif ($_REQUEST['sub']=='add_payment_method' and $_REQUEST['payment_method_cod
 		}
 		else
 		{
+			$this->post['custom_code'] 			= trim($this->post['custom_code']);
+			$this->post['handling_costs'] 		= trim($this->post['handling_costs']);
+			$_REQUEST['payment_method_code'] 	= trim($_REQUEST['payment_method_code']);
+			
 			// save payment method
-			$insertArray=array();	
+			$insertArray=array();
 			$insertArray['code']			=	$this->post['custom_code'];
 			$insertArray['handling_costs']	=	$this->post['handling_costs'];
 			$insertArray['tax_id']			=	$this->post['tax_id'];
-			$insertArray['sort_order']	 	=	$this->post['sort_order'];		
+			$insertArray['sort_order']	 	=	$this->post['sort_order'];
 			$insertArray['date']			=	time();
 			$insertArray['status']			=	1;
 			$insertArray['page_uid']		=	$this->post['related_shop_pid'];

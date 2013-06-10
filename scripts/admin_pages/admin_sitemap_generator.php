@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $content='';
 $log_file=$this->DOCUMENT_ROOT.'uploads/tx_multishop/sitemap_tmp.txt';
 $sitemap_file=$this->DOCUMENT_ROOT.'uploads/tx_multishop/sitemap.txt';
@@ -49,7 +51,7 @@ if (!$this->get['skip_categories'])
 			$where=substr($where,0,(strlen($where)-1));
 			$where.='&';
 		}
-		$links[]=$prefix_domain.mslib_fe::typolink('',''.$where.'&tx_multishop_pi1[page_section]=products_listing')."\n";
+		$links[]=$prefix_domain.mslib_fe::typolink($this->conf['products_listing_page_pid'],''.$where.'&tx_multishop_pi1[page_section]=products_listing')."\n";
 		// check if the cat has subcats or products
 		$qry_tmp = $GLOBALS['TYPO3_DB']->sql_query("SELECT count(1) as total from tx_multishop_categories c, tx_multishop_categories_description cd where c.categories_id=cd.categories_id and c.status=1 and c.parent_id='".$categories['categories_id']."' and c.page_uid='".$this->showCatalogFromPage."'");
 		$row_tmp=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_tmp);
@@ -116,7 +118,7 @@ if (!$this->get['skip_products'])
 			}
 			// get all cats to generate multilevel fake url eof
 		}
-		$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');	
+		$link=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');	
 		if ($link) file_put_contents($log_file, $prefix_domain.$link."\n", FILE_APPEND | LOCK_EX);
 	}
 }

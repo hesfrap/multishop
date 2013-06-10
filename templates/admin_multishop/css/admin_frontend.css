@@ -45,7 +45,7 @@
 #tx_multishop_admin_header_wrapper ul#tx_multishop_admin_header li:hover ul li:hover a span { color:#cdcdcd; }
 
 #tx_multishop_admin_header_wrapper ul#tx_multishop_admin_header li:hover ul ul { position:absolute; left:-9999px; width:250px; border:none; background:none; margin:0; padding:0; opacity:1; z-index:9999; }
-#tx_multishop_admin_header_wrapper ul#tx_multishop_admin_header li:hover ul li:hover ul { left:auto; background-position:0 0; margin:0 0 0 252px; z-index:991; }
+#tx_multishop_admin_header_wrapper ul#tx_multishop_admin_header li:hover ul li:hover>ul { left:auto; background-position:0 0; margin:0 0 0 252px; z-index:991; }
 *:first-child+html #tx_multishop_admin_header_wrapper ul#tx_multishop_admin_header li:hover ul li:hover ul { margin:0; }
 #tx_multishop_admin_header_wrapper ul#tx_multishop_admin_header li:hover ul li:hover ul li { background:none;padding:0; }
 #tx_multishop_admin_header_wrapper ul#tx_multishop_admin_header li:hover ul li:hover ul li.dropdown_bottom { background:none;padding:0; }
@@ -148,7 +148,7 @@ ul#ms_admin_maximize li a { display:block; float:left; width:85px; height:24px; 
 #tx_multishop_admin_footer_wrapper ul#tx_multishop_admin_footer li:hover ul li:hover span span { color:#cdcdcd; }
 
 #tx_multishop_admin_footer_wrapper ul#tx_multishop_admin_footer li:hover ul ul { position:absolute; left:-9999px; width:250px; border:none; background:none; margin:0; padding:0; opacity:1; z-index:9999; }
-#tx_multishop_admin_footer_wrapper ul#tx_multishop_admin_footer li:hover ul li:hover ul { left:auto; bottom:auto; background-position:0 0; margin:0 0 0 252px; z-index:991; }
+#tx_multishop_admin_footer_wrapper ul#tx_multishop_admin_footer li:hover ul li:hover>ul { left:auto; bottom:auto; background-position:0 0; margin:0 0 0 252px; z-index:991; }
 *:first-child+html #tx_multishop_admin_footer_wrapper ul#tx_multishop_admin_footer li:hover ul li:hover ul { margin:0; }
 #tx_multishop_admin_footer_wrapper ul#tx_multishop_admin_footer li.ms_admin_online_users:hover ul li:hover ul { bottom:0; }
 #tx_multishop_admin_footer_wrapper ul#tx_multishop_admin_footer li.ms_admin_system:hover ul li:hover ul { bottom:0; margin:0 0 0 -252px; }

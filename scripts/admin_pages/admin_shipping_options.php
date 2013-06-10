@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if (is_numeric($this->get['status']) and is_numeric($this->get['shipping_option_id']))
 {
 	$updateArray=array();

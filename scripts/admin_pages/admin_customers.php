@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $this->cObj->data['header']='Customers';
 if ($GLOBALS['TSFE']->fe_user->user['uid'] and $this->get['login_as_customer'] && is_numeric($this->get['customer_id']))
 {
@@ -23,16 +25,14 @@ var uncheckAll = function() {
 		}
 	}
 }
-</script>
-';
+</script>';
 if (is_numeric($this->get['disable']) and is_numeric($this->get['customer_id'])) {
 	if ($this->get['disable']) {
 		mslib_befe::disableCustomer($this->get['customer_id']);
 	} else {
 		mslib_befe::enableCustomer($this->get['customer_id']);
 	}
-}
-elseif (is_numeric($this->get['delete']) and is_numeric($this->get['customer_id'])) {   
+} else if (is_numeric($this->get['delete']) and is_numeric($this->get['customer_id'])) {   
 	mslib_befe::deleteCustomer($this->get['customer_id']);			
 }
 $this->hideHeader=1;
@@ -75,27 +75,26 @@ if ($this->get['tx_multishop_pi1']['searchByChar']) {
 	$this->searchKeywords[]=$this->get['tx_multishop_pi1']['keyword'];
 	$this->searchMode='%keyword%';
 }
-if (is_numeric($this->get['p'])) 	$p=$this->get['p'];
-if ($p >0) 
-{
+if (is_numeric($this->get['p'])) {
+	$p=$this->get['p'];
+}
+if ($p >0)  {
 	$offset=(((($p)*$this->ms['MODULES']['PAGESET_LIMIT'])));
 } else {
 	$p=0;
 	$offset=0;
 }
-$user 				= $GLOBALS['TSFE']->fe_user->user;	
-
+$user = $GLOBALS['TSFE']->fe_user->user;
 $option_search = array(
-			"f.company" => 		$this->pi_getLL('admin_company'),
-			"f.name" => 			$this->pi_getLL('admin_customer_name'),
-			"f.username" => 		$this->pi_getLL('username'),
-			"f.email" => 			$this->pi_getLL('admin_customer_email'),
-			"f.uid" => 	$this->pi_getLL('admin_customer_id')
-		);
+	"f.company" => 		$this->pi_getLL('admin_company'),
+	"f.name" => 			$this->pi_getLL('admin_customer_name'),
+	"f.username" => 		$this->pi_getLL('username'),
+	"f.email" => 			$this->pi_getLL('admin_customer_email'),
+	"f.uid" => 	$this->pi_getLL('admin_customer_id')
+);
 asort($option_search);
 $option_item='';
-foreach ($option_search as $key=>$val)
-{
+foreach ($option_search as $key=>$val) {
 	$option_item .= '<option value="'. $key .'" '. ($this->get['tx_multishop_pi1']['search_by'] == $key ? "selected" : "") .'>'.$val.'</option>';
 }
 $searchCharNav='<div id="msAdminSearchByCharNav"><ul>';
@@ -160,8 +159,7 @@ $formTopSearch='
 		</tr>
 	</table>
 	'.$searchCharNav.'
-</div>
-';
+</div>';
 
 $filter		=array();
 $having		=array();
@@ -171,8 +169,7 @@ $where		=array();
 $orderby	=array();
 $select		=array();
 if (strlen($this->get['tx_multishop_pi1']['keyword']) >0) {
-	switch ($this->get['tx_multishop_pi1']['search_by'])
-	{
+	switch ($this->get['tx_multishop_pi1']['search_by']) {
 		case 'f.uid':
 			$filter[]="f.uid like '".addslashes($this->get['tx_multishop_pi1']['keyword'])."%'";	
 		break;			
@@ -188,19 +185,16 @@ if (strlen($this->get['tx_multishop_pi1']['keyword']) >0) {
 		case 'f.username':
 			$filter[]="f.username like '".addslashes($this->get['tx_multishop_pi1']['keyword'])."%'";	
 		break;
-		default:		
-			$orderby[]='f.uid desc';
+		default:
 			$option_fields = $option_search;
 			$items=array();
-			foreach ($option_fields as $fields=>$label)
-			{
+			foreach ($option_fields as $fields=>$label) {
 				 $items[] = $fields." LIKE '%".addslashes($this->get['tx_multishop_pi1']['keyword'])."%'";
 			}
 			$filter[]='('.implode(" or ",$items).')';
 		break;			
 	}
 } else {
-	$orderby[]='f.uid desc';
 	if (count($this->searchKeywords)) {
 		$keywordOr=array();
 		foreach ($this->searchKeywords as $searchKeyword) {
@@ -221,9 +215,53 @@ if (strlen($this->get['tx_multishop_pi1']['keyword']) >0) {
 		$filter[]="(".implode(" OR ",$keywordOr).")";
 	}
 }
-if (!$this->get['tx_multishop_pi1']['show_deleted_accounts']) $filter[]='(f.deleted=0)';
-if (!$this->masterShop) $filter[]="f.page_uid='".$this->shop_pid."'";	
-if (!$this->masterShop) $filter[]=$GLOBALS['TYPO3_DB']->listQuery('usergroup',$this->conf['fe_customer_usergroup'],'fe_users');
+
+switch ($this->get['tx_multishop_pi1']['order_by']) {
+	case 'username':
+		$order_by='f.username';
+		break;
+	case 'company':
+		$order_by='f.company';
+		break;
+	case 'crdate':
+		$order_by='f.crdate';
+		break;
+	case 'lastlogin':
+		$order_by='f.lastlogin';
+		break;
+	case 'grand_total':
+		$order_by='grand_total';
+		break;
+	case 'grand_total_this_year':
+		$order_by='grand_total_this_year';
+		break;
+	case 'uid':
+	default:
+		$order_by='f.uid';
+		break;
+}
+switch ($this->get['tx_multishop_pi1']['order']) {
+	case 'a':
+		$order='asc';
+		$order_link='d';
+		break;
+	case 'd':
+	default:
+		$order='desc';
+		$order_link='a';
+		break;
+}
+$orderby[]=$order_by.' '.$order;
+
+if (!$this->get['tx_multishop_pi1']['show_deleted_accounts']) {
+	$filter[]='(f.deleted=0)';
+}
+if (!$this->masterShop) {
+	$filter[]="f.page_uid='".$this->shop_pid."'";	
+}
+if (!$this->masterShop) {
+	$filter[]=$GLOBALS['TYPO3_DB']->listQuery('usergroup',$this->conf['fe_customer_usergroup'],'fe_users');
+}
 // subquery to summarize grand total per customer
 $select[]='(select sum(grand_total) from tx_multishop_orders where customer_id=f.uid) as grand_total';
 // subquery to summarize grand total by year, per customer
@@ -232,12 +270,10 @@ $endTime=strtotime(date("Y-12-31 23:59:59"));
 $select[]='(select sum(grand_total) from tx_multishop_orders where customer_id=f.uid and crdate BETWEEN '.$startTime.' and '.$endTime.') as grand_total_this_year';
 $pageset=mslib_fe::getCustomersPageSet($filter,$offset,$this->ms['MODULES']['PAGESET_LIMIT'],$orderby,$having,$select,$where);
 $customers=$pageset['customers'];		
-if ($pageset['total_rows'] > 0)
-{
+if ($pageset['total_rows'] > 0) {
 	require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_customers_listing.php');	
 	// pagination
-	if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['PAGESET_LIMIT'])
-	{
+	if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['PAGESET_LIMIT']) {
 		require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_pagination.php');	
 	}
 	// pagination eof	

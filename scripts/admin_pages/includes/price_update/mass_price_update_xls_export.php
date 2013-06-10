@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 require_once(t3lib_extMgm::extPath('phpexcel_service').'Classes/PHPExcel.php');
 
 function getOptionValuesExtraName($optvalid) {
@@ -50,8 +52,8 @@ if (isset($this->get['cid']) && $this->get['cid'] > 0) {
 	$sql = "select p.products_id, pd.products_name, p.products_model, cd.categories_name, p.products_price, cd.categories_id, p.products_weight, p.products_quantity, pd.products_shortdescription, pd.products_meta_keywords from tx_multishop_products p, tx_multishop_products_description pd, tx_multishop_categories_description cd, tx_multishop_categories c, tx_multishop_products_to_categories p2c where c.status = 1 and p.products_status = 1 and cd.language_id = 0 and pd.language_id = 0 and p.products_id = pd.products_id and pd.products_id = p2c.products_id and p2c.categories_id = cd.categories_id and cd.categories_id = c.categories_id group by p.products_id order by pd.products_name";
 	$qry = $GLOBALS['TYPO3_DB']->sql_query($sql) or die('test'.$GLOBALS['TYPO3_DB']->sql_error());
 }
-$dir = $_SERVER['DOCUMENT_ROOT'];
-$export_file = $dir."/uploads/tx_multishop/tmp/".$filename;
+$dir = $this->DOCUMENT_ROOT;
+$export_file = $dir."uploads/tx_multishop/tmp/".$filename;
 
 // Creating a worksheet
 if ($this->get['cid'] > 0) {

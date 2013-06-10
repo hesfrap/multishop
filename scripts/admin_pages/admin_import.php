@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $GLOBALS['TSFE']->additionalHeaderData[] = '
 <script type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/multiselect/js/ui.multiselect_normal.js"></script>
 <link href="'.t3lib_extMgm::siteRelPath($this->extKey).'js/multiselect/css/ui.multiselect.css" rel="stylesheet" type="text/css"/>
@@ -260,7 +262,9 @@ elseif ($this->post['action'] == 'product-import-preview' or (is_numeric($_REQUE
 		$file_location=$this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/'.$filename;
 		$file_content=mslib_fe::file_get_contents($this->post['file_url']);
 		if (!$file_content or !file_put_contents($file_location,$file_content)) {
-			die('cannot save the file or the file is empty');
+			if ($this->ms['mode']!='edit') {
+				die('cannot save the file or the file is empty');
+			}
 		}
 	}
 	elseif($this->ms['mode']=='edit') {
@@ -438,27 +442,6 @@ elseif ($this->post['action'] == 'product-import-preview' or (is_numeric($_REQUE
 			// try the generic way eof			
 		}
 		$tmpcontent='';
-		$tmpcontent.='<form id="product_import_form" class="" name="form1" method="post" action="'.mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]=admin_import').'">
-		<input name="consolidate" type="hidden" value="'.$this->post['consolidate'].'" />
-		<input name="os" type="hidden" value="'.$this->post['os'].'" />
-		<input name="escape_first_line" type="hidden" value="'.$this->post['escape_first_line'].'" />
-		<input name="parser_template" type="hidden" value="'.$this->post['parser_template'].'" />						
-		<input name="format" type="hidden" value="'.$this->post['format'].'" />
-		<input name="action" type="hidden" value="product-import" />
-		<input name="job_id" type="hidden" value="'.$this->get['job_id'].'" />
-		<input name="cid" type="hidden"  value="'.$this->post['cid'].'" />
-		<input name="delimiter" type="hidden"  value="'.$this->post['delimiter'].'" />
-		<input name="backquotes" type="hidden"  value="'.$this->post['backquotes'].'" />
-		<input name="filename" type="hidden" value="'.$filename.'" />
-		<input name="file_url" type="hidden" value="'.$this->post['file_url'].'" />	
-		';
-		if ($this->ms['mode'] =='edit' or $this->post['preProcExistingTask']) {
-			// if the existing import task is rerunned indicate it so we dont save the task double
-			$tmpcontent.='<input name="preProcExistingTask" type="hidden" value="1" />';
-		}
-		if (!$this->get['action']=='edit_job') {
-			$tmpcontent.='<input name="incremental_update" type="hidden" value="'.$this->post['incremental_update'].'" />';
-		}
 		if (!$rows) {
 			$tmpcontent.='<h1>'.$this->pi_getLL('no_products_available').'</h1>';
 		} else {
@@ -574,7 +557,34 @@ elseif ($this->post['action'] == 'product-import-preview' or (is_numeric($_REQUE
 			';
 			$tmpcontent.=$header.'</table>';
 		}
-		$tmpcontent.='
+	} else {
+		$tmpcontent.='<strong>Products cannot be retrieved.</strong>';
+	}
+	// print form 
+	$combinedContent='<form id="product_import_form" class="" name="form1" method="post" action="'.mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]=admin_import').'">
+	<input name="consolidate" type="hidden" value="'.$this->post['consolidate'].'" />
+	<input name="os" type="hidden" value="'.$this->post['os'].'" />
+	<input name="escape_first_line" type="hidden" value="'.$this->post['escape_first_line'].'" />
+	<input name="parser_template" type="hidden" value="'.$this->post['parser_template'].'" />						
+	<input name="format" type="hidden" value="'.$this->post['format'].'" />
+	<input name="action" type="hidden" value="product-import" />
+	<input name="job_id" type="hidden" value="'.$this->get['job_id'].'" />
+	<input name="cid" type="hidden"  value="'.$this->post['cid'].'" />
+	<input name="delimiter" type="hidden"  value="'.$this->post['delimiter'].'" />
+	<input name="backquotes" type="hidden"  value="'.$this->post['backquotes'].'" />
+	<input name="filename" type="hidden" value="'.$filename.'" />
+	<input name="file_url" type="hidden" value="'.$this->post['file_url'].'" />	
+	';
+	if ($this->ms['mode'] =='edit' or $this->post['preProcExistingTask']) {
+		// if the existing import task is rerunned indicate it so we dont save the task double
+		$combinedContent.='<input name="preProcExistingTask" type="hidden" value="1" />';
+	}
+//	if (!$this->get['action']=='edit_job') {
+	if ($this->ms['mode'] !='edit') {
+		$combinedContent.='<input name="incremental_update" type="hidden" value="'.$this->post['incremental_update'].'" />';
+	}	
+	$combinedContent.=$tmpcontent;
+		$combinedContent.='
 			<fieldset>
 			<legend>'.$this->pi_getLL('save_import_task').'</legend>
 			<div class="account-field">					
@@ -583,7 +593,7 @@ elseif ($this->post['action'] == 'product-import-preview' or (is_numeric($_REQUE
 			</div>
 		';
 		if ($this->get['action']=='edit_job') {
-			$tmpcontent.='
+			$combinedContent.='
 			<div class="account-field">					
 				<label for="duplicate">'.$this->pi_getLL('duplicate_task').'</label>
 				<input name="duplicate" type="checkbox" value="1" />
@@ -596,7 +606,7 @@ elseif ($this->post['action'] == 'product-import-preview' or (is_numeric($_REQUE
 			</div>			
 			';
 		}	
-		$tmpcontent.='
+		$combinedContent.='
 		<div class="account-field">					
 		<label for="cron_period">'.$this->pi_getLL('schedule').'</label>
 		<select name="cron_period" id="cron_period">
@@ -621,9 +631,13 @@ elseif ($this->post['action'] == 'product-import-preview' or (is_numeric($_REQUE
 		$locked_fields['products_name']='Products name';
 		$locked_fields['products_quantity']='Products quantity';
 		foreach ($locked_fields as $key => $val) {
-			$tmpcontent.='<option value="'.$key.'"'.(in_array($key,$this->post['tx_multishop_pi1']['locked_fields'])?' selected':'').'>'.htmlspecialchars($val).'</option>'."\n";
+			if (is_array($this->post['tx_multishop_pi1']['locked_fields'])) {			
+				$combinedContent.='<option value="'.$key.'"'.(in_array($key,$this->post['tx_multishop_pi1']['locked_fields'])?' selected':'').'>'.htmlspecialchars($val).'</option>'."\n";
+			} else {
+				$combinedContent.='<option value="'.$key.'">'.htmlspecialchars($val).'</option>'."\n";
+			}
 		}
-		$tmpcontent.='
+		$combinedContent.='
 		</select>		
 		</div>		
 		<div class="account-field">				
@@ -633,15 +647,19 @@ elseif ($this->post['action'] == 'product-import-preview' or (is_numeric($_REQUE
 		$str="SELECT * FROM `tx_multishop_tax_rule_groups`";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);		
 		while(($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
-			$tmpcontent.='<option value="'.$row['rules_group_id'].'"'.($this->post['tx_multishop_pi1']['default_vat_rate']==$row['rules_group_id']?' selected':'').'>'.htmlspecialchars($row['name']).'</option>';
+			$combinedContent.='<option value="'.$row['rules_group_id'].'"'.($this->post['tx_multishop_pi1']['default_vat_rate']==$row['rules_group_id']?' selected':'').'>'.htmlspecialchars($row['name']).'</option>';
 		}
-	$tmpcontent .= '
+	$combinedContent .= '
 		</select>	
 		</div>						
 		<div class="account-field">					
 		<label>&nbsp;</label>
 		<input name="incremental_update" type="checkbox" value="1" '.(($this->post['incremental_update']==1)?'checked':'').' /> '.$this->pi_getLL('import_incremental').' (only use this when you upload partial data. For example when you have 2 feeds that contains the values of 1 attribute then you have to enable this checkbox. Products will always be inserted on incremental basis, so you allmost never have to enable this checkbox)
-		</div>	
+		</div>
+		<div class="account-field">					
+		<label>&nbsp;</label>
+		<input name="fetch_existing_product_by_direct_field" type="checkbox" value="1" '.(($this->post['fetch_existing_product_by_direct_field']==1)?'checked':'').' /> '.$this->pi_getLL('fetch_existing_product_by_direct_field','Fetch existing product by db field (i.e. products_sku, products_ean) instead of hashed extid field.').'
+		</div>			
 		<input name="database_name" type="hidden" value="'.$this->post['database_name'].'" />							
 		<input name="cron_data" type="hidden" value="'.htmlspecialchars(serialize($this->post)).'" />
 		</fieldset>
@@ -653,18 +671,14 @@ elseif ($this->post['action'] == 'product-import-preview' or (is_numeric($_REQUE
 			</tr>
 		</table>
 		<p class="extra_padding_bottom"></p>
-		</form>
-		';
-//print_r($this->post);
-//die();		
-		$content='<div class="fullwidth_div">'.mslib_fe::shadowBox($tmpcontent).'</div>';
-//		$content='<div class="fullwidth_div">'.mslib_fe::shadowBox($tmpcontent).'</div>';
-	}
+		';	
+	$combinedContent.='</form>';
+	$content='<div class="fullwidth_div">'.mslib_fe::shadowBox($combinedContent).'</div>';
 }
-elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') or ($this->post['action'] == 'product-import' and (($this->post['filename'] and file_exists($this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/'.$this->post['filename'])) or $this->post['database_name'])))
+elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') or ($this->post['action'] == 'product-import' and (($this->post['filename']) or $this->post['database_name'])))
 {
-	if ((!$this->post['preProcExistingTask'] and $this->post['cron_name'] and !$this->post['skip_import'] and !$this->post['job_id']) or ($this->post['skip_import'] and $this->post['duplicate']))
-	{
+	// removed this:  and file_exists($this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/'.$this->post['filename']) so we can also save the task if the file is not found
+	if ((!$this->post['preProcExistingTask'] and $this->post['cron_name'] and !$this->post['skip_import'] and !$this->post['job_id']) or ($this->post['skip_import'] and $this->post['duplicate'])) {
 //		print_r($this->post);
 //		die();
 	// we have to save the import job 
@@ -690,6 +704,16 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 	}
 	elseif ($this->post['skip_import'])	{
 	// we have to update the import job 
+		if (!$this->post['select']) {
+			// something is wrong. repair the select of previous job
+			$str="SELECT * from tx_multishop_import_jobs where id='".$this->post['job_id']."'";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
+			$data=unserialize($row['data']);
+			// copy the previous post data to the current post so it can run the job again
+			$this->post['select']=$data[1]['select'];
+			$this->post['input']=$data[1]['input'];
+		}	
 		$updateArray=array();
 		$updateArray['name']					=$this->post['cron_name'];
 		$updateArray['status']					=1;
@@ -703,7 +727,6 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 		$this->post['cron_data']='';
 		$cron_data[1]							=$this->post;
 		$updateArray['data']					=serialize($cron_data);
-
 //		$updateArray['categories_id']			=$this->post['cid'];
 		$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_import_jobs', 'id='.$this->post['job_id'],$updateArray);
 //		echo $query;
@@ -754,21 +777,16 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 		} else if ($this->post['filename']) {
 			$file=$this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/'.$this->post['filename'];
 		}
-		if (($this->post['database_name'] or $file) and isset($this->post['cid']) )
-		{
+		if(($this->post['database_name'] or $file) and isset($this->post['cid'])) {
 			if ($file) {
 				$str=mslib_fe::file_get_contents($file);	
 			}
-			if ($this->post['parser_template'])
-			{
+			if ($this->post['parser_template']) {
 				// include a pre-defined xml to php array way
 				require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_import_parser_templates/'.$this->post['parser_template'].".php");
 				// include a pre-defined xml to php array way eof
-			}	
-			else
-			{	
-				if ($this->post['database_name'])
-				{
+			} else {	
+				if ($this->post['database_name']) {
 					if ($log_file) {
 						file_put_contents($log_file, $this->HTTP_HOST.' - loading random products. ('.date("Y-m-d G:i:s").")\n", FILE_APPEND);							
 					}
@@ -787,11 +805,9 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 					);
 					$qry=$GLOBALS['TYPO3_DB']->sql_query($query);
 					$datarows=array();
-					while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false)
-					{
+					while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
 						$datarows[]=$row;
-						if ($row['internal_id'])
-						{
+						if ($row['internal_id']) {
 							$str2="delete from ".$this->post['database_name']." where internal_id='".$row['internal_id']."'";
 							$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
 						}
@@ -805,19 +821,16 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 					*/					
 					$i=0;
 					$rows=array();
-					foreach ($datarows as $datarow)
-					{
+					foreach ($datarows as $datarow) {
 						$s=0;
-						foreach ($datarow as $datacol)
-						{	
+						foreach ($datarow as $datacol) {	
 							$rows[$i][$s]=$datacol;
 							$s++;				
 						}
 						$i++;
 					}
 				}	
-				elseif ($this->post['format']=='excel')
-				{	
+				elseif ($this->post['format']=='excel') {	
 					// excel
 					require_once(t3lib_extMgm::extPath('phpexcel_service').'Classes/PHPExcel/IOFactory.php');
 					$phpexcel = PHPExcel_IOFactory::load($file);
@@ -842,15 +855,13 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 					}
 					// excel eof
 				}						
-				elseif ($this->post['format']=='xml')
-				{
+				elseif ($this->post['format']=='xml') {
 					$objXML = new xml2Array();
 					$arrOutput = $objXML->parse($str);
 					$i=0;
 					$s=0;
 					$rows=array();
-					foreach ($arrOutput[0]['children'] as $item)
-					{
+					foreach ($arrOutput[0]['children'] as $item) {
 						// image
 						foreach ($item['children'] as $internalitem)
 						{
@@ -865,33 +876,38 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 						$i++;
 						$s=0;
 					}
-				}
-				else
-				{					
+				} else {					
 					if ($this->post['os']=='linux') $splitter="\n";
 					else $splitter="\r\n";
 					$str=trim($str,$splitter);		
-					if ($this->post['escape_first_line']) 
-					{
+					if ($this->post['escape_first_line']) {
 						$pos=strpos($str,$splitter);
 						$str=substr($str,($pos+strlen($splitter)));
 					}		
 					// csv
-					if ($this->post['delimiter']		==	"tab") 			$delimiter	="\t";
-					elseif ($this->post['delimiter']	==	"dash") 		$delimiter	="|";
-					elseif ($this->post['delimiter']	==	"dotcomma") 	$delimiter	=";";
-					elseif ($this->post['delimiter']	==	"comma") 		$delimiter	=",";
-					else 											$delimiter	="\t";
-					if ($this->post['backquotes'])						$backquotes='"';
-					else											$backquotes='"';				
-					if ($this->post['format']=='txt')
-					{
+					if ($this->post['delimiter']		==	"tab") {
+						$delimiter	="\t";
+					} elseif ($this->post['delimiter']	==	"dash") {
+						$delimiter	="|";
+					} elseif ($this->post['delimiter']	==	"dotcomma") {
+						$delimiter	=";";
+					} elseif ($this->post['delimiter']	==	"comma") {
+						$delimiter	=",";
+					} else {
+						$delimiter	="\t";
+					}
+					if ($this->post['backquotes']) {
+						$backquotes='"';
+					}
+					else {
+						$backquotes='"';
+					}
+					if ($this->post['format']=='txt') {
 						$row = 1;
 						$rows=array();
 						if (($handle = fopen($file, "r")) !== FALSE) {
 							$counter=0;
-							while (($data = fgetcsv($handle, '', $delimiter,$backquotes)) !== FALSE)
-							{
+							while (($data = fgetcsv($handle, '', $delimiter,$backquotes)) !== FALSE) {
 								if ($this->post['escape_first_line'])
 								{
 									if ($counter==0) 	$table_cols=$data;				
@@ -914,15 +930,14 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 			$global_start_time = microtime(TRUE);
 			$start_time=microtime(TRUE);
 			$total_datarows=count($rows);
-			if ($log_file)
-			{
-				if ($total_datarows)
-				{
+			if ($log_file) {
+				if ($total_datarows) {
 					// sometimes the preload takes so long that the database connection is lost.
 					$GLOBALS['TYPO3_DB']->connectDB();
 					file_put_contents($log_file, $this->HTTP_HOST.' - products loaded, now starting the import. ('.date("Y-m-d G:i:s").")\n", FILE_APPEND);							
+				} else {
+					file_put_contents($log_file, $this->HTTP_HOST.' - no products needed to be imported'."\n", FILE_APPEND);
 				}
-				else file_put_contents($log_file, $this->HTTP_HOST.' - no products needed to be imported'."\n", FILE_APPEND);							
 			}
 			// load default TAX rules
 			if ($this->post['tx_multishop_pi1']['default_vat_rate']) {
@@ -1119,21 +1134,41 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 						if ($char and $item[$this->post['select'][$i]] == $char) $item[$this->post['select'][$i]]='';
 					}
 					// unique products id. this field will be used for incremental updates
-					if ($item['products_id']) {
-						$item['extid']=md5($this->post['prefix_source_name'].'_'.$item['products_id']);
-					} elseif ($item['products_unique_identifier']) {
-						$item['extid']=md5($this->post['prefix_source_name'].'_'.$item['products_unique_identifier']);
-					} elseif ($item['products_ean']) {
-						$item['products_ean']=trim($item['products_ean']);
-						$item['extid']=md5($this->post['prefix_source_name'].'_'.$item['products_ean']);
-					} elseif ($item['products_sku']) {
-						$item['products_sku']=trim($item['products_sku']);
-						$item['extid']=md5($this->post['prefix_source_name'].'_'.$item['products_sku']);
+					if ($this->post['fetch_existing_product_by_direct_field']) {
+						$fields=array();
+						$fields['sku_code']='products_sku';
+						$fields['products_ean']='products_ean';
+						foreach ($fields as $dbField => $itemField) {
+							if ($item[$itemField]) {
+								$str="select products_id,extid from tx_multishop_products where page_uid=".$this->showCatalogFromPage." and ".$dbField."='".addslashes($item[$itemField])."'";
+								$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+								if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry)) {
+									$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);							
+									$item['extid']=$row['extid'];		
+								}	
+							}
+							if ($item['extid']) {
+								break;
+							}
+						}
 					} else {
+						if ($item['products_id']) {
+							$item['extid']=md5($this->post['prefix_source_name'].'_'.$item['products_id']);
+						} elseif ($item['products_unique_identifier']) {
+							$item['extid']=md5($this->post['prefix_source_name'].'_'.$item['products_unique_identifier']);
+						} elseif ($item['products_ean']) {
+							$item['products_ean']=trim($item['products_ean']);
+							$item['extid']=md5($this->post['prefix_source_name'].'_'.$item['products_ean']);
+						} elseif ($item['products_sku']) {
+							$item['products_sku']=trim($item['products_sku']);
+							$item['extid']=md5($this->post['prefix_source_name'].'_'.$item['products_sku']);
+						}
+					}
+					if (!$item['extid']) {
 						// no sku or special key found. this makes it hard to update things. therefore we have added the prefix_source_name so we can merge it with the productsname and some other fields
 						$make_our_own_fake_sku=serialize($item['products_name'].$item['products_model']);
 						$item['extid']=md5($this->post['prefix_source_name'].'_'.$make_our_own_fake_sku);
-					}			
+					}					
 					if ($item['products_vat_rate'] and strstr($item['products_vat_rate'],'%')) {
 						$item['products_vat_rate']=str_replace("%","",$item['products_vat_rate']);
 					}
@@ -1483,7 +1518,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								if ($item['products_price'] < $item['products_old_price']) $item['products_specials_price']=$item['products_price'];
 								$item['products_price']			=	$item['products_old_price'];									
 							}
-							if (!$item['products_description'] and $item['products_short_description']) $item['products_description']=nl2br($item['products_short_description']);							
+							if (!$item['products_description'] and $item['products_short_description']) $item['products_description']=nl2br($item['products_short_description']);			
 							if (is_numeric($item['updated_products_id'])) {
 								/***********************
 								// UPDATE PRODUCT MODE /
@@ -2178,7 +2213,7 @@ if ($this->post['action'] != 'product-import-preview')
 	// tabber
 	if ($this->ms['show_default_form']) {
 		// load the jobs templates
-		$str="SELECT * from tx_multishop_import_jobs where page_uid='".$this->shop_pid."' order by prefix_source_name asc, id desc";
+		$str="SELECT * from tx_multishop_import_jobs where page_uid='".$this->shop_pid."' and (type='' or type='products') order by prefix_source_name asc, id desc";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		$jobs=array();	
 		while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {	
@@ -2213,7 +2248,6 @@ if ($this->post['action'] != 'product-import-preview')
 		'.mslib_fe::tx_multishop_draw_pull_down_menu('update_category_for_job['.$job['id'].']',mslib_fe::tx_multishop_get_category_tree('','','','',false,false,$this->pi_getLL('admin_main_category')), $job['categories_id'],'onchange="if (CONFIRM(\''.addslashes($this->pi_getLL('are_you_sure')).'?\')) this.form.submit();"').'</form>';		
 				$schedule_content.='<td>'.$category_name;
 				$schedule_content.='
-				</td>
 				</td>
 				';
 				$schedule_content.='<td nowrap align="right">'.date("Y-m-d",$job['last_run']).'<br />'.date("G:i:s",$job['last_run']).'</td>';

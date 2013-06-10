@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $tmp='';
 $tmp.='<table id="pagenav_container">
 <tr>

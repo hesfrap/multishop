@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 // Configuration group ids
 // 1 Homepage
 // 2 Image Settings
@@ -14,6 +16,16 @@
 // 12 Invoice Settings
 
 $records=array();
+$records[]=array(
+		'configuration_title'=>'Multishop Encryption key',
+		'configuration_key'=>'MULTISHOP_ENCRYPTION_KEY',
+		'configuration_value'=>md5(uniqid('',TRUE)),
+		'description'=>'This security key is used for the system.',
+		'group_id'=>'3',
+		'use_function'=>'',
+		'set_function'=>'',
+		'depend_on_configuration_key'=>'',
+		'use_function'=>'');
 $records[]=array(
 		'configuration_title'=>'Show Specials Box',
 		'configuration_key'=>'HOME_SPECIALS_BOX',
@@ -1417,7 +1429,27 @@ $records[]=array(
 		'use_function'=>'',
 		'set_function'=>'tep_cfg_select_option(array(\'0\', \'1\'),',
 		'depend_on_configuration_key'=>'',
-		'use_function'=>'');		
+		'use_function'=>'');
+$records[]=array(
+		'configuration_title'=>'Display product image in admin order details',
+		'configuration_key'=>'DISPLAY_PRODUCT_IMAGE_IN_ADMIN_ORDER_DETAILS',
+		'configuration_value'=>'0',
+		'description'=>'This setting display product image in admin order details.',
+		'group_id'=>'9',
+		'use_function'=>'',
+		'set_function'=>'tep_cfg_select_option(array(\'0\', \'1\'),',
+		'depend_on_configuration_key'=>'',
+		'use_function'=>'');
+$records[]=array(
+		'configuration_title'=>'Display product image in admin packing slip',
+		'configuration_key'=>'DISPLAY_PRODUCT_IMAGE_IN_ADMIN_PACKING_SLIP',
+		'configuration_value'=>'0',
+		'description'=>'This setting display product image in admin packing slip.',
+		'group_id'=>'9',
+		'use_function'=>'',
+		'set_function'=>'tep_cfg_select_option(array(\'0\', \'1\'),',
+		'depend_on_configuration_key'=>'',
+		'use_function'=>'');
 // custom hook that can be controlled by third-party plugin
 if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/configuration/tx_multishop_configuration.php']['addConfigurationRecordsPreHook'])) {
 	$params = array (

@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $GLOBALS['TSFE']->additionalHeaderData[] = '
 <script type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/jquery.blockUI.js"></script>
 <link href="'.$this->FULL_HTTP_URL_MS.'js/jqui/css/smoothness/jquery-ui-1.8.custom.css" rel="stylesheet" type="text/css"/>

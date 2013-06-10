@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if (mslib_fe::loggedin()) {
 	// user is already signed in
 	$content.=$this->pi_getLL('you_are_already_signed_in');
@@ -50,14 +52,44 @@ if (mslib_fe::loggedin()) {
 						// replacing the variables with dynamic values
 						$array1=array();
 						$array2=array();
+
+						$array1[]='###BILLING_COMPANY###';
+						$array2[]=$newCustomer['company'];						
+
 						$array1[]='###FULL_NAME###';
-						$array2[]=$insertArray['name'];
+						$array2[]=$newCustomer['name'];
+						$array1[]='###BILLING_NAME###';
+						$array2[]=$newCustomer['name'];						
+						
+						
+						$array1[]='###BILLING_FIRST_NAME###';
+						$array2[]=$newCustomer['first_name'];
+
+						$array1[]='###BILLING_LAST_NAME###';
+						$last_name=$newCustomer['last_name'];
+						if ($newCustomer['middle_name']) {
+							$last_name=$newCustomer['middle_name'].' '.$last_name;
+						}
+						$array2[]=$last_name;						
+						
 						$array1[]='###CUSTOMER_EMAIL###';
-						$array2[]=$newCustomer['email'];
+						$array2[]=$newCustomer['email'];						
 						$array1[]='###BILLING_EMAIL###';
 						$array2[]=$newCustomer['email'];
+
+						$array1[]='###BILLING_ADDRESS###';
+						$array2[]=$newCustomer['address'];						
+
+						$array1[]='###BILLING_TELEPHONE###';
+						$array2[]=$newCustomer['telephone'];						
+
+						$array1[]='###BILLING_MOBILE###';
+						$array2[]=$newCustomer['mobile'];						
 					
 						$array1[]='###LONG_DATE###'; // ie woensdag 23 juni, 2010
+						$long_date=strftime($this->pi_getLL('full_date_format'));
+						$array2[]=$long_date;
+						$array1[]='###CURRENT_DATE_LONG###'; // ie woensdag 23 juni, 2010
 						$long_date=strftime($this->pi_getLL('full_date_format'));
 						$array2[]=$long_date;
 					
@@ -100,19 +132,51 @@ if (mslib_fe::loggedin()) {
 							// replacing the variables with dynamic values
 							$array1=array();
 							$array2=array();
+								
+							$array1[]='###BILLING_COMPANY###';
+							$array2[]=$newCustomer['company'];						
+
+	
 							$array1[]='###FULL_NAME###';
-							$array2[]=$insertArray['name'];
-								
+							$array2[]=$newCustomer['name'];
+							$array1[]='###BILLING_NAME###';
+							$array2[]=$newCustomer['name'];						
+							
+							
+							$array1[]='###BILLING_FIRST_NAME###';
+							$array2[]=$newCustomer['first_name'];
+	
+							$array1[]='###BILLING_LAST_NAME###';
+							$last_name=$newCustomer['last_name'];
+							if ($newCustomer['middle_name']) {
+								$last_name=$newCustomer['middle_name'].' '.$last_name;
+							}
+							$array2[]=$last_name;						
+							
 							$array1[]='###CUSTOMER_EMAIL###';
+							$array2[]=$newCustomer['email'];						
+							$array1[]='###BILLING_EMAIL###';
 							$array2[]=$newCustomer['email'];
-								
+	
+							$array1[]='###BILLING_ADDRESS###';
+							$array2[]=$newCustomer['address'];						
+	
+							$array1[]='###BILLING_TELEPHONE###';
+							$array2[]=$newCustomer['telephone'];						
+	
+							$array1[]='###BILLING_MOBILE###';
+							$array2[]=$newCustomer['mobile'];						
+						
 							$array1[]='###LONG_DATE###'; // ie woensdag 23 juni, 2010
 							$long_date=strftime($this->pi_getLL('full_date_format'));
 							$array2[]=$long_date;
-					
+							$array1[]='###CURRENT_DATE_LONG###'; // ie woensdag 23 juni, 2010
+							$long_date=strftime($this->pi_getLL('full_date_format'));
+							$array2[]=$long_date;
+						
 							$array1[]='###STORE_NAME###';
 							$array2[]=$this->ms['MODULES']['STORE_NAME'];
-								
+						
 							$array1[]='###CUSTOMER_ID###';
 							$array2[]=$customer_id;
 								

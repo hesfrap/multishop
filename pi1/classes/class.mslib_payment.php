@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 /***************************************************************
 *  Copyright notice
 *
@@ -26,13 +28,12 @@
  *
  * Hint: use extdeveval to insert/update function index above.
  */
-class mslib_payment extends tslib_pibase
-{
-	var 	$name='';
-	var 	$variables='';
+class mslib_payment extends tslib_pibase {
+	var 	$name = '';
+	var 	$variables = '';
 	static 	$installedPaymentMethods=array();
 	static 	$enabledPaymentMethods=array();
-	public 	$ref='';
+	public 	$ref = '';
 	function initLanguage($ms_locallang) {
 		$this->pi_loadLL();	
 		//array_merge with new array first, so a value in locallang (or typoscript) can overwrite values from ../locallang_db
@@ -46,11 +47,9 @@ class mslib_payment extends tslib_pibase
 		$this->initLanguage($ref->LOCAL_LANG);
 		static $installedPaymentMethods;
 		// custom hook for loading the installed payment methods
-		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_payment.php']['mslib_payment']))
-		{
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_payment.php']['mslib_payment'])) {
 			$params = array ('installedPaymentMethods' => &$installedPaymentMethods); 
-			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_payment.php']['mslib_payment'] as $funcRef)
-			{
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_payment.php']['mslib_payment'] as $funcRef) {
 				t3lib_div::callUserFunction($funcRef, $params, $ref);
 			}
 		}	
@@ -58,7 +57,9 @@ class mslib_payment extends tslib_pibase
 		// custom hook for loading the installed payment methods eof
 		// load enabled payment methods
 		$str="SELECT * from tx_multishop_payment_methods s, tx_multishop_payment_methods_description d where ";
-		if (!$include_hidden_items) $str.="s.status=1 and ";
+		if (!$include_hidden_items) {
+			$str.="s.status=1 and ";
+		}
 		$str.="d.language_id='".$this->sys_language_uid."' and s.id=d.id order by s.sort_order";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry)) {		

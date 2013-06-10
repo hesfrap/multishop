@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 /* old not working anymore 
 $arrOutput = mslib_fe::xml2array($str,0);
 $i=0;

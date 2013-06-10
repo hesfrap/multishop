@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $total_pages = ceil(($pageset['total_rows']/$this->ms['MODULES']['PAGESET_LIMIT']));
 
 $tmp='';

@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($_REQUEST['skeyword'])
 {
 	$this->get['tx_multishop_pi1']['zip'] = $_REQUEST['skeyword'];	

@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->post)
 {
 	$query = $GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_shipping_countries', 'page_uid=\''.$this->showCatalogFromPage.'\'');

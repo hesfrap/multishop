@@ -252,6 +252,10 @@
 									<numIndex index="0">Price filter navigation box</numIndex>
 									<numIndex index="1">price_filter_navigation_box</numIndex>
 								</numIndex>
+								<numIndex index="4" type="array">
+									<numIndex index="0">Manufacturers dropdown menu</numIndex>
+									<numIndex index="1">manufacturers_dropdown_menu</numIndex>
+								</numIndex>								
 								<numIndex index="5" type="array">
 									<numIndex index="0">Ultrasearch</numIndex>
 									<numIndex index="1">ultrasearch</numIndex>

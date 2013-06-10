@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $randomnr=rand(100000,900000);
 $session = $GLOBALS['TSFE']->fe_user->getKey('ses', 'tx_multishop_session');
 $session['captcha_code'] = md5($randomnr); 

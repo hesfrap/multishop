@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if (!$this->cObj->data['header'])
 {
 	$this->default_header=1;
@@ -72,14 +74,15 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 					// level 0
 					// get all cats to generate multilevel fake url
 					$nested_level=1;					
-					if ($cat['categories_url'])
-					{
+					if ($cat['categories_url']) {
 						$parsed_url = @parse_url($cat['categories_url']);
-						if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST']))
+						if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
+							$target="target=\"_blank\"";
+						} else {
+							$target='';
+						}
 						$link=$cat['categories_url'];
-					}
-					else
-					{
+					} else {
 						$target="";					
 						$level=0;
 						$cats=mslib_fe::Crumbar($cat['categories_id']);				
@@ -96,7 +99,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 							$where.='&';
 						}
 						// get all cats to generate multilevel fake url eof					
-						$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+						$link=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 					}
 					$actifsub=0;
 					$act=0;
@@ -131,7 +134,11 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 								if ($cat['categories_url'])
 								{
 									$parsed_url = @parse_url($cat['categories_url']);
-									if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST']))
+									if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
+										$target="target=\"_blank\"";	
+									} else {
+										$target='';
+									}
 									$link=$cat['categories_url'];
 								}
 								else
@@ -153,7 +160,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 										$where.='&';
 									}
 									// get all cats to generate multilevel fake url eof					
-									$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+									$link=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 								}
 								$actifsub=0;
 								$act=0;
@@ -252,7 +259,11 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 						if ($cat['categories_url'])
 						{
 							$parsed_url = @parse_url($cat['categories_url']);
-							if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST']))
+							if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
+								$target="target=\"_blank\"";	
+							} else {
+								$target='';
+							}
 							$link=$cat['categories_url'];
 						}
 						else
@@ -272,7 +283,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 								$where.='&';
 							}
 							// get all cats to generate multilevel fake url eof					
-							$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+							$link=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 						}
 						$actifsub=0;
 						$act=0;
@@ -371,8 +382,12 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 					if ($cat['categories_url'])
 					{
 						$parsed_url = @parse_url($cat['categories_url']);
-						if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST']))
-						$link=$cat['categories_url'];
+						if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
+							$target="target=\"_blank\"";	
+						} else {
+							$target='';
+						}
+						$link=$cat['categories_url'];						
 					}
 					else
 					{
@@ -391,9 +406,11 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 							$where.='&';
 						}
 						// get all cats to generate multilevel fake url eof					
-						$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+						$link=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 					}
-					if ($cat['categories_url']) $link=$cat['categories_url'];				
+					if ($cat['categories_url']) {
+						$link=$cat['categories_url'];
+					}
 					$actifsub=0;
 					$act=0;
 					if ($user_crumbar[$nested_level]['id'] == $cat['categories_id'])
@@ -438,19 +455,19 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 							// level 1
 							
 							$content.='<ul class="sublevel">';
-							foreach ($catlist2 as $cat)
-							{					
+							foreach ($catlist2 as $cat) {					
 								$nested_level=1;
 								// get all cats to generate multilevel fake url
 								$level=0;
-								if ($cat['categories_url'])
-								{
+								if ($cat['categories_url']) {
 									$parsed_url = @parse_url($cat['categories_url']);
-									if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST']))
+									if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
+										$target="target=\"_blank\"";	
+									} else {
+										$target='';
+									}
 									$link=$cat['categories_url'];
-								}
-								else
-								{
+								} else {
 									$target="";								
 									$cats=mslib_fe::Crumbar($cat['categories_id']);				
 									$cats=array_reverse($cats);
@@ -466,9 +483,17 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 										$where.='&';
 									}
 									// get all cats to generate multilevel fake url eof					
-									$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+									$link=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 								}
-								if ($cat['categories_url']) $link=$cat['categories_url'];
+								if ($cat['categories_url']) {
+									$parsed_url = @parse_url($cat['categories_url']);
+									if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
+										$target="target=\"_blank\"";
+									} else {
+										$target='';
+									}									
+									$link=$cat['categories_url'];
+								}
 								$actifsub=0;
 								$act=0;
 								if ($user_crumbar[$nested_level]['id'] == $cat['categories_id'])
@@ -502,14 +527,15 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 										$nested_level=1;
 										// get all cats to generate multilevel fake url
 										$level=0;
-										if ($cat['categories_url'])
-										{
+										if ($cat['categories_url']) {
 											$parsed_url = @parse_url($cat['categories_url']);
-											if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST']))
+											if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
+												$target="target=\"_blank\"";	
+											} else {
+												$target='';
+											}
 											$link=$cat['categories_url'];
-										}
-										else
-										{
+										} else {
 											$target="";										
 											$cats=mslib_fe::Crumbar($cat['categories_id']);				
 											$cats=array_reverse($cats);
@@ -525,9 +551,17 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 												$where.='&';
 											}
 											// get all cats to generate multilevel fake url eof					
-											$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+											$link=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 										}
-										if ($cat['categories_url']) $link=$cat['categories_url'];								
+										if ($cat['categories_url']) {
+											$parsed_url = @parse_url($cat['categories_url']);
+											if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
+												$target="target=\"_blank\"";
+											} else {
+												$target='';
+											}											
+											$link=$cat['categories_url'];								
+										}
 										$actifsub=0;
 										$act=0;
 										if ($user_crumbar[$nested_level]['id'] == $cat['categories_id'])

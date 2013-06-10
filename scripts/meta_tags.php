@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 // check Multishop version
 if (!$this->ms['MODULES']['GLOBAL_MODULES']['MULTISHOP_VERSION']) {
 	$this->runUpdate=1;
@@ -49,9 +51,10 @@ if (!$GLOBALS["TYPO3_CONF_VARS"]["tx_multishop_started"]) {
 			}
 		}
 	} else {
-		$updateCart=0;		
-		if (is_numeric($this->get['products_id']) and $this->get['tx_multishop_pi1']['action']=='add_to_cart') $updateCart=1;
-		elseif ((($this->post['products_id'] or $this->get['delete_products_id'] or $this->post['qty'] or $this->get['add_products_id']) and $this->get['tx_multishop_pi1']['page_section']=='shopping_cart') and !$GLOBALS['dont_update_cart']) {
+		$updateCart=0;
+		if (is_numeric($this->get['products_id']) and $this->get['tx_multishop_pi1']['action']=='add_to_cart') {
+			$updateCart=1;
+		} else if ((($this->post['products_id'] or $this->get['delete_products_id'] or $this->post['qty'] or $this->get['add_products_id']) and $this->get['tx_multishop_pi1']['page_section']=='shopping_cart') and !$GLOBALS['dont_update_cart']) {
 			$updateCart=1;
 		}
 		if ($updateCart) {
@@ -59,6 +62,12 @@ if (!$GLOBALS["TYPO3_CONF_VARS"]["tx_multishop_started"]) {
 			$mslib_cart=t3lib_div::makeInstance('tx_mslib_cart');
 			$mslib_cart->init($this);
 			$mslib_cart->updateCart();
+			
+			$link=mslib_fe::typolink($this->shoppingcart_page_pid,'&tx_multishop_pi1[page_section]=shopping_cart', 1);
+			if ($link) {
+				header("Location: ".$this->FULL_HTTP_URL.$link);
+				exit();
+			}
 		}
 	}	
 	if ($this->get['categories_id']) 	$categories_id=$this->get['categories_id'];
@@ -222,6 +231,9 @@ $meta_tags=array();
 		';
 			if ($this->ms['MODULES']['GLOBAL_MODULES']['CACHE_FRONT_END']) $Cache_Lite->save($html);
 		}
+		if ($this->get['tx_multishop_pi1']['page_section']=='admin_home') {
+			$this->ms['MODULES']['DISABLE_ADMIN_PANEL']=1;
+		}
 		// admin stats eof
 			$html.='
 			<script type="text/javascript">
@@ -272,7 +284,7 @@ $meta_tags=array();
 							admin_menu_footer += \'</ul></div>\';
 
 							var admin_menu= admin_menu_header + admin_menu_footer;
-							jQuery("body").prepend(admin_menu);
+							'.(!$this->ms['MODULES']['DISABLE_ADMIN_PANEL']?'jQuery("body").prepend(admin_menu);':'').'
 							
 							// load partial menu items and add them to the footer
 							if (jQuery(".footer_content").length > 0) {

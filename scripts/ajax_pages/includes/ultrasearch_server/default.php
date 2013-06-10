@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->ms['MODULES']['CACHE_FRONT_END'] and !$this->ms['MODULES']['CACHE_TIME_OUT_SEARCH_PAGES']) $this->ms['MODULES']['CACHE_FRONT_END']=0;
 if ($this->ms['MODULES']['CACHE_FRONT_END'])
 {
@@ -284,8 +286,8 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 					// get all cats to generate multilevel fake url eof
 				}
 				$temp_var_products = array();
-				$link_detail = mslib_fe::typolink($this->shop_pid,'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
-				$catlink=mslib_fe::typolink($this->shop_pid,'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+				$link_detail = mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
+				$catlink=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 				$final_price=mslib_fe::final_products_price($product);    
 				if ($product['tax_rate'] and $this->ms['MODULES']['SHOW_PRICES_WITH_AND_WITHOUT_VAT'])
 				{

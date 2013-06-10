@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 require_once(t3lib_extMgm::extPath('phpexcel_service').'Classes/PHPExcel.php');
 
 $option_search = array(
@@ -129,8 +131,8 @@ $tmporders=$pageset['orders'];
 
 $filename = 'orders_listing_' . time() . '.xls';
 
-$dir = $_SERVER['DOCUMENT_ROOT'];
-$export_file = $dir."/uploads/tx_multishop/tmp/".$filename;
+$dir = $this->DOCUMENT_ROOT;
+$export_file = $dir."uploads/tx_multishop/tmp/".$filename;
 
 // Creating a workbook
 $phpexcel = new PHPExcel();

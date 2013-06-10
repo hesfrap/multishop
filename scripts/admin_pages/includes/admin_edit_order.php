@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if (is_numeric($this->get['orders_id'])) {
 	$order = mslib_fe::getOrder($this->get['orders_id']);
 	if ($this->post) {
@@ -588,8 +590,11 @@ if ($dont_overide_delivery_countries) {
 	$delivery_countries = array_merge(array('<option value="'.$orders['delivery_country'].'">'.$orders['delivery_country'].'</option>'),$delivery_countries);
 }
 $delivery_countries_sb = '<select name="tx_multishop_pi1[delivery_country]" id="edit_delivery_country">'.implode("\n",$delivery_countries).'</select>';
+
+$editOrderFormFieldset=array();
 	$tmpcontent.='
-	<fieldset class="tabs-fieldset">
+	<div class="tabs-fieldset" id="address_details">
+	<fieldset>
 		<legend>'.$this->pi_getLL('address_details').'</legend>
 		<table id="address_details">
 			<tr>
@@ -653,7 +658,7 @@ if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 	<label>'.ucfirst($this->pi_getLL('fax')).':</label>
 	<input name="tx_multishop_pi1[billing_fax]" type="text" id="edit_billing_fax" value="'.$orders['billing_fax'].'" />
 	</div>
-	<a href="#" id="close_edit_billing_info" class="float_right">['.$this->pi_getLL('save').']</a>
+	<a href="#" id="close_edit_billing_info" class="float_right msadmin_button">'.$this->pi_getLL('save').'</a>
 	</div>';
 }
 	
@@ -681,7 +686,7 @@ if ($orders['billing_fax']) {
 	$tmpcontent.=$this->pi_getLL('fax').': '.$orders['billing_fax'].'<br />';
 }			
 if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
-	$tmpcontent .= '<span><a href="#" id="edit_billing_info">['.$this->pi_getLL('edit').']</a></span>';
+	$tmpcontent .= '<span><a href="#" id="edit_billing_info" class="msadmin_button">'.$this->pi_getLL('edit').'</a></span>';
 }
 $tmpcontent .= '</div>';
 $tmpcontent.='
@@ -750,7 +755,7 @@ if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 	<label>'.ucfirst($this->pi_getLL('fax')).':</label>
 	<input name="tx_multishop_pi1[delivery_fax]" type="text" id="edit_delivery_fax" value="'.$orders['delivery_fax'].'" />
 	</div>
-	<a href="#" id="close_edit_delivery_info" class="float_right">['.$this->pi_getLL('save').']</a>
+	<a href="#" id="close_edit_delivery_info" class="float_right msadmin_button">'.$this->pi_getLL('save').'</a>
 	</div>
 	';
 }
@@ -779,7 +784,7 @@ if ($orders['delivery_fax']) {
 	$tmpcontent.=$this->pi_getLL('fax').': '.$orders['delivery_fax'].'<br />';
 }
 if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
-	$tmpcontent .= '<span><a href="#" id="edit_delivery_info">['.$this->pi_getLL('edit').']</a></span>';
+	$tmpcontent .= '<span><a href="#" id="edit_delivery_info" class="msadmin_button">'.$this->pi_getLL('edit').'</a></span>';
 }
 $tmpcontent .= '</div>';
 $tmpcontent.='
@@ -802,7 +807,7 @@ $headerData='
 				success: function(r) {} 
 		});
 	}
-	jQuery(document).ready(function($) {		
+	jQuery(document).ready(function($) {
 		$("#edit_billing_info").live("click", function(e) {
 			e.preventDefault();			
 			$("#billing_details_container").hide();
@@ -857,7 +862,7 @@ $headerData='
 				}
 			});
 			$("#billing_details_container").empty();
-			$("#billing_details_container").html(billing_details + "<span><a href=\"#\" id=\"edit_billing_info\">['.$this->pi_getLL('edit').']</a></span>");							
+			$("#billing_details_container").html(billing_details + "<span><a href=\"#\" id=\"edit_billing_info\" class=\"msadmin_button\">'.$this->pi_getLL('edit').'</a></span>");							
 			updateCustomerOrderDetails("billing_details", $("[id^=edit_billing]").serialize());		
 			$("#billing_details_container").show();
 			$("#edit_billing_details_container").hide();
@@ -915,7 +920,7 @@ $headerData='
 				}
 			});
 			$("#delivery_details_container").empty();
-			$("#delivery_details_container").html(delivery_details + "<span><a href=\"#\" id=\"edit_delivery_info\">['.$this->pi_getLL('edit').']</a></span>");			
+			$("#delivery_details_container").html(delivery_details + "<span><a href=\"#\" id=\"edit_delivery_info\" class=\"msadmin_button\">'.$this->pi_getLL('edit').'</a></span>");			
 			updateCustomerOrderDetails("delivery_details", $("[id^=edit_delivery]").serialize());								
 			$("#delivery_details_container").show();
 			$("#edit_delivery_details_container").hide();
@@ -924,15 +929,23 @@ $headerData='
 	</script>';
 $GLOBALS['TSFE']->additionalHeaderData[] = $headerData;
 $headerData='';		
-$tmpcontent.='<table>
-		<tr>
-			<td width="" align="right">'.$this->pi_getLL('orders_id').':</td>
-			<td width="200">
-				'.$orders['orders_id'].'
-			</td>
-			<td width="" align="right">'.$this->pi_getLL('shipping_method').':</td>
-			<td>
-				';
+$tmpcontent.='
+	</fieldset>
+	</div>
+	';
+$editOrderFormFieldset[]=$tmpcontent;
+$tmpcontent='';
+
+$orderDetails=array();
+$orderDetails[]='
+<li>
+	<label>'.$this->pi_getLL('orders_id').'</label><span>'.$orders['orders_id'].'</span>
+	<label>'.$this->pi_getLL('admin_customer_id').'</label><span>'. $orders['customer_id'] .'</span>
+	<label>'.$this->pi_getLL('order_date').'</label><span>'. $order_date .'</span>
+</li>
+';
+$orderDetailsItem='<li>';
+$orderDetailsItem.='<label>'.$this->pi_getLL('shipping_method').'</label>';
 if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked'])
 {
 	$shipping_methods=mslib_fe::loadShippingMethods(1);
@@ -950,21 +963,17 @@ if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked'])
 		}		
 		if ($dontOverrideDefaultOption) $optionItems = array_merge(array('<option value="">'.ucfirst($this->pi_getLL('choose')).'</option>'),$optionItems);
 		else							$optionItems = array_merge(array('<option value="">'.($orders['shipping_method_label']?$orders['shipping_method_label']:$orders['shipping_method']).'</option>'),$optionItems);
-		$tmpcontent.='<select name="shipping_method">'.implode("\n",$optionItems).'</select>';	
-	} else $tmpcontent.=($orders['shipping_method_label']?$orders['shipping_method_label']:$orders['shipping_method']);
+		$orderDetailsItem.='<select name="shipping_method">'.implode("\n",$optionItems).'</select>';	
+	} else $orderDetailsItem.='<span>'.($orders['shipping_method_label']?$orders['shipping_method_label']:$orders['shipping_method']).'</span>';
 }
-else $tmpcontent.=($orders['shipping_method_label']?$orders['shipping_method_label']:$orders['shipping_method']);
-$tmpcontent.='
-			</td>			
-		</tr>
-		<tr>
-			<td width="200" align="right">'.$this->pi_getLL('order_date').':</td>
-			<td width="200">
-				'. $order_date .'
-			</td>
-			<td width="" align="right">'.$this->pi_getLL('payment_method').':</td>
-			<td>';
+else $orderDetailsItem.='<span>'.($orders['shipping_method_label']?$orders['shipping_method_label']:$orders['shipping_method']).'</span>';
+$orderDetailsItem.='</li>';
 
+$orderDetails[]=$orderDetailsItem;
+$orderDetailsItem='';
+
+$orderDetailsItem='<li>';
+$orderDetailsItem.='<label>'.$this->pi_getLL('payment_method').'</label>';
 if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 	if (is_array($payment_methods) and count($payment_methods)) {
 		$optionItems=array();
@@ -983,30 +992,54 @@ if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 		} else {
 			$optionItems = array_merge(array('<option value="">'.($orders['payment_method_label']?$orders['payment_method_label']:$orders['payment_method']).'</option>'),$optionItems);
 		}
-		$tmpcontent.='<select name="payment_method">'.implode("\n",$optionItems).'</select>';
+		$orderDetailsItem.='<select name="payment_method">'.implode("\n",$optionItems).'</select>';
 	} else {
-		$tmpcontent.=($orders['payment_method_label']?$orders['payment_method_label']:$orders['payment_method']);
+		$orderDetailsItem.='<span>'.($orders['payment_method_label']?$orders['payment_method_label']:$orders['payment_method']).'</span>';
 	}		
 } else {
-	$tmpcontent.=($orders['payment_method_label']?$orders['payment_method_label']:$orders['payment_method']);
-}
-
-$tmpcontent.='</td>			
-		</tr>
-		</table>
-	</fieldset>';
-
+	$orderDetailsItem.='<span>'.($orders['payment_method_label']?$orders['payment_method_label']:$orders['payment_method']).'</span>';
+}		
+$orderDetailsItem.='</li>';
+$orderDetails[]=$orderDetailsItem;
+$orderDetailsItem='';
 if ($orders['customer_comments']) {
-	$tmpcontent.='
-	<fieldset class="tabs-fieldset">
-		<legend>'.$this->pi_getLL('customer_comments').'</legend>
-		<span class="bodytextFieldset">'.nl2br($orders['customer_comments']).'</span>
-	</fieldset>
+	$orderDetailsItem='
+	<li id="customer_comments"><label>'.$this->pi_getLL('customer_comments').'</label>	
+		<span>'.nl2br($orders['customer_comments']).'</span>
+	</li>
 	';
+	$orderDetails[]=$orderDetailsItem;
+}
+// hook for adding new items to details fieldset
+if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_order.php']['adminEditOrdersDetailsFieldset'])) {
+	// hook
+	$params = array(
+			'orderDetails' => &$orderDetails,
+			'orders' => &$orders
+	);
+	foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_order.php']['adminEditOrdersDetailsFieldset'] as $funcRef) {
+		t3lib_div::callUserFunction($funcRef, $params, $this);
+	}
+	// hook oef
 }
 
 $tmpcontent.='
-<fieldset class="tabs-fieldset">
+<div class="tabs-fieldset" id="order_properties">
+<fieldset>
+	<legend>Details</legend>
+	<ul class="formDetails">	
+';
+$tmpcontent.=implode("",$orderDetails);
+$tmpcontent.='
+	</ul>
+</fieldset>
+</div>
+';
+
+$tmpcontent.='
+<div class="clear_both"></div>
+<div class="tabs-fieldset" id="product_details">
+<fieldset>
 <legend>'.$this->pi_getLL('product_details').'</legend>';
 		$tr_type='even';
 		$tmpcontent.='<table class="msZebraTable msadmin_border" width="100%">';
@@ -1072,7 +1105,13 @@ $tmpcontent.='
 					}
 					$row[0]=$order['products_id'];
 					$row[1]=number_format($order['qty'],2);
-					$row[2]='<a href="'.mslib_fe::typolink($this->shop_pid,'&'.$where.'&products_id='.$order['products_id'].'&tx_multishop_pi1[page_section]=products_detail').'" target="_blank">'.$order['products_name'].'</a>'.($order['products_model']?' ('.$order['products_model'].')':'').($product['vendor_code']?'<br />Vendor code: '.$product['vendor_code'].'':'');
+					if ($this->ms['MODULES']['DISPLAY_PRODUCT_IMAGE_IN_ADMIN_ORDER_DETAILS'] and $product['products_image']) {
+						$row[2]='<img src="'.mslib_befe::getImagePath($product['products_image'],'products','50').'">';
+						$row[2].='<a href="'.mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$order['products_id'].'&tx_multishop_pi1[page_section]=products_detail').'" target="_blank">'.$order['products_name'].'</a>'.($order['products_model']?' ('.$order['products_model'].')':'').($product['vendor_code']?'<br />Vendor code: '.$product['vendor_code'].'':'');
+					} else {
+						$row[2]='<a href="'.mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$order['products_id'].'&tx_multishop_pi1[page_section]=products_detail').'" target="_blank">'.$order['products_name'].'</a>'.($order['products_model']?' ('.$order['products_model'].')':'').($product['vendor_code']?'<br />Vendor code: '.$product['vendor_code'].'':'');
+					}
+					
 					$row[3]=mslib_fe::amount2Cents($order['final_price'],0);
 					$row[4]=number_format($order['products_tax']).'%';
 					$row[5]=mslib_fe::amount2Cents($order['qty']*$order['final_price'],0);
@@ -1310,8 +1349,8 @@ $tmpcontent.='
 		}
 		if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 			$colspan = 8;
-			$tmpcontent.='<tr><th colspan="'.$colspan.'" style="text-align:left;">'.$this->pi_getLL('add_item_to_order').'</th></tr>';
-			$tmpcontent.='<tr class="odd">';
+			$tmpcontent.='<tr class="manual_add_new_product" style="display:none"><th colspan="'.$colspan.'" style="text-align:left;">'.$this->pi_getLL('add_item_to_order').'</th></tr>';
+			$tmpcontent.='<tr class="odd manual_add_new_product" style="display:none">';
 			$tmpcontent.='<td align="right">
 							<input type="hidden" value="0" id="product_row_counter">
 						  </td>
@@ -1378,6 +1417,7 @@ $tmpcontent.='
 			$tmpcontent.='<td align="right"><input type="submit" value="'.$this->pi_getLL('add').'" class="msadmin_button"></td>';
 			$tmpcontent.='';
 			$tmpcontent.='</tr>';
+			$tmpcontent.='<tr><td colspan="'.$colspan.'" style="text-align:left;"><a href="#" id="button_manual_new_product" class="msadmin_button">'.$this->pi_getLL('add_manual_product', 'ADD ITEM').'</a></td></tr>';
 			
 		} else {
 			$colspan = 7;
@@ -1875,12 +1915,27 @@ $tmpcontent.='
 			});
 			</script>';
 		}
-		
-		
-		$tmpcontent.='
-		</fieldset>';		
-	}	
-	$tabs['Order_Details']=array($this->pi_getLL('order_details'),$tmpcontent);
+	}
+	$tmpcontent.='
+	</fieldset>
+	</div>
+	';		
+	$editOrderFormFieldset[]=$tmpcontent;
+	$tmpcontent='';	
+
+	// hook for adding new fieldsets into edit_order
+	if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_order.php']['adminEditOrdersFieldset'])) {
+		// hook
+		$params = array(
+				'editOrderFormFieldset' => &$editOrderFormFieldset,
+				'orders' => &$orders
+		);
+		foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_order.php']['adminEditOrdersFieldset'] as $funcRef) {
+			t3lib_div::callUserFunction($funcRef, $params, $this);
+		}
+		// hook oef
+	}
+	$tabs['Order_Details']=array($this->pi_getLL('order_details'),implode('',$editOrderFormFieldset));
 	// order details tab eof	
 	// order memo/status tab
 	$tmpcontent='';
@@ -1960,7 +2015,9 @@ $GLOBALS['TSFE']->additionalHeaderData[] = '
 	if (count($order_status_history_items) > 0)
 	{
 		$tmpcontent.='
-		<fieldset class="tabs-fieldset"><legend>'.$this->pi_getLL('order_status_history').'</legend>
+		<div class="tabs-fieldset" id="order_status_history">
+		<fieldset>
+		<legend>'.$this->pi_getLL('order_status_history').'</legend>
 		<table class="msZebraTable msadmin_border" width="100%">
 		<tr>
 			<th>'.$this->pi_getLL('status').'</th>
@@ -1995,6 +2052,7 @@ $GLOBALS['TSFE']->additionalHeaderData[] = '
 		}	
 		$tmpcontent.='</table>
 		</fieldset>
+		</div>
 		';
 	}
 	// load the status history eof
@@ -2015,10 +2073,26 @@ $GLOBALS['TSFE']->additionalHeaderData[] = '
 		// hook oef
 	}
 	
-	$tmpcontent='';	
+	$tmpcontent='';
+	
+	if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
+		$new_manual_product_js = '
+$("#button_manual_new_product").click(function(e) {
+	e.preventDefault();
+	if ($(".manual_add_new_product").is(":hidden")) {
+		$(".manual_add_new_product").show();
+		$("#button_manual_new_product").hide();
+	} else {
+		$(".manual_add_new_product").hide();
+	}
+});		
+		';	
+	}
+	
 	$content.='
 	<script type="text/javascript"> 
 	jQuery(document).ready(function($) {
+		'.$new_manual_product_js.'
 		$(\'.change_order_product_status\').change(function() {
 			var order_pid = $(this).attr("rel");
 			var orders_status_id = $("option:selected", this).val();

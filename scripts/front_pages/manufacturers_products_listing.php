@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if (is_numeric($this->get['manufacturers_id']))
 {
 	if ($this->productsLimit)
@@ -22,10 +24,11 @@ if (is_numeric($this->get['manufacturers_id']))
 	if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($string))
 	{
 		// current manufacturer
-		$str="SELECT * from tx_multishop_manufacturers m, tx_multishop_manufacturers_info mi where m.manufacturers_id=mi.manufacturers_id and m.status=1 and m.manufacturers_id='".$this->get['manufacturers_id']."'";
+		$str="SELECT * from tx_multishop_manufacturers m, tx_multishop_manufacturers_info mi, tx_multishop_manufacturers_cms mcms where m.status=1 and m.manufacturers_id='".$this->get['manufacturers_id']."' and mcms.language_id='".$this->sys_language_uid."' and m.manufacturers_id=mi.manufacturers_id and m.manufacturers_id=mcms.manufacturers_id";
+
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		$current=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);	
-		$content.='<div class="main-heading"><h2>'.$current['manufacturers_name'].'</h2></div>';	
+		$content.='<div class="main-heading"><h2>'.$current['manufacturers_name'].'</h2></div>';		
 		// now the listing		
 		if ($p > 0) 	$extrameta=' (page '.$p.')';
 		else			$extrameta='';
@@ -40,9 +43,13 @@ if (is_numeric($this->get['manufacturers_id']))
 			$offset=0;
 		}
 		$do_search=1;	
-		if ($do_search)
-		{
-			if ($this->get['skeyword'])	$content.='<div class="main-heading"><h2></h2></div>';
+		if ($do_search) {
+			if ($current['content'] and !$p) {
+				$content.=$current['content'];
+			}
+			if ($this->get['skeyword']) {
+				$content.='<div class="main-heading"><h2></h2></div>';
+			}
 			// product search
 			$filter=array();
 			$having=array();		
@@ -57,26 +64,25 @@ if (is_numeric($this->get['manufacturers_id']))
 			$orderby[]	=$tbl."products_last_modified desc";
 			$pageset=mslib_fe::getProductsPageSet($filter,$offset,$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'],$orderby,$having,$select,$where,0,array(),array(),'manufacturers_products');
 			$products=$pageset['products'];		
-			if ($pageset['total_rows'] > 0)
-			{
+			if ($pageset['total_rows'] > 0) {
 				if (strstr($this->ms['MODULES']['PRODUCTS_LISTING_TYPE'],"..")) die('error in PRODUCTS_LISTING_TYPE value');
 				else 
 				{
 					if (strstr($this->ms['MODULES']['PRODUCTS_LISTING_TYPE'],"/"))	require($this->DOCUMENT_ROOT.$this->ms['MODULES']['PRODUCTS_LISTING_TYPE'].'.php');	
-					else	require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing/'.$this->ms['MODULES']['PRODUCTS_LISTING_TYPE'].'.php');	
+					else	require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing/'.$this->ms['MODULES']['PRODUCTS_LISTING_TYPE'].'.php');
 				}	
 				// pagination
-				if (!$this->hidePagination and $pageset['total_rows'] > $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'])
-				{			
+				if (!$this->hidePagination and $pageset['total_rows'] > $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']) {			
 					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination.php');	
 				}
 				// pagination eof
-			}
-			else
-			{
+			} else {
 				$content.='<div class="main-heading"><h2>'.$this->pi_getLL('no_products_found_heading').'</h2></div>'."\n";			
 				$content.='<p>'.$this->pi_getLL('no_new_products_found_description').'</p>'."\n";
 			}
+			if ($current['content_footer'] and !$p) {
+				$content.=$current['content_footer'];
+			}			
 		}
 		if ($this->ms['MODULES']['CACHE_FRONT_END'])	$Cache_Lite->save($content);	
 	}	

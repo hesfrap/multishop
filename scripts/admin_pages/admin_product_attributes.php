@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 mslib_befe::loadLanguages();
 $selects=array();
 $selects['select']='Selectbox';
@@ -9,12 +11,9 @@ $selects['input']='Text input';
 $selects['file']='File input';
 $selects['divider']='Divider';			
 
-if (is_array($this->post['option_names']) and count($this->post['option_names']))
-{
-	foreach ($this->post['option_names'] as $products_options_id => $array)
-	{
-		foreach ($array as $language_id => $value)
-		{
+if (is_array($this->post['option_names']) and count($this->post['option_names'])) {
+	foreach ($this->post['option_names'] as $products_options_id => $array) {
+		foreach ($array as $language_id => $value) {
 			$updateArray=array();
 			$updateArray['language_id']=$language_id;			
 			$updateArray['products_options_id']=$products_options_id;
@@ -25,39 +24,29 @@ if (is_array($this->post['option_names']) and count($this->post['option_names'])
 			$str="select 1 from tx_multishop_products_options where products_options_id='".$products_options_id."' and language_id='".$language_id."'";
 		
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-			if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0)
-			{
+			if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0) {
 				$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products_options', 'products_options_id=\''.$products_options_id.'\' and language_id=\''.$language_id.'\'', $updateArray);
 				$res = $GLOBALS['TYPO3_DB']->sql_query($query);			
-			}
-			else
-			{					
+			} else {					
 				$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_options', $updateArray);
 				$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
-			}	
-
+			}
 		}
 	}
 }
-if (is_array($this->post['option_values']) and count($this->post['option_values']))
-{
-	foreach ($this->post['option_values'] as $products_options_values_id => $array)
-	{
-		foreach ($array as $language_id => $value)
-		{
+if (is_array($this->post['option_values']) and count($this->post['option_values'])) {
+	foreach ($this->post['option_values'] as $products_options_values_id => $array) {
+		foreach ($array as $language_id => $value) {
 			$updateArray=array();
 			$updateArray['language_id']=$language_id;			
 			$updateArray['products_options_values_id']=$products_options_values_id;
 			$updateArray['products_options_values_name']=$value;
 			$str="select 1 from tx_multishop_products_options_values where products_options_values_id='".$products_options_values_id."' and language_id='".$language_id."'";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-			if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0)
-			{
+			if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0) {
 				$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products_options_values', 'products_options_values_id=\''.$products_options_values_id.'\' and language_id=\''.$language_id.'\'', $updateArray);
 				$res = $GLOBALS['TYPO3_DB']->sql_query($query);			
-			}
-			else
-			{				
+			} else {				
 				$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_options_values', $updateArray);
 				$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
 			}	
@@ -67,22 +56,18 @@ if (is_array($this->post['option_values']) and count($this->post['option_values'
 $str = "select * from tx_multishop_products_options where language_id='0' order by sort_order";
 $qry = $GLOBALS['TYPO3_DB']->sql_query($str);
 $rows =$GLOBALS['TYPO3_DB']->sql_num_rows($qry);
-if ($rows)
-{
+if ($rows) {
 	$content.='
 	<form action="'.mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]=admin_product_attributes').'" method="post" name="admin_product_attributes">	
-	<ul class="attribute_options_sortable">
-	';
-while (($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false)
-{
-	$content.='
+	<ul class="attribute_options_sortable">';
+	while (($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
+		$content.='
 		<li id="options_'.$row['products_options_id'].'">
 		<h2><span class="option_id">Option ID: '.$row['products_options_id'].'</span>
 		<span class="listing_type">
 		listing type: 
 		<select name="listtype['.$row['products_options_id'].']">';
-		foreach ($selects as $key => $value)
-		{
+		foreach ($selects as $key => $value) {
 			$content.='<option value="'.$key.'"'.($key==$row['listtype']?' selected':'').'>'.htmlspecialchars($value).'</option>';
 		}
 		$content.='</select>
@@ -96,203 +81,256 @@ while (($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false)
 		</h2>
 		<h3>Option name <input name="option_names['.$row['products_options_id'].'][0]" type="text" value="'.htmlspecialchars($row['products_options_name']).'"  />';
 		$value=htmlspecialchars($row2['products_options_values_name']);																																																				
-		foreach ($this->languages as $key => $language)
-		{
+		foreach ($this->languages as $key => $language) {
 			$str3="select products_options_name from tx_multishop_products_options where products_options_id='".$row['products_options_id']."' and language_id='".$key."'"; 
 			$qry3 = $GLOBALS['TYPO3_DB']->sql_query($str3);
-			while (($row3 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry3)) != false)
-			{		
+			while (($row3 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry3)) != false) {		
 				if ($row3['products_options_name']) $value=htmlspecialchars($row3['products_options_name']);			
 			}		
 			$content.=$this->languages[$key]['title'].' <input name="option_names['.$row['products_options_id'].']['.$key.']" type="text" value="'.$value.'"  />';
-		}				
-		$content.='<a href="#" class="delete_options admin_menu_remove" rel="'.$row['products_options_id'].'">delete</a></h3>
-		<ul class="attribute_option_values_sortable" rel="'.$row['products_options_id'].'">
-	';	
-	// now load the related values
-//if ($row['products_options_id']==65)
-//{
-	$str2="select * from tx_multishop_products_options_values_to_products_options povp, tx_multishop_products_options_values pov where povp.products_options_id='".$row['products_options_id']."' and povp.products_options_values_id=pov.products_options_values_id and pov.language_id='0' order by povp.sort_order";
+		}			
+		$content.='<a href="#" class="delete_options admin_menu_remove" rel="'.$row['products_options_id'].'">delete</a>&nbsp;<a href="#" class="msadmin_button fetch_attributes_values" id="button_label_'.$row['products_options_id'].'" rel="'.$row['products_options_id'].'">'.$this->pi_getLL('show_attributes_values', 'SHOW VALUES').'</a></h3>
+		<ul class="attribute_option_values_sortable" rel="'.$row['products_options_id'].'" id="vc_'.$row['products_options_id'].'" style="display:none">';	
+		/* // now load the related values
+		$str2="select * from tx_multishop_products_options_values_to_products_options povp, tx_multishop_products_options_values pov where povp.products_options_id='".$row['products_options_id']."' and povp.products_options_values_id=pov.products_options_values_id and pov.language_id='0' order by povp.sort_order";
+	
+		$qry2 = $GLOBALS['TYPO3_DB']->sql_query($str2);
+		while (($row2 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry2)) != false) {	
+			$content.='<li id="option_values_'.$row2['products_options_values_id'].'" class="option_values_'.$row['products_options_id'].'_'.$row2['products_options_values_id'].'">Option value <input name="option_values['.$row2['products_options_values_id'].'][0]" type="text" value="'.htmlspecialchars($row2['products_options_values_name']).'"   />';
+			$value=htmlspecialchars($row2['products_options_values_name']);																																																				
+			foreach ($this->languages as $key => $language) {
+				$str3="select products_options_values_name from tx_multishop_products_options_values pov where pov.products_options_values_id='".$row2['products_options_values_id']."' and pov.language_id='".$key."'"; 
+				$qry3 = $GLOBALS['TYPO3_DB']->sql_query($str3);
+				while (($row3 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry3)) != false) {
+					if ($row3['products_options_values_name']) {
+						$value=htmlspecialchars($row3['products_options_values_name']);			
+					}
+				}
+					
+				$content.=$this->languages[$key]['title'].' <input name="option_values['.$row2['products_options_values_id'].']['.$key.']" type="text" value="'.$value.'"   />';
+			}
+				
+			$content.='<a href="#" class="delete_options admin_menu_remove" rel="'.$row['products_options_id'].':'.$row2['products_options_values_id'].'">delete</a></li>';
+		} */
 
-	$qry2 = $GLOBALS['TYPO3_DB']->sql_query($str2);
-	while (($row2 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry2)) != false)
-	{	
-		$content.='<li id="option_values_'.$row2['products_options_values_id'].'" class="option_values_'.$row['products_options_id'].'_'.$row2['products_options_values_id'].'">Option value <input name="option_values['.$row2['products_options_values_id'].'][0]" type="text" value="'.htmlspecialchars($row2['products_options_values_name']).'"   />';
-		$value=htmlspecialchars($row2['products_options_values_name']);																																																				
-		foreach ($this->languages as $key => $language)
-		{
-			$str3="select products_options_values_name from tx_multishop_products_options_values pov where pov.products_options_values_id='".$row2['products_options_values_id']."' and pov.language_id='".$key."'"; 
-			$qry3 = $GLOBALS['TYPO3_DB']->sql_query($str3);
-			while (($row3 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry3)) != false)
-			{		
-				if ($row3['products_options_values_name']) $value=htmlspecialchars($row3['products_options_values_name']);			
-			}		
-			$content.=$this->languages[$key]['title'].' <input name="option_values['.$row2['products_options_values_id'].']['.$key.']" type="text" value="'.$value.'"   />';
-		}		
-		$content.='<a href="#" class="delete_options admin_menu_remove" rel="'.$row['products_options_id'].':'.$row2['products_options_values_id'].'">delete</a>
-		</li>
-		';
+		$content.='</ul>
+		<input type="hidden" name="values_fetched_'.$row['products_options_id'].'" id="values_fetched_'.$row['products_options_id'].'" value="0" />		
+		</li>';
 	}
-//}
+	
 	$content.='
 		</ul>
-
-		</li>
-	';
-}
-$content.='
-	</ul>
-	<br /><input name="Submit" type="submit" value="Save" class="msadmin_button" />
-	</form>
-	
-	<div id="dialog-confirm" title="WARNING: THIS ACTION IS NOT REVERSIBLE!!">
-  		<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>Are you sure you want to delete <span id="attributes-name0"></span> attribute(s)?</p>
-	</div>
+		<br /><input name="Submit" type="submit" value="Save" class="msadmin_button" />
+		</form>
 		
-	<div id="dialog-confirm-force" title="WARNING: THIS ACTION IS NOT REVERSIBLE!!">
-  		<p>
-			<span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
-			There are <span id="used-product-number"></span> product(s) using <span id="attributes-name1"></span> attribute(s), are you sure want to delete it?
-		</p>
-		<br/><br/>
-		<p style="text-align:left">
-			The products using this attributes are:
+		<div id="dialog-confirm" title="WARNING: THIS ACTION IS NOT REVERSIBLE!!">
+	  		<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>Are you sure you want to delete <span id="attributes-name0"></span> attribute(s)?</p>
+		</div>
+			
+		<div id="dialog-confirm-force" title="WARNING: THIS ACTION IS NOT REVERSIBLE!!">
+	  		<p>
+				<span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+				There are <span id="used-product-number"></span> product(s) using <span id="attributes-name1"></span> attribute(s), are you sure want to delete it?
+			</p>
+			<br/><br/>
+			<p style="text-align:left">
+				The products using this attributes are:
+				<br/>
+				(link will open in new tab/window)
+			</p>
 			<br/>
-			(link will open in new tab/window)
-		</p>
-		<br/>
-		<span id="products-used-attributes-list" style="text-align:left"></span>
-	</div>
-';
-// now load the sortables jQuery code
-
-$content.='					
-<script type="text/javascript">
-  jQuery(document).ready(function($) {
-	jQuery("#dialog-confirm").hide();
-	jQuery("#dialog-confirm-force").hide();	
+			<span id="products-used-attributes-list" style="text-align:left"></span>
+		</div>';
 	
-	jQuery(".delete_options").click(function(e){
-		e.preventDefault();
-		var opt_id = jQuery(this).attr("rel");
-		
-		href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=delete_attributes').'"; 
-		jQuery.ajax({ 
-				type:   "POST", 
-				url:    href, 
-				data:   \'data_id=\' + opt_id,
-				dataType: "json",
-				success: function(r) { 
-					if (r.delete_status == "notok") {
-						//var products_used = parseInt(r.products_used);
-						var dialog_box_id = "#dialog-confirm";
-				
-						if (parseInt(r.products_used) > 0) {
-							dialog_box_id = "#dialog-confirm-force";
-				
-							// add product list that mapped to attributes
-							jQuery("#used-product-number").html("<strong>" + r.products_used + "</strong>");
+	// now load the sortables jQuery code
+	$content .= '<script type="text/javascript">
+	  jQuery(document).ready(function($) {
+		jQuery("#dialog-confirm").hide();
+		jQuery("#dialog-confirm-force").hide();	
+			
+		jQuery(".fetch_attributes_values").click(function(e) {
+			e.preventDefault();
+			var opt_id = jQuery(this).attr("rel");
+			var container_id = "#vc_" + opt_id;
+			var fetched_id = "#values_fetched_" + opt_id;
+			var button_label_id = "#button_label_" + opt_id;
+			
+			if (jQuery(fetched_id).val() == "0") {
+				href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=fetch_attributes').'"; 
+				jQuery.ajax({ 
+					type:   "POST", 
+					url:    href, 
+					data:   \'data_id=\' + opt_id,
+					dataType: "json",
+					success: function(r) { 
+						if (r.results) {
+							var values_data = "";
 							
-							var product_list = "<ul>";
-							jQuery.each(r.products, function(i, v){
-								product_list += "<li>"+ parseInt(i+1) +". <a href=\""+v.link+"\" target=\"_blank\" alt=\"Edit\">"+ v.name +"</a></li>";
+							jQuery.each(r.results, function(i, v){
+								values_data += \'<li id="option_values_\' + v.values_id + \'" class="option_values_\' + opt_id + \'_\' + v.values_id + \'">Option value <input name="option_values[\' + v.values_id + \'][0]" type="text" value="\' + v.values_name + \'" />\';
+								jQuery.each(v.language, function(x, y){
+									values_data += y.lang_title + \' <input name="option_values[\' + v.values_id + \'][\' + y.lang_id + \']" type="text" value="\' + y.lang_values + \'" />\';
+								});
+							
+								values_data += \'<a href="#" class="delete_options admin_menu_remove" rel="\' + opt_id + \':\' + v.values_id + \'">delete</a></li>\';
 							});
-							product_list += "<ul>";
-							jQuery("#products-used-attributes-list").html(product_list);
-						}
-				
-						if (r.option_value_id != null) {
-							jQuery("#attributes-name0").html("<strong>" + r.option_name + ": " + r.option_value_name + "</strong>");
-							jQuery("#attributes-name1").html("<strong>" + r.option_name + ": " + r.option_value_name + "</strong>");
+
+							values_data += \'<a href="#" class="msadmin_button hide_attributes_values" rel="\' + opt_id + \'">HIDE VALUES</a>\';
+						
+							jQuery(container_id).html(values_data);
+							jQuery(fetched_id).val("1");
+							jQuery(container_id).show();
+							jQuery(button_label_id).html("HIDE VALUES");
 						} else {
-							jQuery("#attributes-name0").html("<strong>Option: " + r.option_name + "</strong>");
-							jQuery("#attributes-name1").html("<strong>Option: " + r.option_name + "</strong>");
+							jQuery(button_label_id).html("NO VALUES");
 						}
+					} 
+				});
 				
-						jQuery(dialog_box_id).show();	
-				
-						jQuery(dialog_box_id).dialog({
-							resizable: true,
-							height:300,
-							width:500,
-							modal: true,
-							buttons: {
-								"CONFIRM DELETE": function() {
-									href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=delete_attributes&force_delete=1').'"; 
-										jQuery.ajax({ 
-												type:   "POST", 
-												url:    href, 
-												data:   \'data_id=\' + r.data_id,
-												dataType: "json",
-												success: function(s) { 
-													if (s.delete_status == "ok"){
-														jQuery(s.delete_id).remove();
-													}
-												} 
-										});
+			} else if (jQuery(fetched_id).val() == "1") {
+				if (jQuery(container_id).is(":hidden")) {
+					jQuery(container_id).show();
+					jQuery(button_label_id).html("HIDE VALUES");
+				} else {
+					jQuery(container_id).hide();
+					jQuery(button_label_id).html("SHOW VALUES");
+				}
+			}
+		});
 						
-						
-									jQuery( this ).dialog( "close" );
-									jQuery( this ).hide();
-								},
-								Cancel: function() {
-									jQuery( this ).dialog( "close" );
-									jQuery( this ).hide();
-								}
-							}
-						});
-					}
-				} 
+		jQuery(".hide_attributes_values").live("click", function(e) {
+			e.preventDefault();
+			var opt_id = jQuery(this).attr("rel");
+			var container_id = "#vc_" + opt_id;
+			var button_label_id = "#button_label_" + opt_id;
+
+			if (jQuery(container_id).is(":hidden")) {
+				jQuery(container_id).show();
+				jQuery(button_label_id).html("HIDE VALUES");
+			} else {
+				jQuery(container_id).hide();
+				jQuery(button_label_id).html("SHOW VALUES");
+			}
 		});
 		
-		
-		/* if (confirm(\'Are you sure you want to delete this Attributes Option?\')) {
+		jQuery(".delete_options").live("click", function(e) {
+			e.preventDefault();
+			var opt_id = jQuery(this).attr("rel");
 			
-		} */
-	});
+			href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=delete_attributes').'"; 
+			jQuery.ajax({ 
+					type:   "POST", 
+					url:    href, 
+					data:   \'data_id=\' + opt_id,
+					dataType: "json",
+					success: function(r) { 
+						if (r.delete_status == "notok") {
+							//var products_used = parseInt(r.products_used);
+							var dialog_box_id = "#dialog-confirm";
+					
+							if (parseInt(r.products_used) > 0) {
+								dialog_box_id = "#dialog-confirm-force";
+					
+								// add product list that mapped to attributes
+								jQuery("#used-product-number").html("<strong>" + r.products_used + "</strong>");
+								
+								var product_list = "<ul>";
+								jQuery.each(r.products, function(i, v){
+									product_list += "<li>"+ parseInt(i+1) +". <a href=\""+v.link+"\" target=\"_blank\" alt=\"Edit\">"+ v.name +"</a></li>";
+								});
+								product_list += "<ul>";
+								jQuery("#products-used-attributes-list").html(product_list);
+							}
+					
+							if (r.option_value_id != null) {
+								jQuery("#attributes-name0").html("<strong>" + r.option_name + ": " + r.option_value_name + "</strong>");
+								jQuery("#attributes-name1").html("<strong>" + r.option_name + ": " + r.option_value_name + "</strong>");
+							} else {
+								jQuery("#attributes-name0").html("<strong>Option: " + r.option_name + "</strong>");
+								jQuery("#attributes-name1").html("<strong>Option: " + r.option_name + "</strong>");
+							}
+					
+							jQuery(dialog_box_id).show();	
+					
+							jQuery(dialog_box_id).dialog({
+								resizable: true,
+								height:300,
+								width:500,
+								modal: true,
+								buttons: {
+									"CONFIRM DELETE": function() {
+										href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=delete_attributes&force_delete=1').'"; 
+											jQuery.ajax({ 
+													type:   "POST", 
+													url:    href, 
+													data:   \'data_id=\' + r.data_id,
+													dataType: "json",
+													success: function(s) { 
+														if (s.delete_status == "ok"){
+															jQuery(s.delete_id).remove();
+														}
+													} 
+											});
+							
+							
+										jQuery( this ).dialog( "close" );
+										jQuery( this ).hide();
+									},
+									Cancel: function() {
+										jQuery( this ).dialog( "close" );
+										jQuery( this ).hide();
+									}
+								}
+							});
+						}
+					} 
+			});
+			
+			
+			/* if (confirm(\'Are you sure you want to delete this Attributes Option?\')) {
+				
+			} */
+		});
+		
+		var result 	= jQuery(".attribute_options_sortable").sortable({
+			cursor:     "move", 
+			//axis:       "y", 
+			update: function(e, ui) { 
+				href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=update_attributes_sortable&tx_multishop_pi1[type]=options').'"; 
+				jQuery(this).sortable("refresh"); 
+				sorted = jQuery(this).sortable("serialize","id"); 
+				jQuery.ajax({ 
+						type:   "POST", 
+						url:    href, 
+						data:   sorted, 
+						success: function(msg) { 
+								//do something with the sorted data 
+						} 
+				}); 
+			} 
+		});
+		var result2 	= jQuery(".attribute_option_values_sortable").sortable({
+			cursor:     "move", 
+			//axis:       "y", 
+			update: function(e, ui) { 
+				href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=update_attributes_sortable&tx_multishop_pi1[type]=option_values').'"; 
+				jQuery(this).sortable("refresh"); 
+				sorted = jQuery(this).sortable("serialize", "id"); 
+				var products_options_id=jQuery(this).attr("rel");
+				jQuery.ajax({ 
+						type:   "POST", 
+						url:    href, 
+						data:   sorted+"&products_options_id="+products_options_id, 
+						success: function(msg) { 
+								//do something with the sorted data 
+						} 
+				}); 
+			} 
+		});		
+	  });
+	  </script>';
 	
-	var result 	= jQuery(".attribute_options_sortable").sortable({
-		cursor:     "move", 
-		//axis:       "y", 
-		update: function(e, ui) { 
-			href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=update_attributes_sortable&tx_multishop_pi1[type]=options').'"; 
-			jQuery(this).sortable("refresh"); 
-			sorted = jQuery(this).sortable("serialize","id"); 
-			jQuery.ajax({ 
-					type:   "POST", 
-					url:    href, 
-					data:   sorted, 
-					success: function(msg) { 
-							//do something with the sorted data 
-					} 
-			}); 
-		} 
-	});
-	var result2 	= jQuery(".attribute_option_values_sortable").sortable({
-		cursor:     "move", 
-		//axis:       "y", 
-		update: function(e, ui) { 
-			href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=update_attributes_sortable&tx_multishop_pi1[type]=option_values').'"; 
-			jQuery(this).sortable("refresh"); 
-			sorted = jQuery(this).sortable("serialize", "id"); 
-			var products_options_id=jQuery(this).attr("rel");
-			jQuery.ajax({ 
-					type:   "POST", 
-					url:    href, 
-					data:   sorted+"&products_options_id="+products_options_id, 
-					success: function(msg) { 
-							//do something with the sorted data 
-					} 
-			}); 
-		} 
-	});		
-  });
-  </script>
-
-';
-}
-else
-{
+} else {
 	$content.='<h1>No product attributes defined yet</h1>';
 	$content.='You can add product attributes while creating and/or editing a product (through the products attribute tab).';
 }

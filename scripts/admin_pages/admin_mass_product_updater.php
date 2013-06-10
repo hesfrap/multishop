@@ -1,17 +1,17 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $content = '<div class="main-heading"><h2>Mass Product Update</h2></div>';
 if ($this->post)
 {
 	// update tax rate
-	if (isset($this->post['rules_group_id']))
-	{
+	if (isset($this->post['rules_group_id'])) {
 		$str="update tx_multishop_products set tax_id='".$this->post['rules_group_id']."' where page_uid='".$this->showCatalogFromPage."'";
 		$res = $GLOBALS['TYPO3_DB']->sql_query($str);		
 		$content .= '<strong>For '.$GLOBALS['TYPO3_DB']->sql_affected_rows().' product(s) the TAX rules group has been changed.</strong><br />';
 	}
 	// update prices
-	if ($this->post['percentage'])
-	{
+	if ($this->post['percentage']) {
 		$multiply=(100+$this->post['percentage'])/100;
 		$str="update tx_multishop_products set products_price=(products_price*".$multiply.") where page_uid='".$this->showCatalogFromPage."'";
 		$res = $GLOBALS['TYPO3_DB']->sql_query($str);
@@ -39,6 +39,7 @@ else
 <div class="account-field">
 		<label for="rules_group_id">VAT Rate</label>	
 		<select name="rules_group_id"><option value="">skip</option>
+		<option value="0">No VAT</option>
 		';
 		
 		$str="SELECT * FROM `tx_multishop_tax_rule_groups`";

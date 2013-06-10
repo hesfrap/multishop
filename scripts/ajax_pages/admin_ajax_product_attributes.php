@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $content = '';
 if ($_GET['a'] == 'update_options') {
 	$str = "select * from tx_multishop_products_options where language_id = '".$this->sys_language_uid."' order by sort_order";

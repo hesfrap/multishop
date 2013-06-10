@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $this->box_class="multishop_basket";
 $this->cObj->data['header']='<a href="'.mslib_fe::typolink($this->conf['shoppingcart_page_pid'],'&tx_multishop_pi1[page_section]=shopping_cart').'">'.$this->pi_getLL('basket').'</a>';
 $cart = $GLOBALS['TSFE']->fe_user->getKey('ses', $this->cart_page_uid);
@@ -14,8 +16,8 @@ $content.='<div class="multishop_basketbox">';
 $content.='<span id="basket_message">'.(($totalitems==1)?sprintf($this->pi_getLL('you_have_item_in_your_cart'),$totalitems):sprintf($this->pi_getLL('you_have_items_in_your_cart'),$totalitems)).'</span>';
 $content.='
 <ul>
-	<li><a class="multishop_goto_shopping_cart" href="'.mslib_fe::typolink($this->conf['shoppingcart_page_pid'],'&tx_multishop_pi1[page_section]=shopping_cart').'">Bekijk inhoud</a></li>
-	<li><a class="multishop_goto_checkout" href="'.mslib_fe::typolink($this->conf['shoppingcart_page_pid'],'&tx_multishop_pi1[page_section]=checkout').'">Ga direct naar afrekenen</a></li>
+	<li><a class="multishop_goto_shopping_cart" href="'.mslib_fe::typolink($this->conf['shoppingcart_page_pid'],'&tx_multishop_pi1[page_section]=shopping_cart').'">'.$this->pi_getLL('view_contents','Bekijk inhoud').'</a></li>
+	<li><a class="multishop_goto_checkout" href="'.mslib_fe::typolink($this->conf['shoppingcart_page_pid'],'&tx_multishop_pi1[page_section]=checkout').'">'.$this->pi_getLL('go_directly_to_checkout','Ga direct naar afrekenen').'</a></li>
 </ul>
 ';
 $content.='</div>

@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $messages=array();
 $skipMultishopUpdates=0;
 // custom hook that can be controlled by third-party plugin
@@ -60,7 +62,78 @@ if (!$skipMultishopUpdates) {
 					}
 				}		
 			}	
+		}
+		$required_indexes=array();
+		$required_indexes[]='crdate';
+		$required_indexes[]='ip_address';
+		$required_indexes[]='is_checkout';
+		$indexes=array();
+		$table_name='tx_multishop_cart_contents';
+		$str="show indexes from `".$table_name."` ";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		while (($rs = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
+			$indexes[]=$rs['Key_name'];
+		}
+		foreach ($required_indexes as $required_index) {
+			if (!in_array($required_index,$indexes)) {
+				$str="ALTER TABLE  `".$table_name."` ADD INDEX `".$required_index."` (`".$required_index."`)";
+				$qry=$GLOBALS['TYPO3_DB']->sql_query($str);			
+				$messages[]=$str;	
+			}	
+		}
+		
+		$str="select type from tx_multishop_import_jobs limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `tx_multishop_import_jobs` ADD `type` varchar(35) NOT NULL default '', ADD KEY `type` (type)"; 
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);							
+			$messages[]=$str;				
 		}		
+
+		$str="select cruser_id from tx_multishop_products limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `tx_multishop_products` ADD `cruser_id` int(11) NOT NULL default '0'"; 
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);							
+			$messages[]=$str;				
+		}		
+		$str="select content_footer from tx_multishop_manufacturers_cms limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `tx_multishop_manufacturers_cms` ADD `content_footer` text not null default ''";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}	
+		$str="select meta_title from tx_multishop_manufacturers_cms limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `tx_multishop_manufacturers_cms` ADD `meta_title` varchar(254) NOT NULL DEFAULT ''";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}
+		$str="select meta_description from tx_multishop_manufacturers_cms limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `tx_multishop_manufacturers_cms` ADD `meta_description` text NOT NULL DEFAULT ''";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}	
+		$str="select meta_keywords from tx_multishop_manufacturers_cms limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `tx_multishop_manufacturers_cms` ADD `meta_keywords` text NOT NULL DEFAULT ''";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}				
+		
+
+		$str="select alert_quantity_threshold from tx_multishop_products limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `tx_multishop_products` ADD `alert_quantity_threshold` int(11) not null default '0'";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}	
 		$str="describe `tx_multishop_products`";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
@@ -74,6 +147,18 @@ if (!$skipMultishopUpdates) {
 					$messages[]=$str2;			
 				}
 			}	
+		}		
+		$str="select categories_id_0 from tx_multishop_orders_products limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			for ($i=0;$i<6;$i++) {
+				$str="ALTER TABLE `tx_multishop_orders_products` ADD `categories_id_".$i."` int(5) NOT NULL DEFAULT '0'"; 
+				$qry=$GLOBALS['TYPO3_DB']->sql_query($str);							
+				$messages[]=$str;
+				$str="ALTER TABLE `tx_multishop_orders_products` ADD `categories_name_".$i."` varchar(150) NOT NULL"; 
+				$qry=$GLOBALS['TYPO3_DB']->sql_query($str);							
+				$messages[]=$str;				
+			}
 		}		
 		$str="select title from tx_multishop_payment_log limit 1";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
@@ -133,10 +218,18 @@ if (!$skipMultishopUpdates) {
 		}
 		$str="select order_unit_label from tx_multishop_orders_products limit 1";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-		if (!$qry) {
-			$str="ALTER TABLE  `tx_multishop_orders_products` ADD `order_unit_label` varchar(100) NOT NULL DEFAULT ''"; 
+		if ($qry) {
+			$str="ALTER TABLE  `tx_multishop_orders_products` CHANGE  order_unit_label `order_unit_name` varchar(100) NOT NULL DEFAULT ''"; 
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);							
 			$messages[]=$str;
+		} else {
+			$str="select order_unit_name from tx_multishop_orders_products limit 1";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			if (!$qry) {
+				$str="ALTER TABLE  `tx_multishop_orders_products` ADD `order_unit_name` varchar(100) NOT NULL DEFAULT ''"; 
+				$qry=$GLOBALS['TYPO3_DB']->sql_query($str);							
+				$messages[]=$str;
+			}			
 		}
 		$str="select order_unit_code from tx_multishop_orders_products limit 1";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);

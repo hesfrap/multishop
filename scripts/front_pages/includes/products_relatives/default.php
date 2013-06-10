@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 	$rel_products=$pageset['products'];
 	if (!$this->imageWidth) $this->imageWidth='100';
 	$subpartArray=array();

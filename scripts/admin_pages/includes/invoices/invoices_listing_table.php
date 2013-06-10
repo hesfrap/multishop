@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $counter=0;	
 $tr_type='even';
 $tmp='

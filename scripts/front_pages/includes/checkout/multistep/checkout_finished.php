@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $order_session = $GLOBALS['TSFE']->fe_user->getKey('ses', 'tx_multishop_order');
 if (!$order_session['orders_id'])
 {

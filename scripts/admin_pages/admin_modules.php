@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->ms['MODULES']['ACCORDION_SETUP_MODULES']){
 	$GLOBALS['TSFE']->additionalHeaderData[] = '
 <script type="text/javascript">

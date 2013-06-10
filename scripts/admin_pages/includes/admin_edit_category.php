@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $GLOBALS['TSFE']->additionalHeaderData[] = '
 <script type="text/javascript">
 window.onload = function(){
@@ -201,8 +203,25 @@ if ($category['categories_id'] or $_REQUEST['action']=='add_category')
 	<form class="admin_category_edit" name="admin_categories_edit_'.$category['categories_id'].'" id="admin_categories_edit_'.$category['categories_id'].'" method="post" action="'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&cid='.$_REQUEST['cid']).'" enctype="multipart/form-data">';
 	
 	$tmpcontent.='<div style="float:right;">'.$save_block.'</div>';
-	if ($_REQUEST['action']=='add_category') $tmpcontent.='<div class="main-heading"><h1>'.$this->pi_getLL('add_category').'</h1></div>';
-	elseif ($_REQUEST['action']=='edit_category') $tmpcontent.='<div class="main-heading"><h1>'.$this->pi_getLL('edit_category').' (ID: '.$category['categories_id'].')</h1></div>';
+	if ($_REQUEST['action']=='add_category') {
+		$tmpcontent.='<div class="main-heading"><h1>'.$this->pi_getLL('add_category').'</h1></div>';
+	} else if ($_REQUEST['action']=='edit_category') {
+		$level=0;
+		$cats=mslib_fe::Crumbar($category['categories_id']);
+		
+		$cats=array_reverse($cats);
+		$where='';
+		if (count($cats) > 0) {
+			foreach ($cats as $item) {
+				$where.="categories_id[".$level."]=".$item['id']."&";
+				$level++;
+			}
+			$where=substr($where,0,(strlen($where)-1));
+		}
+		// get all cats to generate multilevel fake url eof
+		$details_link = mslib_fe::typolink($this->conf['products_listing_page_pid'],$where.'&tx_multishop_pi1[page_section]=products_listing');
+		$tmpcontent.='<div class="main-heading"><h1>'.$this->pi_getLL('edit_category').' (ID: '.$category['categories_id'].')</h1><span class="viewfront"><a href="'.$details_link.'" target="_blank">'.$this->pi_getLL('admin_edit_view_front_category', 'View in front').'</a></span></div>';
+	}
 	foreach ($this->languages as $key => $language)
 	{
 		$tmpcontent	.='

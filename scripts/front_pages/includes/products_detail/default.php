@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $output=array();
 if ($this->ADMIN_USER) $include_disabled_products=1;
 else $include_disabled_products=0;
@@ -49,7 +51,7 @@ else
 			}
 			// get all cats to generate multilevel fake url eof
 	}
-	$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
+	$link=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
 	if ($product['products_image'])
 	{
 			$output_array['meta']['image_src']='
@@ -117,12 +119,10 @@ else
 	}
 	else
 	{
-		$output['products_price']		.='
-										  	<input type="hidden" name="price_hid" id="price_default" value="'.$final_price.'"/>
+		$output['products_price']		.= '<input type="hidden" name="price_hid" id="price_default" value="'.$final_price.'"/>
 										  	<input type="hidden" name="price" id="price" value="'.$final_price.'" readonly/>
 											'.$staffel_price_hid.'
-										  	<div class="specials_price">'.mslib_fe::amount2Cents($final_price).'</div>										 
-										  ';		
+										  	<div class="specials_price">'.mslib_fe::amount2Cents($final_price).'</div>';		
 	}	
 	$output['products_price'].=$sub_content.'</div>';
 	// show selectbox by products multiplication or show default input
@@ -162,7 +162,7 @@ else
 	}
 	else
 	{
-		$quantity_html.='<input type="text" name="quantity" size="5" id="quantity" value="'.$qty.'" />';
+		$quantity_html.='<div class="quantity buttons_added" style=""><input type="button" value="-" class="qty_minus"><input type="text" name="quantity" size="5" id="quantity" value="'.$qty.'" /><input type="button" value="+" class="qty_plus"></div>';
 	}
 	// show selectbox by products multiplication or show default input eof
 	$output['quantity']='

@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 // clearing cooluri
 $content.='<h2>Clearing CoolURI cache</h2>';
 $content.='<ul>';

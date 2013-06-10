@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if (mslib_fe::loggedin()) {
 	switch ($this->get['tx_multishop_pi1']['page_section']) {
 		case 'order_details':

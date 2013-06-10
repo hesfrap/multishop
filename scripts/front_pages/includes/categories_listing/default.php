@@ -42,7 +42,7 @@ foreach ($categories as $category)
 		$output['link'] = $category['categories_url'];
 	} else {
 		$output['target'] = "";
-		$output['link'] = mslib_fe::typolink($this->shop_pid,$where.'&tx_multishop_pi1[page_section]=products_listing');
+		$output['link'] = mslib_fe::typolink($this->conf['products_listing_page_pid'],$where.'&tx_multishop_pi1[page_section]=products_listing');
 	}
 	$output['categories_counter'] = $counter;				
 	if ($this->ROOTADMIN_USER or ($this->ADMIN_USER and $this->CATALOGADMIN_USER)) {

@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 /*
 	when a web shop contains categories/products and a new language is being added, this script must be runned 1 time to clone the products to the specific language
 */

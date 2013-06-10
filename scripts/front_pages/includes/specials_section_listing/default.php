@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $teller=0;
 $specials_items='';
 $content.='<ul class="msFrontSpecialsListingSection">';
@@ -26,7 +28,7 @@ foreach ($products as $product)
 		}
 		// get all cats to generate multilevel fake url eof
 	}
-	$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');		
+	$link=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');		
 	$tel++;
 	$content.='<li class="multishop_specialsbox_item"><h3><a href="'.$link.'" class="ajax_link">'.$product['products_name'].'</a></h3><div class="multishop_specialsbox_item_image"><a href="'.$link.'" title="'.htmlspecialchars($product['products_name']).'" class="ajax_link">'.$image.'</a></div>';
 	$final_price=mslib_fe::final_products_price($product);

@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $this->box_class="multishop_currency_selector";
 $this->cObj->data['header']=$this->pi_getLL('currency','currency selector');
 if (!$this->ms['MODULES']['ENABLED_CURRENCIES']) $this->ms['MODULES']['ENABLED_CURRENCIES']='USD,EUR,GBP,DKK,UAH';

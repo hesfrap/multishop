@@ -1,7 +1,8 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $this->ms['page']=$this->get['tx_multishop_pi1']['page_section'];		
-switch ($this->ms['page'])
-{
+switch ($this->ms['page']) {
 	case 'admin_action_notification_log':
 		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_action_notification_log.php');	
 	break;	
@@ -78,18 +79,14 @@ switch ($this->ms['page'])
 		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_cms.php');
 	break;	
 	case 'admin_products_search_and_edit':
-		if ($this->ADMIN_USER)
-		{
-			if (strstr($this->ms['MODULES']['ADMIN_PRODUCTS_SEARCH_AND_EDIT'],"..")) die('error in ADMIN_PRODUCTS_SEARCH_AND_EDIT value');
-			else 
-			{
-				if (strstr($this->ms['MODULES']['ADMIN_PRODUCTS_SEARCH_AND_EDIT'],"/"))
-				{
+		if ($this->ADMIN_USER) {
+			if (strstr($this->ms['MODULES']['ADMIN_PRODUCTS_SEARCH_AND_EDIT'],"..")) {
+				die('error in ADMIN_PRODUCTS_SEARCH_AND_EDIT value');
+			} else {
+				if (strstr($this->ms['MODULES']['ADMIN_PRODUCTS_SEARCH_AND_EDIT'],"/")) {
 					// relative mode
 					require($this->DOCUMENT_ROOT.$this->ms['MODULES']['ADMIN_PRODUCTS_SEARCH_AND_EDIT'].'.php');	
-				}
-				else
-				{
+				} else {
 					 require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_products_search_and_edit.php');
 				}
 			}
@@ -97,35 +94,31 @@ switch ($this->ms['page'])
 		}
 	break;
 	case 'admin_import':
-			if (!$this->ms['MODULES']['ADMIN_PRODUCTS_IMPORT_TYPE']) $script='admin_import.php';
-			if (strstr($this->ms['MODULES']['ADMIN_PRODUCTS_IMPORT_TYPE'],"..")) die('error in ADMIN_PRODUCTS_IMPORT_TYPE value');
-			else 
-			{
-				if (strstr($this->ms['MODULES']['ADMIN_PRODUCTS_IMPORT_TYPE'],"/"))
-				{
+			if (!$this->ms['MODULES']['ADMIN_PRODUCTS_IMPORT_TYPE']) {
+				$script='admin_import.php';
+			}
+			if (strstr($this->ms['MODULES']['ADMIN_PRODUCTS_IMPORT_TYPE'],"..")) {
+				die('error in ADMIN_PRODUCTS_IMPORT_TYPE value');
+			} else {
+				if (strstr($this->ms['MODULES']['ADMIN_PRODUCTS_IMPORT_TYPE'],"/")) {
 					// relative mode
 					$script=$this->DOCUMENT_ROOT.$this->ms['MODULES']['ADMIN_PRODUCTS_IMPORT_TYPE'].'.php';
-				}
-				else
-				{
+				} else {
 					$script='admin_import.php';
 				}
-			}		
-			if ($this->get['action']=='run_job' and $this->get['code'])
-			{
+			}
+			if ($this->get['action']=='run_job' and $this->get['code']) {
 				$this->get['job_id']='';
 				$str="SELECT id FROM `tx_multishop_import_jobs` where code='".addslashes($this->get['code'])."'";					
 				$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-				while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry))
-				{	
+				while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
 					$this->get['job_id']=$row['id'];
 				}
-				if (is_numeric($this->get['job_id'])) require($script);
-			}
-			else
-			{
-				if ($this->ADMIN_USER)
-				{				
+				if (is_numeric($this->get['job_id'])) {
+					require($script);
+				}
+			} else {
+				if ($this->ADMIN_USER) {				
 					require($script);
 				}
 			}
@@ -155,35 +148,40 @@ switch ($this->ms['page'])
 		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_stats_customers.php');
     break;		
 	case 'admin_orders':
-		if ($this->ADMIN_USER)
-		{
-			if (strstr($this->ms['MODULES']['ADMIN_ORDERS_TYPE'],"..")) die('error in ADMIN_ORDERS_TYPE value');
-			else 
-			{
-				if (strstr($this->ms['MODULES']['ADMIN_ORDERS_TYPE'],"/"))
-				{
+		if ($this->ADMIN_USER) {
+			if (strstr($this->ms['MODULES']['ADMIN_ORDERS_TYPE'],"..")) {
+				die('error in ADMIN_ORDERS_TYPE value');
+			} else {
+				if (strstr($this->ms['MODULES']['ADMIN_ORDERS_TYPE'],"/")) {
 					// relative mode
 					require($this->DOCUMENT_ROOT.$this->ms['MODULES']['ADMIN_ORDERS_TYPE'].'.php');	
-				}
-				else
-				{
+				} else {
 					require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_orders.php');
 				}
-			}			
+			}
 		}
     break;	
 	// to find out
 	case 'admin_categories':
 		if ($this->ADMIN_USER) {
 			if ($this->get['action'] == 'move_categories') {
-				$new_parent_id = $this->post['move_to_cat'];
-				foreach ($this->post['movecats'] as $move_catid) {
-					$sql_update = 'update tx_multishop_categories set parent_id = ' . $new_parent_id . ' where categories_id = ' . $move_catid;
-					$GLOBALS['TYPO3_DB']->sql_query($sql_update);
+				$selected_cats = count($this->post['movecats']);
+				if ($selected_cats > 0) {
+					if (isset($this->post['move_selected_categories'])) {
+						$new_parent_id = $this->post['move_to_cat'];
+						foreach ($this->post['movecats'] as $move_catid) {
+							$sql_update = 'update tx_multishop_categories set parent_id = ' . $new_parent_id . ' where categories_id = ' . $move_catid;
+							$GLOBALS['TYPO3_DB']->sql_query($sql_update);
+						}
+						
+					} else if (isset($this->post['delete_selected_categories'])) {
+						foreach ($this->post['movecats'] as $move_catid) {
+							mslib_befe::deleteCategory($move_catid);
+						}
+					}
 				}				
 				header('Location: ' . $this->FULL_HTTP_URL . mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_categories&cid='.$this->get['categories_id']));
 			}
-			
 			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_categories.php');	
 		}
 	break;		
@@ -194,27 +192,27 @@ switch ($this->ms['page'])
 		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_customer_export.php');		
 	break;
 	case 'admin_customer_import':
-		if ($this->ADMIN_USER)
-		{
-			if (!$this->ms['MODULES']['ADMIN_CUSTOMERS_IMPORT_TYPE']) $script='admin_customer_import.php';
-			if (strstr($this->ms['MODULES']['ADMIN_CUSTOMERS_IMPORT_TYPE'],"..")) die('error in ADMIN_CUSTOMERS_IMPORT_TYPE value');
-			else 
-			{
-				if (strstr($this->ms['MODULES']['ADMIN_CUSTOMERS_IMPORT_TYPE'],"/"))
-				{
+		if ($this->ADMIN_USER) {
+			if (!$this->ms['MODULES']['ADMIN_CUSTOMERS_IMPORT_TYPE']) {
+				$script='admin_customer_import.php';
+			}
+			if (strstr($this->ms['MODULES']['ADMIN_CUSTOMERS_IMPORT_TYPE'],"..")) {
+				die('error in ADMIN_CUSTOMERS_IMPORT_TYPE value');
+			} else {
+				if (strstr($this->ms['MODULES']['ADMIN_CUSTOMERS_IMPORT_TYPE'],"/")) {
 					// relative mode
 					$script=$this->DOCUMENT_ROOT.$this->ms['MODULES']['ADMIN_CUSTOMERS_IMPORT_TYPE'].'.php';
-				}
-				else
-				{
+				} else {
 					$script='admin_customer_import.php';
 				}
-			}		
+			}
 			require($script);
 		}
 	break;
 	case 'admin_system_update_catalog_languages':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_update_catalog_languages.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_update_catalog_languages.php');	
+		}
 	break;		
 	case 'admin_system_fix_catalog_default_language':
 		if ($this->ADMIN_USER) {
@@ -238,7 +236,9 @@ switch ($this->ms['page'])
 		}
 	break;
 	case 'admin_customer_groups':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_customer_groups.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_customer_groups.php');	
+		}
 	break;
 	case 'admin_system_delete_disabled_products':
 	if ($this->ADMIN_USER) {
@@ -261,9 +261,17 @@ switch ($this->ms['page'])
 		if ($this->ADMIN_USER and $this->get['tx_multishop_pi1']['sortItem']) {
 			require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.tx_mslib_catalog.php');							
 			switch ($this->get['tx_multishop_pi1']['sortItem']) {
+				case 'manufacturers':
+					switch ($this->get['tx_multishop_pi1']['sortByField']) {
+						case 'name':
+							$content .= tx_mslib_catalog::sortCatalog('manufacturers','manufacturers_name',$this->get['tx_multishop_pi1']['orderBy']);
+							break;
+					}
+				break;
 				case 'catalog':
 					switch ($this->get['tx_multishop_pi1']['sortByField']) {
 						case 'name':
+							$content .= tx_mslib_catalog::sortCatalog('manufacturers','manufacturers_name','asc');
 							$content .= tx_mslib_catalog::sortCatalog('categories','categories_name','asc');	
 							$content .= tx_mslib_catalog::sortCatalog('products','products_name','asc');	
 						break;
@@ -298,6 +306,16 @@ switch ($this->ms['page'])
 				break;				
 			}
 		}
+	break;
+	case 'admin_search':
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_search.php');
+		}
+	break;
+	case 'admin_home':
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_home.php');	
+		}
 	break;	
 	case 'custom_page':
 		// custom page hook that can be controlled by third-party plugin
@@ -310,7 +328,7 @@ switch ($this->ms['page'])
 			}
 		}
 		// custom page hook that can be controlled by third-party plugin eof
-		break;
+	break;
 }
 if (!$this->ADMIN_USER) {
 	header("Location: ".$this->FULL_HTTP_URL.mslib_fe::typolink($this->shop_pid));

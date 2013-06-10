@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if (is_numeric($this->get['orders_id']))
 {
 	$invoice=mslib_fe::getOrderInvoice($this->get['orders_id']);
@@ -168,7 +170,16 @@ $tmpcontent.='
 			$tmpcontent.='<td align="right" class="cell_products_qty">'.number_format($product['qty']).'</td>';		
 			$tmpcontent.='<td align="right" class="cell_products_id">'.$product['products_id'].'</td>';		
 			$tmpcontent.='<td align="left" class="cell_products_model">'.$product['products_model'].'</td>';		
-			$tmpcontent.='<td align="left" class="cell_products_name"><strong>'.$product['products_name'];
+			
+			$product_tmp = mslib_fe::getProduct($product['products_id']);
+			
+			if ($this->ms['MODULES']['DISPLAY_PRODUCT_IMAGE_IN_ADMIN_PACKING_SLIP'] and $product_tmp['products_image']) {
+				$tmpcontent.='<td align="left" class="cell_products_name"><strong>';
+				$tmpcontent.='<img src="'.mslib_befe::getImagePath($product_tmp['products_image'],'products','50').'"> ';
+				$tmpcontent.=$product['products_name'];
+			} else {
+				$tmpcontent.='<td align="left" class="cell_products_name"><strong>'.$product['products_name'];
+			}
 			if ($product['products_article_number'])
 			{
 				$tmpcontent.=' ('.$product['products_article_number'].')';

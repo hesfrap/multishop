@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($GLOBALS['categories_id_array'])	$categories_id=$GLOBALS['categories_id_array'][0];
 elseif(is_numeric($this->get['categories_id']))		$categories_id=$this->get['categories_id'];
 if ($this->ms['MODULES']['CACHE_FRONT_END'] and !$this->ms['MODULES']['CACHE_TIME_OUT_CATEGORIES_NAVIGATION_MENU']) $this->ms['MODULES']['CACHE_FRONT_END']=0;

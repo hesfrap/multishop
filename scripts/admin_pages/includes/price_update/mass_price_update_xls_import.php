@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 function getOptionID($optname) {
 	$sql_opt = "select products_options_id from tx_multishop_products_options where products_options_name = '".addslashes($optname)."'";
 	$qry_opt = $GLOBALS['TYPO3_DB']->sql_query($sql_opt) or die($sql_opt."<br/>".$GLOBALS['TYPO3_DB']->sql_error());

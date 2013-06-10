@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 	if (!$this->imageWidth) $this->imageWidth='100';
 	if ($show_default_header) $content.='<div class="main-heading"><h2>'.trim($current['categories_name']).'</h2></div>';
 	$content.='<ul id="product_listing">';
@@ -26,7 +28,7 @@
 			// get all cats to generate multilevel fake url eof
 		}
 		$link=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$current_product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
-		$catlink=mslib_fe::typolink($this->shop_pid,'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+		$catlink=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 		$counter++;		
 		if ($current_product['products_image']) 	$image='<img src="'.mslib_befe::getImagePath($current_product['products_image'],'products',$this->imageWidth).'" alt="'.htmlspecialchars($current_product['products_name']).'" />';
 		else							$image='<div class="no_image"></div>';

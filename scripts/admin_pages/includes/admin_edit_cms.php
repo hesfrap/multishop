@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $tabs=array();
 if ($_REQUEST['action']=='edit_cms')
 {
@@ -117,6 +119,7 @@ if ($cms['id'] or $_REQUEST['action']=='edit_cms')
 	$types['general_conditions'] =$this->pi_getLL('general_conditions');
 	$types['email_create_account_confirmation'] = $this->pi_getLL('email_create_account_confirmation');
 	$types['create_account_thank_you_page'] 	= $this->pi_getLL('create_account_thank_you_page');
+	$types['email_alert_quantity_threshold_letter'] 	= $this->pi_getLL('email_alert_quantity_threshold_letter', 'Alert quantity threshold e-mail content');
 
 	
 	// extra cms type
@@ -194,6 +197,9 @@ $markers['TOTAL_AMOUNT']='Order total amount';
 $markers['PROPOSAL_NUMBER']='Proposal number';
 $markers['ORDER_NUMBER']='Order number (orders id)';
 $markers['BILLING_ADDRESS']='Billing address';
+$markers['BILLING_COMPANY']='Billing company';
+$markers['DELIVERY_COMPANY']='Delivery company';
+
 $markers['DELIVERY_ADDRESS']='Delivery address';
 $markers['CUSTOMER_ID']='Customer id';
 $markers['SHIPPING_METHOD']='Shipping method';

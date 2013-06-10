@@ -71,3 +71,19 @@ body { background:#000 url(../images/msadmin_dash_bg.gif) left top repeat-x; fon
 #msadmin_content #tx_multishop_pi1_core #tab-container table#product_import_table table#msOrderDetailsSubTotalTable td { border:none; background:#fff; font-weight:bold; }
 #msadmin_content #tx_multishop_pi1_core #tab-container table#product_import_table table#msOrderDetailsSubTotalTable td.msOrderDetailsSubTotalLabel { border-right:none; width:95%; text-align:right; }
 #msadmin_content #tx_multishop_pi1_core #tab-container table#product_import_table table#msOrderDetailsSubTotalTable td.msOrderDetailsSubTotalValue { text-align:right; }
+
+#msadmin_content ul.admin_search_result { overflow:hidden; width:100%; }
+#msadmin_content li.ui-menu-item.ui-menu-item-alternate { float:left; width:19%; margin:0 0.5% 10px;}
+#msadmin_content li.ui-menu-item.ui-menu-item-alternate a { display:block; border:1px solid #ddd; border-radius:6px; text-decoration:none; padding:10px; }
+#msadmin_content li.ui-menu-item.ui-menu-item-alternate a:hover { border-color:#999; text-decoration:none !important; }
+#msadmin_content li.ui-menu-item.ui-menu-item-alternate .ajax_products_image_wrapper { height:50px; text-align:center; padding:0 0 5px; }
+#msadmin_content li.ui-menu-item.ui-menu-item-alternate .ajax_products_search_item .ajax_products_name { height:30px; font-weight:bold; color:#E42434; }
+#msadmin_content li.ui-menu-item.ui-menu-item-alternate .ajax_products_search_item .ajax_products_shortdescription { font-weight:bold; color:#000; }
+#msadmin_content li.ui-menu-item.ui-menu-item-alternate .ajax_products_search_item .ajax_products_price { font-weight:bold; color:#666; }
+
+#msadmin_content li.ui-category { padding:0 0.5%; }
+#msadmin_content li span.admin_ajax_res_header,
+#msadmin_content li span#admin_ajax_res_header { display:block; font:bold 16px Arial, Helvetica, sans-serif; color:#c50000; padding:0 0 10px; }
+#msadmin_content li span#admin_ajax_res_footer { display:block; padding:0 0 20px; }
+#msadmin_content li span#more-results { float:left; display:block; border:1px solid #7c7c7c; background:#d5d5d5 url(/typo3conf/ext/multishop/templates/global/images/submit_gradient.gif) left top repeat-x; font:12px Arial, Helvetica, sans-serif; color:#333; text-decoration:none; text-transform:uppercase; margin:0 0.5%; padding:2px 6px; cursor:pointer; }
+#msadmin_content li span#more-results:hover { background:#e2e2e2; }

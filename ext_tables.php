@@ -105,10 +105,63 @@ unset($tempColumns['street_name']);
 unset($tempColumns['address_number']);
 unset($tempColumns['address_ext']);
 
-
 t3lib_div::loadTCA("fe_groups");
 t3lib_extMgm::addTCAcolumns("fe_groups",$tempColumns,1);
 t3lib_extMgm::addToAllTCAtypes("fe_groups",'--div--; Multishop, tx_multishop_discount;;;;1-1-1');
+
+// tt_address
+/*
+ * Extend fe_user table
+ */
+$tempColumns = array (
+    "street_name" => array (
+          "exclude" => 1,
+          "label" => "Street name:",
+          "config" => array (
+              "type" => "input",
+              "size" => "25",
+              "max" => "75",
+              "checkbox" => "0",
+              "default" => 0
+          )
+      ),	
+    "address_number" => array (
+          "exclude" => 1,
+          "label" => "Number:",
+          "config" => array (
+              "type" => "input",
+              "size" => "10",
+              "max" => "20",
+              "checkbox" => "0",
+              "default" => 0
+          )
+      ),
+    "address_ext" => array (
+          "exclude" => 1,
+          "label" => "Number extension:",
+          "config" => array (
+              "type" => "input",
+              "size" => "5",
+              "max" => "5",
+              "checkbox" => "0",
+              "default" => 0
+          )
+      ),	  
+
+);
+t3lib_div::loadTCA("tt_address");
+t3lib_extMgm::addTCAcolumns("tt_address",$tempColumns,1);
+t3lib_extMgm::addToAllTCAtypes("tt_address",'--div--; Multishop, tx_multishop_discount;;;;1-1-1');
+
+// Extending address with address_number and combine them in one new palette called "multishopaddress"
+$TCA['tt_address']['palettes']['multishopaddress'] = array(
+  'showitem' => 'address,street_name,address_number,address_ext'
+);
+t3lib_extMgm::addToAllTCAtypes('tt_address', '--palette--;Address;multishopaddress', '', 'replace:address');
+
+// TT ADDRESS EOF
+
+
 
 t3lib_extMgm::addPlugin(array(
 	'LLL:EXT:multishop/locallang_db.xml:tt_content.list_type_pi1',

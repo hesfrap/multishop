@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->get['Search'] and ($this->get['negative_keywords_only'] != $this->cookie['negative_keywords_only']))
 {	
 	$this->cookie['negative_keywords_only'] = $this->get['negative_keywords_only'];
@@ -9,6 +11,7 @@ $content.='
 <form method="get" action="index.php" id="search_log_form" class="float_right">
 <input name="id" type="hidden" value="'.$this->shop_pid.'" />
 <input name="Search" type="hidden" value="1" />
+<input name="type" type="hidden" value="2003" />
 <input name="tx_multishop_pi1[page_section]" type="hidden" value="'.$this->ms['page'].'" />
 <input id="checkbox_negative_keywords_only" name="negative_keywords_only" type="checkbox" value="1" '.($this->cookie['negative_keywords_only']?'checked':'').' /> '.$this->pi_getLL('display_negative_keywords_only').'
 </form>

@@ -1,4 +1,6 @@
-<?php 
+<?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $pid = $this->post['pid'];
 $json_data = array();
 

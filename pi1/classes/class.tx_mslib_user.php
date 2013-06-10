@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 /***************************************************************
 *  Copyright notice
 *
@@ -60,12 +62,11 @@ class tx_mslib_user {
 	var $region 				= '';
 	var $customFields			= array();
 	
-	function init(&$ref) {
+	function init(&$ref) {		
 		$this->get 		= &$ref->get;
 		$this->post 	= &$ref->post;
 		$this->ms 		= &$ref->ms;
 		$this->ref		= &$ref;
-		
 		return true;
 	}
 
@@ -518,8 +519,8 @@ class tx_mslib_user {
 		$insertArray['tx_multishop_code']			= md5(uniqid('',TRUE));
 		$insertArray['crdate']						= time();
 		$insertArray['page_uid']					= $this->ref->shop_pid;
-		$insertArray['http_referer']				= $this->cookie['HTTP_REFERER'];	
-		$insertArray['ip_address']					= $this->server['REMOTE_ADDR'];	
+		$insertArray['http_referer']				= $this->ref->cookie['HTTP_REFERER'];	
+		$insertArray['ip_address']					= $this->ref->REMOTE_ADDR;	
 		if (is_array($this->customFields) and count($this->customFields)) {
 			foreach ($this->customFields as $key => $val) {
 				$insertArray[$key] = $val;

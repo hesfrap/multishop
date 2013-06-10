@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $content.='
 <form action="index.php" method="get" name="products_searchform" id="multishop_products_searchform">
 <input name="id" type="hidden" value="'.$this->conf['search_page_pid'].'" />

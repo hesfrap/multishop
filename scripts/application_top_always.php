@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 // when having a multi category based url get the deepest categories_id and save it as $this->get['categories_id']		
 /*
 if (is_array($this->get['categories_id']))
@@ -83,6 +85,7 @@ if ($this->conf['fe_ordersadmin_usergroup']) 		$this->excluded_userGroups[]=$thi
 if ($this->conf['fe_storesadmin_usergroup']) 		$this->excluded_userGroups[]=$this->conf['fe_storesadmin_usergroup'];
 if ($this->conf['fe_searchadmin_usergroup']) 		$this->excluded_userGroups[]=$this->conf['fe_searchadmin_usergroup'];
 if ($this->conf['fe_systemadmin_usergroup']) 		$this->excluded_userGroups[]=$this->conf['fe_systemadmin_usergroup'];
+if ($this->conf['fe_statisticsadmin_usergroup']) 	$this->excluded_userGroups[]=$this->conf['fe_statisticsadmin_usergroup'];
 
 if ($this->conf['cacheConfiguration'] == '1') $this->ms['MODULES']['CACHE_FRONT_END']=1;
 $lifetime=36000;
@@ -203,6 +206,7 @@ if (!$this->conf['admin_template_folder']) 						$this->conf['admin_template_fol
 if (!$this->conf['search_page_pid']) 							$this->conf['search_page_pid']							=$this->shop_pid;
 if (!$this->conf['shoppingcart_page_pid'])						$this->conf['shoppingcart_page_pid']					=$this->shop_pid;
 if (!$this->conf['products_detail_page_pid'])					$this->conf['products_detail_page_pid']				=$this->shop_pid;
+if (!$this->conf['products_listing_page_pid'])					$this->conf['products_listing_page_pid']				=$this->shop_pid;
 if (!$this->conf['checkout_page_pid'])							$this->conf['checkout_page_pid']						=$this->shop_pid;
 if (!isset($this->conf['includejCarousel'])) 					$this->conf['includejCarousel']							='1';
 if (!isset($this->conf['includejAutocomplete'])) 				$this->conf['includejAutocomplete']						='1';

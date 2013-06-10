@@ -1,4 +1,5 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
 
 	if (!$this->imageWidth) $this->imageWidth='100';
 	// now parse all the objects in the tmpl file
@@ -36,7 +37,7 @@
 			// get all cats to generate multilevel fake url eof
 		}
 		$output['link']=mslib_fe::typolink($this->conf['products_detail_page_pid'],$where.'&products_id='.$current_product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
-		$output['catlink']=mslib_fe::typolink($this->shop_pid,'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+		$output['catlink']=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 		if ($current_product['products_image']) $output['image']='<img src="'.mslib_befe::getImagePath($current_product['products_image'],'products',$this->imageWidth).'" alt="'.htmlspecialchars($current_product['products_name']).'" />';
 		else $output['image']='<div class="no_image"></div>';
 		

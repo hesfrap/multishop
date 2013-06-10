@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $content='0%';
 // first check group discount
 if ($GLOBALS["TSFE"]->fe_user->user['uid'])

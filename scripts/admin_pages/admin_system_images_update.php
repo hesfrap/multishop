@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $content.='<div class="main-heading"><h1>Updating Images</h1></div>';
 // we go to reconnect to the DB, because sometimes when scripts takes too long, the database connection is lost.
 

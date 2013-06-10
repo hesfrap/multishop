@@ -148,7 +148,10 @@ plugin.multishop {
 	disableFeFromCalculatingVatPrices=0
 
 	# cat=plugin.multishop - optional; type=int+; label= PID of the products detail page: Optional field. The ID number of the page where the products detail must be shown.
-	products_detail_page_pid =	
+	products_detail_page_pid =
+	
+	# cat=plugin.multishop - optional; type=int+; label= PID of the categories/products listing page: Optional field. The ID number of the page where the categories/products listing must be shown.
+	products_listing_page_pid =	
 
 	# cat=plugin.multishop - templates/file; type=string; label= Order Details Table (web site) File Path: Optionally specify the location of the template file that is being used for building up the order details. Example: fileadmin/templates/multishop/order_details_site.tmpl.
 	order_details_table_site_tmpl_path=	
@@ -177,8 +180,44 @@ plugin.multishop {
 	# cat=plugin.multishop - templates/file; type=string; label= Shopping Cart File Path: Optionally specify the location of the template file that is being used for building up the shopping cart. Example: fileadmin/templates/multishop/shopping_cart.tmpl.
 	shopping_cart_tmpl_path = EXT:multishop/templates/shopping_cart.tmpl
 	
+	# cat=plugin.multishop - templates/file; type=string; label= Admin customer groups listing File Path: Optionally specify the location of the template file that is being used for building up the admin edit customer groups listing. Example: fileadmin/templates/multishop/admin_customer_groups_listing.tmpl.
+	admin_customer_groups_listing_tmpl_path = EXT:multishop/templates/admin_customer_groups_listing.tmpl
+	
+	# cat=plugin.multishop - templates/file; type=string; label= Admin edit customer group File Path: Optionally specify the location of the template file that is being used for building up the admin edit customer group. Example: fileadmin/templates/multishop/admin_edit_customer_group.tmpl.
+	admin_edit_customer_group_tmpl_path = EXT:multishop/templates/admin_edit_customer_group.tmpl
+	
+	# cat=plugin.multishop - templates/file; type=string; label= Admin customers listing File Path: Optionally specify the location of the template file that is being used for building up the admin customers listing. Example: fileadmin/templates/multishop/admin_customers_listing.tmpl.
+	admin_customers_listing_tmpl_path = EXT:multishop/templates/admin_customers_listing.tmpl
+	
+	# cat=plugin.multishop - templates/file; type=string; label= Admin manufacturers listing File Path: Optionally specify the location of the template file that is being used for building up the admin manufacturers listing. Example: fileadmin/templates/multishop/admin_manufacturers.tmpl.
+	admin_manufacturers_tmpl_path = EXT:multishop/templates/admin_manufacturers.tmpl
+	
+	# cat=plugin.multishop - templates/file; type=string; label= Admin CMS listing File Path: Optionally specify the location of the template file that is being used for building up the admin cms listing. Example: fileadmin/templates/multishop/admin_cms.tmpl.
+	admin_cms_tmpl_path = EXT:multishop/templates/admin_cms.tmpl
+	
+	# cat=plugin.multishop - templates/file; type=string; label= Admin Categories File Path: Optionally specify the location of the template file that is being used for building up the admin categories. Example: fileadmin/templates/multishop/admin_categories.tmpl.
+	admin_categories_tmpl_path = EXT:multishop/templates/admin_categories.tmpl
+	
+	# cat=plugin.multishop - templates/file; type=string; label= Admin edit manufacturer File Path: Optionally specify the location of the template file that is being used for building up the admin edit manufacturer. Example: fileadmin/templates/multishop/admin_edit_manufacturer.tmpl.
+	admin_edit_manufacturer_tmpl_path = EXT:multishop/templates/admin_edit_manufacturer.tmpl
+	
+	# cat=plugin.multishop - templates/file; type=string; label= Admin edit customer File Path: Optionally specify the location of the template file that is being used for building up the admin edit customer. Example: fileadmin/templates/multishop/admin_edit_customer.tmpl.
+	admin_edit_customer_tmpl_path = EXT:multishop/templates/admin_edit_customer.tmpl
+	
+	# cat=plugin.multishop - templates/file; type=string; label= Admin edit product File Path: Optionally specify the location of the template file that is being used for building up the admin edit product. Example: fileadmin/templates/multishop/admin_edit_product.tmpl.
+	admin_edit_product_tmpl_path = EXT:multishop/templates/admin_edit_product.tmpl
+	
+	# cat=plugin.multishop - templates/file; type=string; label= Admin products search and edit File Path: Optionally specify the location of the template file that is being used for building up the admin products search and edit. Example: fileadmin/templates/multishop/admin_products_search_and_edit.tmpl.
+	admin_products_search_and_edit_tmpl_path = EXT:multishop/templates/admin_products_search_and_edit.tmpl
+	
+	# cat=plugin.multishop - templates/file; type=string; label= Admin orders File Path: Optionally specify the location of the template file that is being used for building up the admin orders. Example: fileadmin/templates/multishop/admin_orders.tmpl.
+	admin_orders_tmpl_path = EXT:multishop/templates/admin_orders.tmpl
+
+	# cat=plugin.multishop - templates/file; type=string; label= Admin home File Path: Optionally specify the location of the template file that is being used for building up the admin home. Example: fileadmin/templates/multishop/admin_home.tmpl.
+	admin_home_tmpl_path = EXT:multishop/templates/admin_home.tmpl
+	
 	# cat=plugin.multishop - templates/file; type=string; label= Order Details Table (admin notification popup) File Path: Optionally specify the location of the template file that is being used for building up the order details. Example: fileadmin/templates/multishop/order_details_adminNotificationPopup.tmpl.
-	order_details_table_adminNotificationPopup_tmpl_path=		
+	order_details_table_adminNotificationPopup_tmpl_path=	
 	
 	# cat=plugin.multishop - optional/enable; type=boolean; label= Hide Facebook like box in admin interface 
 	hideFacebookInAdminInterface=0

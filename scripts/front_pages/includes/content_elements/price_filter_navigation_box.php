@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->ms['MODULES']['PRICE_FILTER_BOX_STEPPINGS'])
 {
 	$this->box_class="multishop_price_filter_box";

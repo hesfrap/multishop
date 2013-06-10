@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->get['stats_year_sb'] > 0) {
 	if ($this->get['stats_year_sb'] != $this->cookie['stats_year_sb']) {
 		$this->cookie['stats_year_sb'] = $this->get['stats_year_sb'];

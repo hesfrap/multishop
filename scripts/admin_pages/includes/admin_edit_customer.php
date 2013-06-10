@@ -1,4 +1,16 @@
-<?php 
+<?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
+// now parse all the objects in the tmpl file
+if ($this->conf['admin_edit_customer_tmpl_path']) {
+	$template = $this->cObj->fileResource($this->conf['admin_edit_customer_tmpl_path']);
+} else {
+	$template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath($this->extKey).'templates/admin_edit_customer.tmpl');
+}
+// Extract the subparts from the template
+$subparts=array();
+$subparts['template'] 	= $this->cObj->getSubpart($template, '###TEMPLATE###');
+
 if ($this->post) {
 	$erno=array();
 	if ($this->post['tx_multishop_pi1']['cid']) {
@@ -33,8 +45,7 @@ if ($this->post) {
 	if (count($erno)) {
 		$this->get['tx_multishop_pi1']['cid']=$this->post['tx_multishop_pi1']['cid'];
 		$continue=0;
-	}
-	else {
+	} else {
 		$continue=1;
 	}
 	if ($continue) {
@@ -93,6 +104,16 @@ if ($this->post) {
 			// custom hook that can be controlled by third-party plugin eof				
 			$query = $GLOBALS['TYPO3_DB']->UPDATEquery('fe_users', 'uid='.$this->post['tx_multishop_pi1']['cid'],$updateArray);
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);		
+			// custom hook that can be controlled by third-party plugin
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['updateCustomerUserPostProc'])) {
+				$params = array (
+					'uid' => $this->post['tx_multishop_pi1']['cid']
+				);
+				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['updateCustomerUserPostProc'] as $funcRef) {
+					t3lib_div::callUserFunction($funcRef, $params, $this);
+				}
+			}	
+			// custom hook that can be controlled by third-party plugin eof				
 		} else {
 			// insert mode
 			if (count($this->post['tx_multishop_pi1']['groups'])) {
@@ -126,6 +147,66 @@ if ($this->post) {
 			// custom hook that can be controlled by third-party plugin eof		
 			$query = $GLOBALS['TYPO3_DB']->INSERTquery('fe_users', $updateArray);			
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+			$customer_id=$GLOBALS['TYPO3_DB']->sql_insert_id();
+			// ADD TT_ADDRESS RECORD
+			$insertArray=array();
+			$insertArray['tstamp']						= time();
+			$insertArray['company']						= $updateArray['company'];
+			$insertArray['name']						= $updateArray['first_name'].' '.$updateArray['middle_name'].' '.$updateArray['last_name'];
+			$insertArray['name']						= preg_replace('/\s+/', ' ', $insertArray['name']);
+			$insertArray['first_name']					= $updateArray['first_name'];
+			$insertArray['middle_name']					= $updateArray['middle_name'];
+			$insertArray['last_name']					= $updateArray['last_name'];
+			$insertArray['email']						= $updateArray['email'];
+			if (!$updateArray['street_name']) {
+				// fallback for old custom checkouts
+				$insertArray['street_name']		=	$updateArray['address'];
+				$insertArray['address_number']		=	$updateArray['address_number'];
+				$insertArray['address_ext']			=	$updateArray['address_ext'];
+				$insertArray['address']				=	$insertArray['street_name'].' '.$insertArray['address_number'].($insertArray['address_ext']?'-'.$insertArray['address_ext']:'');
+				$insertArray['address']				= preg_replace('/\s+/', ' ', $insertArray['address']);				
+				
+			} else {
+				$insertArray['street_name']			=	$updateArray['street_name'];
+				$insertArray['address_number']		=	$updateArray['address_number'];
+				$insertArray['address_ext']			=	$updateArray['address_ext'];
+				$insertArray['address']				=	$updateArray['address'];				
+			}
+			
+			$insertArray['zip']							= $updateArray['zip'];
+			$insertArray['phone']						= $updateArray['telephone'];
+			$insertArray['mobile']						= $updateArray['mobile'];
+			$insertArray['city']						= $updateArray['city'];
+			$insertArray['country']						= $updateArray['country'];
+			$insertArray['gender'] 						= $updateArray['gender'];
+			$insertArray['birthday'] 					= strtotime($updateArray['birthday']);
+				
+			if ($updateArray['gender'] == 'm') {
+				$insertArray['title'] 					= 'Mr.';
+					
+			} else if ($updateArray['gender'] == 'f') {
+				$insertArray['title'] 					= 'Mrs.';
+			}					
+			$insertArray['region']						= $updateArray['state'];
+			
+			$insertArray['pid']							= $this->conf['fe_customer_pid'];
+			$insertArray['page_uid']					= $this->shop_pid;
+			$insertArray['tstamp']						= time();
+			$insertArray['tx_multishop_address_type'] 	= 'billing';
+			$insertArray['tx_multishop_default'] 		= 1;
+			$insertArray['tx_multishop_customer_id'] 	= $customer_id;
+			
+			$query = $GLOBALS['TYPO3_DB']->INSERTquery('tt_address', $insertArray);			
+			$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
+			
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['insertCustomerUserPostProc'])) {
+				$params = array (
+					'uid' => $customer_id
+				);
+				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['insertCustomerUserPostProc'] as $funcRef) {
+					t3lib_div::callUserFunction($funcRef, $params, $this);
+				}
+			}
 		}
 		/*
 		$updateArray['delivery_company']=
@@ -158,10 +239,11 @@ while (($row2=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry2)) != false) {
 $regex = "/^[^\\\W][a-zA-Z0-9\\\_\\\-\\\.]+([a-zA-Z0-9\\\_\\\-\\\.]+)*\\\@[a-zA-Z0-9\\\_\\\-\\\.]+([a-zA-Z0-9\\\_\\\-\\\.]+)*\\\.[a-zA-Z]{2,4}$/";
 $regex_for_character = "/[^0-9]$/";
 if(!$this->post && is_numeric($this->get['tx_multishop_pi1']['cid'])) {	
-	$this->post=mslib_fe::getUser($this->get['tx_multishop_pi1']['cid']);
+	$user=mslib_fe::getUser($this->get['tx_multishop_pi1']['cid']);
+	$this->post=$user;
 }
-
-$GLOBALS['TSFE']->additionalHeaderData[] = '
+$head='';
+$head.='
 	 <script type="text/javascript">
 				/* <![CDATA[ */
 				jQuery(function(){
@@ -169,26 +251,29 @@ $GLOBALS['TSFE']->additionalHeaderData[] = '
 							expression: "if (VAL) return true; else return false;",
 							message: "'.$this->pi_getLL('username_is_required').'"
 					 });
-				 '. $validate_password .'					 								 		
-				  jQuery("#company").validate();
-				  jQuery("#delivery_company").validate();
+';
+if ($_REQUEST['action'] != 'edit_customer') {
+$head.='						 
+				jQuery("#password").validate({
+							expression: "if (VAL) return true; else return false;",
+							message: "'.$this->pi_getLL('password_is_required', 'Password is required').'"
+					 });
+';
+$head.='
+				jQuery("#company").validate();
+				jQuery("#radio").validate({
+				  expression: "if (jQuery(\'#radio\').is(\':checked\') || jQuery(\'#radio2\').is(\':checked\')) return true; else return false;",
+				  message: "'.$this->pi_getLL('title_is_required', 'Title is required').'"
+				});
 				  
-			  jQuery("#delivery_first_name").validate({
+			  jQuery("#first_name").validate({
 						  expression: "if (VAL.match('.$regex_for_character.')) return true; else return false;",
-						  message: "'.$this->pi_getLL('first_name_required').' (delivery address)."
-					 });
-			  jQuery("#middle_name").validate({
-						  expression: "if (VAL.match('.$regex_for_character.')) return true; else return false;",
-						 message: "'.$this->pi_getLL('middle_name_may_only_contain_alpha_characters').'"
-					 });
-			  jQuery("#delivery_middle_name").validate({
-						  expression: "if (VAL.match('.$regex_for_character.')) return true; else return false;",
-						 message: "'.$this->pi_getLL('middle_name_may_only_contain_alpha_characters').' (delivery address)."
+						  message: "'.$this->pi_getLL('first_name_required').'"
 					 });
 			
-			  jQuery("#delivery_last_name").validate({
+			  jQuery("#last_name").validate({
 						  expression: "if (VAL.match('.$regex_for_character.')) return true; else return false;",
-						  message: "'.$this->pi_getLL('surname_is_required').' (delivery address)."
+						  message: "'.$this->pi_getLL('surname_is_required').'"
 					 });
 			  jQuery("#zip").validate({
 						  expression: "if (VAL) return true; else return false;",
@@ -206,7 +291,7 @@ $GLOBALS['TSFE']->additionalHeaderData[] = '
 						  expression: "if (VAL) return true; else return false;",
 							message: "'.$this->pi_getLL('city_is_required').'"
 					 });
-			  jQuery("#delivery_city").validate({
+			  jQuery("#city").validate({
 						  expression: "if (VAL) return true; else return false;",
 							message: "'.$this->pi_getLL('city_is_required').' (delivery address)."
 					 });
@@ -226,10 +311,18 @@ $GLOBALS['TSFE']->additionalHeaderData[] = '
 					expression: "if (VAL.match('.$regex.')) return true; else return false;",
 					message: "'.$this->pi_getLL('email_is_required').'"
 					 });
-					jQuery("#delivery_email").validate({
-					expression: "if (VAL.match('.$regex.')) return true; else return false;",
-					message: "'.$this->pi_getLL('email_is_required').' (delivery address)."
-					 });  
+					jQuery("#address_number").validate({
+						  expression: "if (VAL) return true; else return false;",
+							message: "'.$this->pi_getLL('street_number_is_required').'"
+					 });
+					jQuery("#telephone").validate({
+					  expression: "if (!isNaN(VAL) && VAL) return true; else return false;",
+						message: "'.$this->pi_getLL('telephone_is_required').'"
+					});
+';
+}
+$head.='
+					
 				});
 				/* ]]> */
 				jQuery().ready(function(){
@@ -362,9 +455,9 @@ $GLOBALS['TSFE']->additionalHeaderData[] = '
 						yearRange: "'.(date("Y")-100).':'.date("Y").'" 
 					});
 				}); //end of first load
-	  
-			 </script>
-';
+			 </script>';
+$GLOBALS['TSFE']->additionalHeaderData[] = $head;
+$head='';
 if (is_array($erno) and count($erno) > 0) {
 	$content.='<div class="error_msg">';
 	$content.='<h3>'.$this->pi_getLL('the_following_errors_occurred').'</h3><ul class="ul-display-error">';
@@ -374,173 +467,164 @@ if (is_array($erno) and count($erno) > 0) {
 	}
 	$content.='</ul>';
 	$content.='</div>';
-}	
-$content.='<div class="error_msg" style="display:none">';
-$content.='<h3>'.$this->pi_getLL('the_following_errors_occurred').'</h3><ul class="ul-display-error">';
-$content.='<li class="item-error" style="display:none"></li>';
-$content.='</ul></div>';
+} else {
+	$content.='<div class="error_msg" style="display:none">';
+	$content.='<h3>'.$this->pi_getLL('the_following_errors_occurred').'</h3><ul class="ul-display-error">';
+	$content.='<li class="item-error" style="display:none"></li>';
+	$content.='</ul></div>';
+}
 
-$formFields=array();
-$counter=0;
-$formFields[$counter]['username']='
-	<label for="username" id="account-username">'.ucfirst($this->pi_getLL('username')).'</label>
-	<input type="text" name="username" class="username" id="username" '.($_GET['action']=='edit_customer'?'readonly="readonly"':'').' value="'.htmlspecialchars($this->post['username']).'" />
-	<span class="error-space"></span>
-';
-$formFields[$counter]['password']='<label for="password" id="account-password">'.ucfirst($this->pi_getLL('password')).'</label>
-	<input type="text" name="password" class="password" id="password" value="" />
-	<span class="error-space"></span>
-';
-$counter++;
-$formFields[$counter]['gender']='<span id="ValidRadio" class="InputGroup">
-	<label for="radio" id="account-gender">'.ucfirst($this->pi_getLL('title')).'*</label>
-		<input type="radio" class="InputGroup" name="gender" value="0" class="account-gender-radio" id="radio" '.(($this->post['gender']=='0')?'checked':'').'>
-	<label class="account-male">'.ucfirst($this->pi_getLL('mr')).'</label>
-		<input type="radio" name="gender" value="1" class="InputGroup" id="radio2" '.(($this->post['gender']=='1')?'checked':'').'>
-	<label class="account-female">'.ucfirst($this->pi_getLL('mrs')).'</label>
-</span>
-<span  class="error-space"></span>
-';
-$counter++;
-$formFields[$counter]['first_name']='<label class="account-firstname" for="first_name">'.ucfirst($this->pi_getLL('first_name')).'*</label>
-<input type="text" name="first_name" class="first-name" id="first_name" value="'.htmlspecialchars($this->post['first_name']).'" ><span class="error-space"></span>
-';
-$formFields[$counter]['middle_name']='<label class="account-middlename" for="middle_name">'.ucfirst($this->pi_getLL('middle_name')).'</label>
-	<input type="text" name="middle_name" id="middle_name" class="middle_name" value="'.htmlspecialchars($this->post['middle_name']).'"><span class="error-space"></span>
-';
-$formFields[$counter]['last_name']='<label class="account-lastname" for="last_name">'.ucfirst($this->pi_getLL('last_name')).'*</label>
-	<input type="text" name="last_name" id="last_name" class="last-name" value="'.htmlspecialchars($this->post['last_name']).'" ><span class="error-space"></span>
-';
-$counter++;
-$formFields[$counter]['company']='<label for="company" id="account-company">'.ucfirst($this->pi_getLL('company')).'</label>
-	<input type="text" name="company" class="company" id="company" value="'.htmlspecialchars($this->post['company']).'" />
-	<span class="error-space"></span>
-';
-$counter++;
-$formFields[$counter]['street_address']='
-<label class="account-address" for="address">'.ucfirst($this->pi_getLL('street_address')).'*</label>
-	<input type="text" name="street_name" id="address" class="address" value="'.htmlspecialchars($this->post['street_name']).'" ><span class="error-space"></span>
-';
-$formFields[$counter]['street_address_number']='
-<label class="account-addressnumber" for="address_number">'.ucfirst($this->pi_getLL('street_address_number')).'*</label>
-	<input type="text" name="address_number" id="address_number" class="address-number" value="'.htmlspecialchars($this->post['address_number']).'" ><span class="error-space"></span>  
-';
-$formFields[$counter]['address_extension']='
-<label class="account-address_ext" for="address_ext">'.ucfirst($this->pi_getLL('address_extension')).'</label>
-	<input type="text" name="address_ext" id="address_ext" class="address_ext" value="'.htmlspecialchars($this->post['address_ext']).'" ><span class="error-space"></span>
-';
-$counter++;
-$formFields[$counter]['zip']='
-<label class="account-zip" for="zip">'.ucfirst($this->pi_getLL('zip')).'*</label>
-	<input type="text" name="zip" id="zip" class="zip" value="'.htmlspecialchars($this->post['zip']).'" ><span class="error-space"></span>
-';
-$formFields[$counter]['city']='
-<label class="account-city" for="city">'.ucfirst($this->pi_getLL('city')).'*</label>
-	<input type="text" name="city" id="city" class="city" value="'.htmlspecialchars($this->post['city']).'" ><span class="error-space"></span>
-';
-// load countries	
+// load countries
+$countries_input = '';
 if (count($enabled_countries) ==1)  {
-	$formFields[$counter]['country']='<input name="country" type="hidden" value="'.t3lib_div::strtolower($enabled_countries[0]['cn_short_en']).'" />';
-	$formFields[$counter]['country'].='<input name="delivery_country" type="hidden" value="'.t3lib_div::strtolower($enabled_countries[0]['cn_short_en']).'" />';
+	$countries_input='<input name="country" type="hidden" value="'.t3lib_div::strtolower($enabled_countries[0]['cn_short_en']).'" />';
+	$countries_input.='<input name="delivery_country" type="hidden" value="'.t3lib_div::strtolower($enabled_countries[0]['cn_short_en']).'" />';
 } else {
 	foreach ($enabled_countries as $country) {
 		$tmpcontent_con.='<option value="'.t3lib_div::strtolower($country['cn_short_en']).'" '.((t3lib_div::strtolower($this->post['country'])==t3lib_div::strtolower($country['cn_short_en']))?'selected':'').'>'.htmlspecialchars(mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$country['cn_short_en'])).'</option>';
 		$tmpcontent_con_delivery.='<option value="'.t3lib_div::strtolower($country['cn_short_en']).'" '.(($this->post['delivery_country']==t3lib_div::strtolower($country['cn_short_en']))?'selected':'').'>'.htmlspecialchars(mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$country['cn_short_en'])).'</option>';
 	}
 	if ($tmpcontent_con) {
-		$formFields[$counter]['country']='
+		$countries_input='
 		<label for="country" id="account-country">'.ucfirst($this->pi_getLL('country')).'*</label>
 		<select name="country" id="country" class="country">
 		<option value="">'.ucfirst($this->pi_getLL('choose_country')).'</option>
 		'.$tmpcontent_con.'
-		</select><span class="error-space"></span>
-		';
+		</select><span class="error-space"></span>';
 	}			
 }
 // country eof
-$counter++;
-$formFields[$counter]['email']='
-<label for="email" id="account-email">'.ucfirst($this->pi_getLL('e-mail_address')).'*</label>
-	<input type="text" name="email" id="email" class="email" value="'.htmlspecialchars($this->post['email']).'" /><span class="error-space"></span>
-';
-$counter++;
-$formFields[$counter]['telephone']='
-<label for="telephone" id="account-telephone">'.ucfirst($this->pi_getLL('telephone')).'*</label>
-	<input type="text" name="telephone" id="telephone" class="telephone" value="'.htmlspecialchars($this->post['telephone']).'"><span class="error-space"></span>
-';
-$formFields[$counter]['mobile']='
-<label for="mobile" id="account-mobile">'.ucfirst($this->pi_getLL('mobile')).'</label>
-	<input type="text" name="mobile" id="mobile" class="mobile" value="'.htmlspecialchars($this->post['mobile']).'"><span class="error-space"></span>
-';
-$counter++;
-$formFields[$counter]['birthday']='
-<label for="birthday" id="account-birthday">'.ucfirst($this->pi_getLL('birthday')).'</label>
-<input type="text" name="birthday_visitor" class="birthday" id="birthday_visitor" value="'.($this->post['date_of_birth']?htmlspecialchars(strftime("%x",  $this->post['date_of_birth'])):'').'" >
-<input type="hidden" name="birthday" class="birthday" id="birthday" value="'.($this->post['date_of_birth']?htmlspecialchars(strftime("%F",  $this->post['date_of_birth'])):'').'" >		
-<span class="error-space"></span>
-';
-$formFields[$counter]['discount']='
-<label for="tx_multishop_discount" id="account-tx_multishop_discount">'.ucfirst($this->pi_getLL('discount')).'</label>
-<input type="text" name="tx_multishop_discount" class="tx_multishop_discount" id="tx_multishop_discount" value="'.($this->post['tx_multishop_discount']>0 ?htmlspecialchars($this->post['tx_multishop_discount']):'').'" /><span class="error-space"></span>
-';
-// custom hook that can be controlled by third-party plugin
-if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_edit_customer.php']['adminEditCustomerFormItems'])) {
-	$params = array (
-		'formFields' => &$formFields,
-		'counter' => $counter
-	);
-	foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_edit_customer.php']['adminEditCustomerFormItems'] as $funcRef) {
-		t3lib_div::callUserFunction($funcRef, $params, $this);
-	}
-}
-// custom hook that can be controlled by third-party plugin eof
-$content.='
-<div id="live-validation">
-<form action="" method="post" name="edit_customer" class="edit_customer" id="edit_customer">
-';
-foreach ($formFields as $row) {
-	if (count($row)) {
-		$content.='<div class="account-field">';
-		foreach ($row as $item) {
-			$content.=$item;
-		}
-		$content.='</div>';
-	}
-}
-$content.='<div class="mb10" style="clear:both"></div>';
 // now lets load the users 
 $groups=mslib_fe::getUserGroups($this->conf['fe_customer_pid']);
+$customer_groups_input = '';
 if (is_array($groups) and count($groups)) {
-	$content.='
-			<div class="account-field multiselect_horizontal">
-				<label>'.$this->pi_getLL('member_of').'</label>
-	<select id="groups" class="multiselect" multiple="multiple" name="tx_multishop_pi1[groups][]">'."\n";
+	$customer_groups_input.='<div class="account-field multiselect_horizontal"><label>'.$this->pi_getLL('member_of').'</label><select id="groups" class="multiselect" multiple="multiple" name="tx_multishop_pi1[groups][]">'."\n";
 	if ($erno) {
 		$this->post['usergroup']=implode(",",$this->post['tx_multishop_pi1']['groups']);
 	}
 	foreach ($groups as $group) {
-		$content.='<option value="'.$group['uid'].'"'.(mslib_fe::inUserGroup($group['uid'],$this->post['usergroup'])?' selected="selected"':'').'>'.$group['title'].'</option>'."\n";
+		$customer_groups_input.='<option value="'.$group['uid'].'"'.(mslib_fe::inUserGroup($group['uid'],$this->post['usergroup'])?' selected="selected"':'').'>'.$group['title'].'</option>'."\n";
 	}
-	
-	$content.='</select>
-			</div>'."\n";
+	$customer_groups_input.='</select></div>'."\n";
 }
-$content.='<div id="bottom-navigation">
-				<div id="navigation">
-					<div class="float_right">
-						<input type="hidden" id="tx_multishop_pi1[cid]" value="'.$this->get['tx_multishop_pi1']['cid'].'" name="tx_multishop_pi1[cid]" />
-						<input type="submit" id="submit" class="msadmin_button" value="'.  ($_GET['action'] == 'edit_customer' ? ucfirst($this->pi_getLL('update_account')) : ucfirst($this->pi_getLL('save'))) .'" />
-					</div>
-					<div>';
-	
+$login_as_this_user_link = '';
 if ($this->get['tx_multishop_pi1']['cid']) {
-	$content.='<a href="'.mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_customers&login_as_customer=1&customer_id='.$this->get['tx_multishop_pi1']['cid']).'" target="_parent" class="msadmin_button">'.$this->pi_getLL('login_as_user').'</a>';	
+	$login_as_this_user_link = '<a href="'.mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_customers&login_as_customer=1&customer_id='.$this->get['tx_multishop_pi1']['cid']).'" target="_parent" class="msadmin_button">'.$this->pi_getLL('login_as_user').'</a>';	
 }
 
-$content.='</div>
-		</div>
-</div>
-</form>
-</div>
-';
+$subpartArray = array();
+if ($_REQUEST['action'] == 'edit_customer') {
+	$subpartArray['###LABEL_USERNAME###'] 				= ucfirst($this->pi_getLL('username'));
+	$subpartArray['###USERNAME_READONLY###'] 			= ($this->get['action']=='edit_customer'?'readonly="readonly"':'');
+	$subpartArray['###VALUE_USERNAME###'] 				= htmlspecialchars($this->post['username']);
+	$subpartArray['###LABEL_PASSWORD###'] 				= ucfirst($this->pi_getLL('password'));
+	$subpartArray['###VALUE_PASSWORD###'] 				= '';
+	$subpartArray['###LABEL_GENDER###'] 				= ucfirst($this->pi_getLL('title'));
+	$subpartArray['###GENDER_MR_CHECKED###'] 			= (($this->post['gender']=='0')?'checked="checked"':'');
+	$subpartArray['###LABEL_GENDER_MR###'] 				= ucfirst($this->pi_getLL('mr'));
+	$subpartArray['###GENDER_MRS_CHECKED###'] 			= (($this->post['gender']=='1')?'checked="checked"':'');
+	$subpartArray['###LABEL_GENDER_MRS###'] 			= ucfirst($this->pi_getLL('mrs'));
+	$subpartArray['###LABEL_FIRSTNAME###'] 				= ucfirst($this->pi_getLL('first_name'));
+	$subpartArray['###VALUE_FIRSTNAME###'] 				= htmlspecialchars($this->post['first_name']);
+	$subpartArray['###LABEL_MIDDLENAME###'] 			= ucfirst($this->pi_getLL('middle_name'));
+	$subpartArray['###VALUE_MIDDLENAME###'] 			= htmlspecialchars($this->post['middle_name']);
+	$subpartArray['###LABEL_LASTNAME###'] 				= ucfirst($this->pi_getLL('last_name'));
+	$subpartArray['###VALUE_LASTNAME###'] 				= htmlspecialchars($this->post['last_name']);
+	$subpartArray['###LABEL_COMPANY###'] 				= ucfirst($this->pi_getLL('company'));
+	$subpartArray['###VALUE_COMPANY###'] 				= htmlspecialchars($this->post['company']);
+	$subpartArray['###LABEL_STREET_ADDRESS###'] 		= ucfirst($this->pi_getLL('street_address'));
+	$subpartArray['###VALUE_STREET_ADDRESS###'] 		= htmlspecialchars($this->post['street_name']);
+	$subpartArray['###LABEL_STREET_ADDRESS_NUMBER###'] 	= ucfirst($this->pi_getLL('street_address_number'));
+	$subpartArray['###VALUE_STREET_ADDRESS_NUMBER###'] 	= htmlspecialchars($this->post['address_number']);
+	$subpartArray['###LABEL_ADDRESS_EXTENTION###'] 		= ucfirst($this->pi_getLL('address_extension'));
+	$subpartArray['###VALUE_ADDRESS_EXTENTION###'] 		= htmlspecialchars($this->post['address_ext']);
+	$subpartArray['###LABEL_POSTCODE###'] 				= ucfirst($this->pi_getLL('zip'));
+	$subpartArray['###VALUE_POSTCODE###'] 				= htmlspecialchars($this->post['zip']);
+	$subpartArray['###LABEL_CITY###'] 					= ucfirst($this->pi_getLL('city'));
+	$subpartArray['###VALUE_CITY###'] 					= htmlspecialchars($this->post['city']);
+	$subpartArray['###COUNTRIES_INPUT###'] 				= $countries_input;
+	$subpartArray['###LABEL_EMAIL###'] 					= ucfirst($this->pi_getLL('e-mail_address'));
+	$subpartArray['###VALUE_EMAIL###'] 					= htmlspecialchars($this->post['email']);
+	$subpartArray['###LABEL_TELEPHONE###'] 				= ucfirst($this->pi_getLL('telephone'));
+	$subpartArray['###VALUE_TELEPHONE###'] 				= htmlspecialchars($this->post['telephone']);
+	$subpartArray['###LABEL_MOBILE###'] 				= ucfirst($this->pi_getLL('mobile'));
+	$subpartArray['###VALUE_MOBILE###'] 				= htmlspecialchars($this->post['mobile']);
+	$subpartArray['###LABEL_BIRTHDATE###'] 				= ucfirst($this->pi_getLL('birthday'));
+	$subpartArray['###VALUE_VISIBLE_BIRTHDATE###'] 		= ($this->post['date_of_birth']?htmlspecialchars(strftime("%x",  $this->post['date_of_birth'])):'');
+	$subpartArray['###VALUE_HIDDEN_BIRTHDATE###'] 		= ($this->post['date_of_birth']?htmlspecialchars(strftime("%F",  $this->post['date_of_birth'])):'');
+	$subpartArray['###LABEL_DISCOUNT###'] 				= ucfirst($this->pi_getLL('discount'));
+	$subpartArray['###VALUE_DISCOUNT###'] 				= ($this->post['tx_multishop_discount']>0 ?htmlspecialchars($this->post['tx_multishop_discount']):'');
+	$subpartArray['###CUSTOMER_GROUPS_INPUT###'] 		= $customer_groups_input;
+	$subpartArray['###VALUE_CUSTOMER_ID###'] 			= $this->get['tx_multishop_pi1']['cid'];
+	if ($_GET['action'] == 'edit_customer') {
+		$subpartArray['###LABEL_BUTTON_SAVE###'] 		= ucfirst($this->pi_getLL('update_account'));
+	} else {
+		$subpartArray['###LABEL_BUTTON_SAVE###'] 		= ucfirst($this->pi_getLL('save'));
+	}
+	$subpartArray['###LOGIN_AS_THIS_USER_LINK###'] 		= $login_as_this_user_link;
+} else {
+	if ($this->post['gender']=='1') {
+		$mr_checked 	= '';
+		$mrs_checked 	= 'checked="checked"';
+	} else {
+		$mr_checked 	= 'checked="checked"';
+		$mrs_checked 	= '';
+	}
+	$subpartArray['###LABEL_USERNAME###'] 				= ucfirst($this->pi_getLL('username'));
+	$subpartArray['###USERNAME_READONLY###'] 			= ($this->get['action']=='edit_customer'?'readonly="readonly"':'');
+	$subpartArray['###VALUE_USERNAME###'] 				= htmlspecialchars($this->post['username']);
+	$subpartArray['###VALUE_PASSWORD###'] 				= htmlspecialchars($this->post['password']);
+	$subpartArray['###LABEL_PASSWORD###'] 				= ucfirst($this->pi_getLL('password'));
+	$subpartArray['###LABEL_GENDER###'] 				= ucfirst($this->pi_getLL('title'));
+	$subpartArray['###GENDER_MR_CHECKED###'] 			= $mr_checked;
+	$subpartArray['###LABEL_GENDER_MR###'] 				= ucfirst($this->pi_getLL('mr'));
+	$subpartArray['###GENDER_MRS_CHECKED###'] 			= $mrs_checked;
+	$subpartArray['###LABEL_GENDER_MRS###'] 			= ucfirst($this->pi_getLL('mrs'));
+	$subpartArray['###LABEL_FIRSTNAME###'] 				= ucfirst($this->pi_getLL('first_name'));
+	$subpartArray['###VALUE_FIRSTNAME###'] 				= htmlspecialchars($this->post['first_name']);
+	$subpartArray['###LABEL_MIDDLENAME###'] 			= ucfirst($this->pi_getLL('middle_name'));
+	$subpartArray['###VALUE_MIDDLENAME###'] 			= htmlspecialchars($this->post['middle_name']);
+	$subpartArray['###LABEL_LASTNAME###'] 				= ucfirst($this->pi_getLL('last_name'));
+	$subpartArray['###VALUE_LASTNAME###'] 				= htmlspecialchars($this->post['last_name']);
+	$subpartArray['###LABEL_COMPANY###'] 				= ucfirst($this->pi_getLL('company'));
+	$subpartArray['###VALUE_COMPANY###'] 				= htmlspecialchars($this->post['company']);
+	$subpartArray['###LABEL_STREET_ADDRESS###'] 		= ucfirst($this->pi_getLL('street_address'));
+	$subpartArray['###VALUE_STREET_ADDRESS###'] 		= htmlspecialchars($this->post['street_name']);
+	$subpartArray['###LABEL_STREET_ADDRESS_NUMBER###'] 	= ucfirst($this->pi_getLL('street_address_number'));
+	$subpartArray['###VALUE_STREET_ADDRESS_NUMBER###'] 	= htmlspecialchars($this->post['address_number']);
+	$subpartArray['###LABEL_ADDRESS_EXTENTION###'] 		= ucfirst($this->pi_getLL('address_extension'));
+	$subpartArray['###VALUE_ADDRESS_EXTENTION###'] 		= htmlspecialchars($this->post['address_ext']);
+	$subpartArray['###LABEL_POSTCODE###'] 				= ucfirst($this->pi_getLL('zip'));
+	$subpartArray['###VALUE_POSTCODE###'] 				= htmlspecialchars($this->post['zip']);
+	$subpartArray['###LABEL_CITY###'] 					= ucfirst($this->pi_getLL('city'));
+	$subpartArray['###VALUE_CITY###'] 					= htmlspecialchars($this->post['city']);
+	$subpartArray['###COUNTRIES_INPUT###'] 				= $countries_input;
+	$subpartArray['###LABEL_EMAIL###'] 					= ucfirst($this->pi_getLL('e-mail_address'));
+	$subpartArray['###VALUE_EMAIL###'] 					= htmlspecialchars($this->post['email']);
+	$subpartArray['###LABEL_TELEPHONE###'] 				= ucfirst($this->pi_getLL('telephone'));
+	$subpartArray['###VALUE_TELEPHONE###'] 				= htmlspecialchars($this->post['telephone']);
+	$subpartArray['###LABEL_MOBILE###'] 				= ucfirst($this->pi_getLL('mobile'));
+	$subpartArray['###VALUE_MOBILE###'] 				= htmlspecialchars($this->post['mobile']);
+	$subpartArray['###LABEL_BIRTHDATE###'] 				= ucfirst($this->pi_getLL('birthday'));
+	$subpartArray['###VALUE_VISIBLE_BIRTHDATE###'] 		= ($this->post['date_of_birth']?htmlspecialchars(strftime("%x",  $this->post['date_of_birth'])):'');
+	$subpartArray['###VALUE_HIDDEN_BIRTHDATE###'] 		= ($this->post['date_of_birth']?htmlspecialchars(strftime("%F",  $this->post['date_of_birth'])):'');
+	$subpartArray['###LABEL_DISCOUNT###'] 				= ucfirst($this->pi_getLL('discount'));
+	$subpartArray['###VALUE_DISCOUNT###'] 				= ($this->post['tx_multishop_discount']>0 ?htmlspecialchars($this->post['tx_multishop_discount']):'');
+	$subpartArray['###CUSTOMER_GROUPS_INPUT###'] 		= $customer_groups_input;
+	$subpartArray['###VALUE_CUSTOMER_ID###'] 			= '';
+	$subpartArray['###LABEL_BUTTON_SAVE###'] 			= ucfirst($this->pi_getLL('save'));
+	$subpartArray['###LOGIN_AS_THIS_USER_LINK###'] 		= '';
+}
+// custom page hook that can be controlled by third-party plugin
+if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['adminEditCustomerTmplPreProc'])) {
+	$params = array (
+		'subpartArray' => &$subpartArray,
+		'user' => &$user
+	); 
+	foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['adminEditCustomerTmplPreProc'] as $funcRef) {
+		t3lib_div::callUserFunction($funcRef, $params, $this);
+	}
+}	
+// custom page hook that can be controlled by third-party plugin eof	
+$content .= $this->cObj->substituteMarkerArrayCached($subparts['template'], array(), $subpartArray);
 ?>

@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $output = array();
 
 // now parse all the objects in the tmpl file

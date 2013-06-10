@@ -116,7 +116,10 @@ CREATE TABLE `tx_multishop_cart_contents` (
   `session_id` varchar(150) NOT NULL DEFAULT '',
   `ip_address` varchar(150) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
-  KEY `customer_id` (`customer_id`)
+  KEY `customer_id` (`customer_id`),
+  KEY `crdate` (`crdate`),
+  KEY `ip_address` (`ip_address`),
+  KEY `is_checkout` (`is_checkout`)
 ) ENGINE=InnoDB ;
 
 CREATE TABLE `tx_multishop_categories` (
@@ -374,8 +377,12 @@ CREATE TABLE `tx_multishop_manufacturers_cms` (
   `manufacturers_id` int(11) DEFAULT '0',
   `language_id` tinyint(2) NOT NULL DEFAULT '0',
   `content` text,
+  `content_footer` text,
   `shortdescription` text,
   `negative_keywords` text,
+  `meta_title` varchar(254) DEFAULT '',
+  `meta_description` text NOT NULL,
+  `meta_keywords` text NOT NULL,  
   KEY `combined` (`manufacturers_id`,`language_id`),
   KEY `content` (`content`(250)),
   KEY `negative_keywords` (`negative_keywords`(250))
@@ -565,10 +572,22 @@ CREATE TABLE `tx_multishop_orders_products` (
   `file_number_of_downloads` int(11) NOT NULL DEFAULT '0',
   `products_tax_data` text NOT NULL,
   `order_unit_id` int(11) NOT NULL DEFAULT '0',
-  `order_unit_label` varchar(100) NOT NULL DEFAULT '',
+  `order_unit_name` varchar(100) NOT NULL DEFAULT '',
   `order_unit_code` varchar(15) NOT NULL DEFAULT '',
   `categories_id` int(11) NOT NULL DEFAULT '0',
   `manufacturers_id` int(11) NOT NULL DEFAULT '0',
+  `categories_id_0` int(5) NOT NULL DEFAULT '0',
+  `categories_name_0` varchar(150) NOT NULL DEFAULT '',
+  `categories_id_1` int(5) NOT NULL DEFAULT '0',
+  `categories_name_1` varchar(150) NOT NULL DEFAULT '',
+  `categories_id_2` int(5) NOT NULL DEFAULT '0',
+  `categories_name_2` varchar(150) NOT NULL DEFAULT '',
+  `categories_id_3` int(5) NOT NULL DEFAULT '0',
+  `categories_name_3` varchar(150) NOT NULL DEFAULT '',
+  `categories_id_4` int(5) NOT NULL DEFAULT '0',
+  `categories_name_4` varchar(150) NOT NULL DEFAULT '',
+  `categories_id_5` int(5) NOT NULL DEFAULT '0',
+  `categories_name_5` varchar(150) NOT NULL DEFAULT '',  
   PRIMARY KEY (`orders_products_id`),
   KEY `orders_id` (`orders_id`),
   KEY `type` (`type`),
@@ -597,7 +616,7 @@ CREATE TABLE `tx_multishop_orders_products_attributes` (
   KEY `orders_id` (`orders_id`),
   KEY `orders_id_2` (`orders_id`),
   KEY `orders_products_id` (`orders_products_id`)
-) ENGINE=InnoDB ;
+) ENGINE=MyISAM ;
 
 CREATE TABLE `tx_multishop_orders_products_downloads` (
   `orders_products_id` int(11) NOT NULL default '0',
@@ -800,6 +819,8 @@ CREATE TABLE `tx_multishop_products` (
   `lock_imported_product` tinyint(1) NOT NULL DEFAULT '0',
   `google_taxonomy_id` int(11) DEFAULT '0',
   `import_job_id` int(11) NOT NULL DEFAULT '0',
+  `alert_quantity_threshold` int(11) NOT NULL DEFAULT '0',
+  `cruser_id` int(11) NOT NULL default '0',  
   PRIMARY KEY (`products_id`),
   KEY `products_price` (`products_price`),
   KEY `products_model` (`products_model`),
@@ -818,8 +839,10 @@ CREATE TABLE `tx_multishop_products` (
   KEY `lock_imported_product` (`lock_imported_product`),
   KEY `vendor_code` (`vendor_code`),
   KEY `google_taxonomy_id` (`google_taxonomy_id`),
-  KEY `import_job_id` (`import_job_id`)
-) ENGINE=InnoDB ;
+  KEY `import_job_id` (`import_job_id`),
+  KEY `alert_quantity_threshold` (`alert_quantity_threshold`),
+  KEY `cruser_id` (`cruser_id`)
+) ENGINE=MyISAM ;
 
 CREATE TABLE `tx_multishop_products_attributes` (
   `products_attributes_id` int(5) NOT NULL auto_increment,
@@ -837,7 +860,7 @@ CREATE TABLE `tx_multishop_products_attributes` (
   KEY `products_id` (`products_id`),
   KEY `options_id` (`options_id`),
   KEY `options_values_id` (`options_values_id`)
-) ENGINE=InnoDB ;
+) ENGINE=MyISAM ;
 
 CREATE TABLE `tx_multishop_products_attributes_download` (
   `products_attributes_id` int(5) NOT NULL DEFAULT '0',
@@ -886,7 +909,7 @@ CREATE TABLE `tx_multishop_products_description` (
   KEY `products_description` (`products_description`(250)),
   KEY `products_negative_keywords` (`products_negative_keywords`(250)),
   KEY `promotext` (`promotext`)
-) ENGINE=InnoDB;
+) ENGINE=MyISAM;
 
 # remove fulltext index cause innodb does not support this
 ALTER TABLE tx_multishop_products_description DROP INDEX combined_four;
@@ -975,7 +998,7 @@ CREATE TABLE `tx_multishop_products_search_log` (
   KEY `keyword` (`keyword`),
   KEY `customer_id` (`customer_id`),
   KEY `negative_results` (`negative_results`)
-) ENGINE=InnoDB ;
+) ENGINE=MyISAM ;
 
 CREATE TABLE `tx_multishop_products_to_categories` (
   `products_id` int(11) NOT NULL DEFAULT '0',
@@ -983,7 +1006,7 @@ CREATE TABLE `tx_multishop_products_to_categories` (
   `sort_order` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`products_id`,`categories_id`),
   KEY `categories_id` (`categories_id`)
-) ENGINE=InnoDB;
+) ENGINE=MyISAM;
 
 CREATE TABLE `tx_multishop_products_to_extra_options` (
   `id` int(11) NOT NULL auto_increment,
@@ -1001,7 +1024,7 @@ CREATE TABLE `tx_multishop_products_to_relative_products` (
   KEY `relative_product_id` (`relative_product_id`),
   KEY `pid_to_relative_id` (`products_id`,`relative_product_id`),
   KEY `relative_to_pid_id` (`relative_product_id`,`products_id`)
-) ENGINE=InnoDB;
+) ENGINE=MyISAM;
 
 
 CREATE TABLE `tx_multishop_product_feeds` (
@@ -1147,7 +1170,7 @@ CREATE TABLE `tx_multishop_specials` (
   KEY `sort_order` (`sort_order`),
   KEY `page_uid` (`page_uid`),
   KEY `start_date` (`start_date`)
-) ENGINE=InnoDB ;
+) ENGINE=MyISAM;
 
 CREATE TABLE `tx_multishop_specials_sections` (
   `id` int(11) NOT NULL auto_increment,
@@ -1257,7 +1280,7 @@ CREATE TABLE `tx_multishop_undo_products` (
   `minimum_quantity` int(11) DEFAULT '1',
   `maximum_quantity` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB;
+) ENGINE=MyISAM;
 
 CREATE TABLE `tx_multishop_zones` (
   `id` int(4) NOT NULL auto_increment,

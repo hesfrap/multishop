@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $sql_year 		= "select crdate from tx_multishop_orders order by orders_id asc limit 1";
 $qry_year 		= $GLOBALS['TYPO3_DB']->sql_query($sql_year);
 $row_year 		= $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_year);
@@ -19,8 +21,8 @@ if ($this->get['stats_year_sb'] > 0) {
 
 $filename = 'orders_stats_' . time() . '.xls';
 
-$dir = $_SERVER['DOCUMENT_ROOT'];
-$export_file = $dir."/uploads/tx_multishop/tmp/".$filename;
+$dir = $this->DOCUMENT_ROOT;
+$export_file = $dir."uploads/tx_multishop/tmp/".$filename;
 
 $colwidth = array();
 $colwidth[0] = 20;

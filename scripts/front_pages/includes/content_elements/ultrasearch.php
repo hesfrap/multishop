@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 //print_r($this->get);
 // if there are no Ultrasearch fields defined through the Multishop configuration system, lets check if the Ultrasearch fields are defined through FlexForms.
 

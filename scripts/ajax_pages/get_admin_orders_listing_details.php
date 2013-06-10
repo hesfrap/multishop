@@ -1,14 +1,12 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->ADMIN_USER) {
 	$jsonData=array();
 	if (is_numeric($this->post['tx_multishop_pi1']['orders_id'])) {
 		$order=mslib_fe::getOrder($this->post['tx_multishop_pi1']['orders_id']);
 		if ($order['orders_id']) {
 			$jsonData['html']='';
-			if ($order['cruser_id']) {
-				$user=mslib_fe::getUser($order['cruser_id']);
-				if ($user['username']) $jsonData['html'].=$this->pi_getLL('created_by').': '.$user['username'];
-			}
 			if (count($order['products'])) {
 				// address details:
 				$jsonData['html'].='
@@ -95,7 +93,7 @@ $jsonData['html'].='
 							$where=substr($where,0,(strlen($where)-1));
 						}
 						// get all cats to generate multilevel fake url eof
-						$productLink=mslib_fe::typolink($this->shop_pid,'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');						
+						$productLink=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');						
 					} else {
 						$productLink='';
 					}
@@ -156,18 +154,32 @@ $jsonData['html'].='
 				</tr>
 				</table>';
 				$extraDetails=array();
+				if ($order['cruser_id']) {
+					$user=mslib_fe::getUser($order['cruser_id']);
+					if ($user['username']) {
+						$customer_edit_link=mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&tx_multishop_pi1[cid]='.$user['uid'].'&action=edit_customer');
+						$extraDetails['right'][]=$this->pi_getLL('ordered_by').': <strong><a href="'.$customer_edit_link.'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 950, height: 600})">'.$user['username'].'</a></strong><br />';
+					}
+				}				
 				if ($order['ip_address']) {
-					$extraDetails[]='<div class="float_right">'.$this->pi_getLL('ip_address','IP address').': <strong>'.$order['ip_address'].'</strong></div>';
-				}
+					$extraDetails['right'][]=$this->pi_getLL('ip_address','IP address').': <strong>'.$order['ip_address'].'</strong><br />';
+				}				
 				if ($order['http_referer']) {
 					$domain=parse_url($order['http_referer']);
 					if ($domain['host']) {
-							$extraDetails[]=$this->pi_getLL('referrer','Referrer').': <strong><a href="'.$order['http_referer'].'" target="_blank" rel="noreferrer">'.$domain['host'].'</a></strong>';
+						$extraDetails['left'][]=$this->pi_getLL('referrer','Referrer').': <strong><a href="'.$order['http_referer'].'" target="_blank" rel="noreferrer">'.$domain['host'].'</a></strong>';
 					}					
 				}				
 				if (count($extraDetails)) {
 					$jsonData['html'].='<div class="hr"></div>';
-					$jsonData['html'].=implode("",$extraDetails);
+					$jsonData['html'].='<div id="adminOrderDetailsFooter">';
+					$jsonData['html'].='<div class="left">';
+					$jsonData['html'].=implode("",$extraDetails['left']);
+					$jsonData['html'].='</div>';
+					$jsonData['html'].='<div class="right">';
+					$jsonData['html'].=implode("",$extraDetails['right']);
+					$jsonData['html'].='</div>';
+					$jsonData['html'].='</div>';
 				}
 			}
 		} else {

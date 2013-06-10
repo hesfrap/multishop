@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $total_pages = ceil(($pageset['total_rows']/$this->ms['MODULES']['ORDERS_LISTING_LIMIT']));
 
 $tmp.='<div id="pagenav_container_list_wrapper">

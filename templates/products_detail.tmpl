@@ -20,3 +20,21 @@
 ###BACK_BUTTON###
 ###ADD_TO_CART_BUTTON###
 </div>
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+	$(".qty_minus").click(function() {
+		var qty = parseInt($("#quantity").val());
+		
+		if (qty > 1) {
+			var new_val = parseInt(qty - 1);
+			$("#quantity").val(new_val);
+		}		
+	});
+	
+	$(".qty_plus").click(function() {
+		var qty = parseInt($("#quantity").val());
+		var new_val = parseInt(qty + 1);
+		$("#quantity").val(new_val);		
+	});
+});
+</script>

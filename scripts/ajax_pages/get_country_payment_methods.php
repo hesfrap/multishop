@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $str3 = "SELECT * from static_countries where cn_short_en='".addslashes($this->post['cc'])."' ";
 $qry3 = $GLOBALS['TYPO3_DB']->sql_query($str3);
 $row3 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry3);

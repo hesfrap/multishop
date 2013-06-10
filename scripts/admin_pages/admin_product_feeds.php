@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 // defining the types
 $array=array();
 $array['categories_name']				='Categories name';
@@ -23,11 +25,13 @@ $array['products_ean']				='Products EAN code';
 $array['products_sku']				='Products SKU code';
 $array['products_quantity']			='Products quantity';
 $array['products_price']			='Products price';
+$array['products_price_excluding_vat']			='Products price excluding vat';
+
 $array['products_weight']			='Products weight';
 $array['products_status']			='Products status';
 $array['minimum_quantity']			='Products minimum quantity';
 $array['maximum_quantity']			='Products maximum quantity';
-$array['order_unit_label']			='Products order unit label';
+$array['order_unit_name']			='Products order unit name';
 
 $array['category_link']				='Category link';
 $array['category_level_1']			='Category level 1';

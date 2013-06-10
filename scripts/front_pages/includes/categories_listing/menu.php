@@ -23,7 +23,7 @@
 		}
 		$where.='categories_id['.$level.']='.$category['categories_id'];
 		// get all cats to generate multilevel fake url eof
-		$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+		$link=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 		$content.='<li class="item_'.$counter.'"';
 		if ($this->ROOTADMIN_USER or ($this->ADMIN_USER and $this->CATALOGADMIN_USER)) $content.=' id="sortable_subcat_'.$category['categories_id'].'" ';		
 		$content.='>
@@ -92,8 +92,8 @@
 				}
 				// get all cats to generate multilevel fake url eof
 			}
-			$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&products_id='.$item['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
-			$catlink=mslib_fe::typolink($this->shop_pid,'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+			$link=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$item['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
+			$catlink=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 			$counter++;		
 			if ($item['products_image']) 	$image='<img src="'.$this->ms['image_paths']['products']['100'].'/'.$item['products_image'].'" alt="'.htmlspecialchars($item['products_name']).'">';
 			else							$image='<div class="no_image"></div>';

@@ -1,4 +1,6 @@
-<?php 
+<?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $id_category = $_REQUEST['idcategory'];
 $id_product = $_REQUEST['pid'];
 $type_copy = $_REQUEST['type_copy'];

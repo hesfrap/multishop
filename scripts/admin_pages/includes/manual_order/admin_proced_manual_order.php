@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 //add order 
 if ($this->post['proced_order'])
 {

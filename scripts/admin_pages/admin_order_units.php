@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->get['tx_multishop_pi1']['action'])
 {
 	switch ($this->get['tx_multishop_pi1']['action'])

@@ -42,6 +42,7 @@ $EM_CONF[$_EXTKEY] = array(
 			'phpexcel_service' => '1.7.6',			
 		),
 		'conflicts' => array(
+			'dbal' => '0.0.0'
 		),
 		'suggests' => array(
 		),

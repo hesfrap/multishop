@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $output = array();
 
 // now parse all the objects in the tmpl file
@@ -40,8 +42,8 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 		
 		$contentItem = '';
 		$teller=0;
-		for ($i=(count($cats)-1);$i>=0;$i--)
-		{
+		$tree_idx_start = count($cats) - 1;
+		for ($i = $tree_idx_start; $i >= 0; $i--) {
 			$teller++;
 			$link='';
 			if (($cats[$i]['id'] != $categories_id) or $this->get['products_id']) {
@@ -50,10 +52,8 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 				$cats2=array_reverse($cats2);
 				$where='';
 				$level=0;
-				if (count($cats2) > 0)
-				{
-					foreach ($cats2 as $item)
-					{
+				if (count($cats2) > 0) {
+					foreach ($cats2 as $item) {
 						$where.="categories_id[".$level."]=".$item['id']."&";
 						$level++;
 					}
@@ -63,8 +63,10 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 					$where.='categories_id['.$level.']='.$cats[$i]['id'];
 				}
 				
-				// get all cats to generate multilevel fake url eof
-				$output['link'] = mslib_fe::typolink($this->shop_pid,$where.'&tx_multishop_pi1[page_section]=products_listing');		
+				//if ($i > 1) {
+					// get all cats to generate multilevel fake url eof
+					$output['link'] = mslib_fe::typolink($this->conf['products_listing_page_pid'],$where.'&tx_multishop_pi1[page_section]=products_listing');
+				//}
 			}
 			
 			if (!$cats[$i]['meta_description']) {
@@ -72,6 +74,10 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 			}
 			
 			$output['level_counter'] = $teller;
+			
+			if ($i < 1 && empty($product['products_name'])) {
+				$output['link'] = '';
+			}
 			
 			if ($output['link']) {
 				$output['crumbar_value'] = '<a href="'.$output['link'].'" class="ajax_link" title="'.htmlspecialchars($cats[$i]['meta_description']).'">' . $cats[$i]['name'] . '</a>';
@@ -86,7 +92,9 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 			$contentItem .= $this->cObj->substituteMarkerArray($subparts['item'], $markerArray,'###|###');
 		}
 		
-		$output['product_name'] =  '<li class="crumbar_product_level"><strong>'.substr($product['products_name'], 0, 60).'</strong></li>';
+		if (!empty($product['products_name'])) {
+			$output['product_name'] =  '<li class="crumbar_product_level"><strong>'.substr($product['products_name'], 0, 60).'</strong></li>';
+		}
 		
 		// fill the row marker with the expanded rows
 		$subpartArray['###LABEL_YOU_ARE_CURRENTLY_HERE###'] = $output['label_you_are_currently_here'];

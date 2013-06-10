@@ -1,4 +1,5 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
 
 if ($this->get['stats_year_sb'] > 0) {
 	if ($this->get['stats_year_sb'] != $this->cookie['stats_year_sb']) {
@@ -134,7 +135,7 @@ foreach ($dates as $key => $value) {
 					$where=substr($where,0,(strlen($where)-1));
 				}
 				// get all cats to generate multilevel fake url eof
-				$productLink=mslib_fe::typolink($this->shop_pid,'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');						
+				$productLink=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');						
 			} else {
 				$productLink='';
 			}				

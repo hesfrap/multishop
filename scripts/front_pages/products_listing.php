@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->ms['MODULES']['CACHE_FRONT_END'] and !$this->ms['MODULES']['CACHE_TIME_OUT_LISTING_PAGES']) $this->ms['MODULES']['CACHE_FRONT_END']=0;
 if ($this->ms['MODULES']['CACHE_FRONT_END'])
 {
@@ -24,7 +26,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 	$str="SELECT * from tx_multishop_categories c, tx_multishop_categories_description cd where c.status=1 and c.categories_id='".$parent_id."' and cd.language_id='".$this->sys_language_uid."' and c.page_uid='".$this->showCatalogFromPage."' and c.categories_id=cd.categories_id";
 	$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 	$current=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
-	// first check if the meta_title exists	
+	// first check if the meta_title exists
 	$output_array=array();
 	if ($current['categories_id'])
 	{
@@ -39,7 +41,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 		if ($current['meta_keywords'])		$meta_keywords=$current['meta_keywords'];
 		else								$meta_keywords='';
 		if(!$this->conf['disableMetatags'])
-		{			
+		{
 			$output_array['meta']['title'] 							= '<title>'.htmlspecialchars($meta_title).' :: '.$this->ms['MODULES']['STORE_NAME'].'</title>';	
 			$output_array['meta']['description'] 					= '<meta name="description" content="'.$meta_description.'" />';
 			if ($meta_keywords) $output_array['meta']['keywords'] 	= '<meta name="keywords" content="'.htmlspecialchars($meta_keywords).'" />';	
@@ -64,7 +66,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 						$updateArray=array();
 						$updateArray['sort_order']=$counter;
 						$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_categories', 'categories_id='.$row['categories_id'],$updateArray);
-						$res = $GLOBALS['TYPO3_DB']->sql_query($query);		
+						$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 						$counter++;
 					}	
 					$str="SELECT * from tx_multishop_categories c, tx_multishop_categories_description cd where c.categories_id=cd.categories_id and c.status=1 and c.parent_id='".$parent_id."' and c.page_uid='".$this->showCatalogFromPage."' and cd.language_id='".$this->sys_language_uid."' order by c.sort_order";

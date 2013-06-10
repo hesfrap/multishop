@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->productsLimit)
 {
 	$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']=$this->productsLimit;

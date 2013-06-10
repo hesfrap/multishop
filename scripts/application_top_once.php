@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 /*
 	Webdevelopment by BVB Media BV. (C)2010
 	Developer: Bas van Beek, mail@bvbmedia.com

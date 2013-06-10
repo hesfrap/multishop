@@ -1,4 +1,6 @@
-<?php 
+<?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->ADMIN_USER) {
 	$shippingid 	= $_REQUEST['shippingid'];
 	$zones 			= $_REQUEST['zone'];

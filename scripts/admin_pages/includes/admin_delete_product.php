@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $content.='<div class="main-heading"><h1>'.$this->pi_getLL('admin_delete_product').'</h1></div>';
 if (is_numeric($_REQUEST['pid']))
 {

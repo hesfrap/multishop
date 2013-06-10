@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $user=mslib_fe::getUser($this->get['tx_multishop_pi1']['hash'],'code');
 if ($user['uid'] and !$user['tx_multishop_optin_crdate']) {
 	$updateArray=array();

@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->get['Search']) {
 	if ($this->get['paid_orders_only_py'] and $this->get['paid_orders_only_py'] != $this->cookie['paid_orders_only']) {
 		$this->cookie['paid_orders_only_py'] = $this->get['paid_orders_only_py'];

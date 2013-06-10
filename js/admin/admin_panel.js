@@ -278,27 +278,91 @@ function renderAdminMenu(json, type, includeDescinFooter) {
 									tablevel3_params = '';
 								}
 				
-								admin_content += '<li class="' + tablevel3_key + '">';
-				
-								if (tablevel3.link) {
-									if (tablevel3.description != null) {
-										admin_content 	+= '<a href="' + tablevel3.link + '"' + tablevel3.link_params + '>' + tablevel3.label + '<span class="ms_admin_menu_item_description">' + tablevel3.description + '</span></a>';
+								if (tablevel3.subs == null) {
+									admin_content += '<li class="' + tablevel3_key + '">';
+									if (tablevel3.link) {
+										if (tablevel3.description != null) {
+											admin_content 	+= '<a href="' + tablevel3.link + '"' + tablevel3.link_params + '>' + tablevel3.label + '<span class="ms_admin_menu_item_description">' + tablevel3.description + '</span></a>';
+										} else {
+											admin_content 	+= '<a href="' + tablevel3.link + '"' + tablevel3.link_params + '>' + tablevel3.label + '<span class="ms_admin_menu_item_description"></span></a>';
+										}
+					
 									} else {
-										admin_content 	+= '<a href="' + tablevel3.link + '"' + tablevel3.link_params + '>' + tablevel3.label + '<span class="ms_admin_menu_item_description"></span></a>';
+										if (tablevel3.description != null) {
+											admin_content 	+= '<span>' + tablevel3.label + '<span class="ms_admin_menu_item_description">' + tablevel3.description + '</span></span>';
+										} else {
+											admin_content 	+= '<span>' + tablevel3.label + '<span class="ms_admin_menu_item_description"></span></span>';
+										}
 									}
-				
+									admin_content += '</li>';
+									
 								} else {
-									if (tablevel3.description != null) {
-										admin_content 	+= '<span>' + tablevel3.label + '<span class="ms_admin_menu_item_description">' + tablevel3.description + '</span></span>';
+									admin_content += '<li class="' + tablevel3_key + ' ms_admin_has_subs">';
+									
+									if (tablevel3.link) {
+										if (tablevel3.description != null) {
+											admin_content 	+= '<a href="' + tablevel3.link + '"' + tablevel3.link_params + '>' + tablevel3.label + '<span class="ms_admin_menu_item_description">' + tablevel3.description + '</span></a>';
+										} else {
+											admin_content 	+= '<a href="' + tablevel3.link + '"' + tablevel3.link_params + '>' + tablevel3.label + '<span class="ms_admin_menu_item_description"></span></a>';
+										}
+					
 									} else {
-										admin_content 	+= '<span>' + tablevel3.label + '<span class="ms_admin_menu_item_description"></span></span>';
+										if (tablevel3.description != null) {
+											admin_content 	+= '<span>' + tablevel3.label + '<span class="ms_admin_menu_item_description">' + tablevel3.description + '</span></span>';
+										} else {
+											admin_content 	+= '<span>' + tablevel3.label + '<span class="ms_admin_menu_item_description"></span></span>';
+										}
 									}
+									
+									admin_content 		+=  '<ul>';
+									
+									var tablevel4_ctr = 0;
+									jQuery.each(tablevel3.subs, function(_tablevel4_key, _tablevel4) {
+										if (_tablevel4_key != '') {
+											tablevel4_ctr++;
+										}
+									});
+					
+									total_tablevel4 	= tablevel4_ctr;
+									counter_tablevel4 	= 0;
+									
+									jQuery.each(tablevel3.subs, function(tablevel4_key, tablevel4) {
+										counter_tablevel4++;
+					
+										if (type =='header' && (counter_tablevel4 == total_tablevel4)) {
+											tablevel4_params = 'dropdown_bottom';
+						
+										} else if (type=='footer' && (counter_tablevel4==1)) {
+											tablevel4_params = 'dropdown_top';
+						
+										} else {
+											tablevel4_params = '';
+										}
+						
+										admin_content += '<li class="' + tablevel4_key + '">';
+										
+										if (tablevel4.link) {
+											if (tablevel4.description != null) {
+												admin_content 	+= '<a href="' + tablevel4.link + '"' + tablevel4.link_params + '>' + tablevel4.label + '<span class="ms_admin_menu_item_description">' + tablevel4.description + '</span></a>';
+											} else {
+												admin_content 	+= '<a href="' + tablevel4.link + '"' + tablevel4.link_params + '>' + tablevel4.label + '<span class="ms_admin_menu_item_description"></span></a>';
+											}
+						
+										} else {
+											if (tablevel4.description != null) {
+												admin_content 	+= '<span>' + tablevel4.label + '<span class="ms_admin_menu_item_description">' + tablevel4.description + '</span></span>';
+											} else {
+												admin_content 	+= '<span>' + tablevel4.label + '<span class="ms_admin_menu_item_description"></span></span>';
+											}
+										}
+										
+										admin_content += '</li>';
+						
+									});
+									
+									admin_content += '</ul></li>';
 								}
-				
-								admin_content += '</li>';
-				
 							});
-	
 							admin_content += '</ul></li>';
 						}
 					});

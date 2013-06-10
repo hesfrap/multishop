@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 /***************************************************************
 *  Copyright notice
 *
@@ -78,19 +80,18 @@ class tx_multishop {
 	 * Flattens an array, or returns FALSE on fail. 
 	 */ 
 	function array_flatten($array) { 
-	  if (!is_array($array)) { 
-		return FALSE; 
-	  } 
-	  $result = array(); 
-	  foreach ($array as $key => $value) { 
-		if (is_array($value)) { 
-		  $result = array_merge($result, $this->array_flatten($value)); 
-		} 
-		else { 
-		  $result[$key] = $value; 
-		} 
-	  } 
-	  return $result; 
+		if (! is_array ( $array )) {
+			return FALSE;
+		}
+		$result = array ();
+		foreach ( $array as $key => $value ) {
+			if (is_array ( $value )) {
+				$result = array_merge ( $result, $this->array_flatten ( $value ) );
+			} else {
+				$result [$key] = $value;
+			}
+		}
+		return $result; 
 	} 
     /**
      * Render the preview
@@ -98,8 +99,7 @@ class tx_multishop {
      * @param array  $row tt_content row of the plugin
      * @return string rendered preview html
      */
-    protected function preview($row)
-	{		
+    protected function preview($row) {		
 		$data = t3lib_div::xml2array($row['pi_flexform']);
 		$item ='Multishop: '.$data['data']['sDEFAULT']['lDEF']['method']['vDEF'];
         return $item;

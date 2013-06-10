@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 set_include_path(t3lib_extMgm::extPath('multishop').PATH_SEPARATOR.t3lib_extMgm::extPath('multishop').'scripts/admin_pages/');	
 if ($this->post)
 {

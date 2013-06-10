@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 // Configuration group ids
 // 1 Homepage
 // 2 Image Settings

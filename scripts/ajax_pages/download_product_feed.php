@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if ($this->get['feed_hash'])
 {
     $feed=mslib_fe::getProductFeed($this->get['feed_hash'],'code');
@@ -106,6 +108,9 @@ if ($this->get['feed_hash'])
 						case 'products_price':
 							$content.='price';
 						break;
+						case 'products_price_excluding_vat':
+							$content.='price excluding vat';
+						break;						
 						case 'products_url':
 							$content.='link';
 						break;
@@ -349,7 +354,7 @@ if ($this->get['feed_hash'])
 						else
 						{
 							$target="";
-							$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+							$link=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 						}		
 						$row['category_link']=$this->FULL_HTTP_URL.$link;
 						$records[]=$row;
@@ -440,6 +445,9 @@ if ($this->get['feed_hash'])
 					case 'products_price':
 						$tmpcontent.= mslib_fe::final_products_price($row);
 					break;
+					case 'products_price_excluding_vat':
+						$tmpcontent.= round($row['final_price'],14);
+					break;
 					case 'manufacturers_id':
 						$tmpcontent.= $row['manufacturers_id'];
 					break;
@@ -523,8 +531,8 @@ if ($this->get['feed_hash'])
 					case 'products_quantity':
 						$tmpcontent.= $row['products_quantity'];
 					break;	
-					case 'order_unit_label':
-						$tmpcontent.= $row['order_unit_label'];
+					case 'order_unit_name':
+						$tmpcontent.= $row['order_unit_name'];
 					break;	
 					case 'minimum_quantity':
 						$tmpcontent.= $row['minimum_quantity'];
@@ -553,7 +561,7 @@ if ($this->get['feed_hash'])
 							}
 							// get all cats to generate multilevel fake url eof
 						}
-						$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&products_id='.$row['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
+						$link=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$row['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
 						$tmpcontent.= $this->FULL_HTTP_URL.$link;
 					break;
 					case 'products_meta_title':

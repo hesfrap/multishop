@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 set_time_limit(0);
 require_once(t3lib_extMgm::extPath('phpexcel_service').'Classes/PHPExcel.php');
 // define the different columns
@@ -54,9 +56,9 @@ while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
 	$rows[]=$row;
 }
 
-$dir 			= $_SERVER['DOCUMENT_ROOT'];
+$dir 			= $this->DOCUMENT_ROOT;
 $filename 		= uniqid().".xls";
-$export_file 	= $dir."/uploads/tx_multishop/tmp/" . $filename;
+$export_file 	= $dir."uploads/tx_multishop/tmp/" . $filename;
 $worksheet_name = 'customers';
 
 $phpexcel = new PHPExcel();

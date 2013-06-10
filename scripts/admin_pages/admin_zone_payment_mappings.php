@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $shipping_methods 	= mslib_fe::loadShippingMethods();
 $payment_methods 	= mslib_fe::loadPaymentMethods();
 $zones 				= mslib_fe::loadAllCountriesZones();

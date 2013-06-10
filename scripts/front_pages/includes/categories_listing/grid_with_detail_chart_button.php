@@ -28,7 +28,7 @@
 //		$where.='categories_id['.$level.']='.$category['categories_id'];
 		// get all cats to generate multilevel fake url eof
 		if ($category['categories_url']) 	$link=$category['categories_url'];
-		else								$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+		else								$link=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 
 		$content.='<li class="item_'.$counter.'"';
 		if ($this->ROOTADMIN_USER or ($this->ADMIN_USER and $this->CATALOGADMIN_USER)) $content.=' id="sortable_subcat_'.$category['categories_id'].'" ';		

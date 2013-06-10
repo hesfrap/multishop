@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $disable_checkout = false;
 $output = array();
 
@@ -219,7 +221,7 @@ if (count($cart['products']) > 0) {
 			}
 			else
 			{
-				$quantity_html.='<input class="qty_input" name="qty['.$shopping_cart_item.']" type="text" value="'.$value['qty'].'" size="3" maxlength="3" />';
+				$quantity_html.='<input class="qty_input" name="qty['.$shopping_cart_item.']" type="text" value="'.$value['qty'].'" size="4" maxlength="4" />';
 			}
 			// show selectbox by products multiplication or show default input eof
 			

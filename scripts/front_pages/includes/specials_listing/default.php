@@ -1,4 +1,6 @@
-<?php 
+<?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if (!$this->imageWidth) $this->imageWidth='100';
 $teller=0;
 $specials_items='';
@@ -27,7 +29,7 @@ foreach ($products as $product)
 		}
 		// get all cats to generate multilevel fake url eof
 	}
-	$link=mslib_fe::typolink($this->shop_pid,'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');		
+	$link=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');		
 	$tel++;
 	if ($this->conf['disableFeFromCalculatingVatPrices']=='1') {
 		$final_price=$product['final_price'];

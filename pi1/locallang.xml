@@ -10,7 +10,7 @@
       <label index="list_mode_2">Mode 2</label>
       <label index="list_mode_3">Mode 3</label>
       <label index="submit_button_label">Click here to submit value</label>
-      <label index="basket">Basket</label>
+      <label index="basket">Cart</label>
       <label index="checkout">checkout</label>
       <label index="catalog">Catalog</label>
       <label index="keyword">keyword</label>
@@ -19,7 +19,7 @@
       <label index="you_have_items_in_your_cart">You have %d items in your cart</label>
       <label index="back">Back</label>
       <label index="you_are_currently_here">You are currently here</label>
-      <label index="add_to_basket">Add to basket</label>
+      <label index="add_to_basket">Add to cart</label>
       <label index="manufacturers">Manufacturers</label>
       <label index="go_to_checkout">Go to Checkout</label>
       <label index="go_to_catalog">Go to Catalog</label>
@@ -29,7 +29,7 @@
       <label index="subtotal">Subtotal</label>
       <label index="total">Total</label>
       <label index="order_product_status">Status</label>
-      <label index="remove_product_from_basket">remove product from Basket</label>
+      <label index="remove_product_from_basket">remove product from cart</label>
       <label index="first_name">first name</label>
       <label index="middle_name">middle name</label>
       <label index="last_name">surname</label>
@@ -561,7 +561,7 @@
       <label index="email">E-mail</label>
       <label index="convert_to_order">Convert to order</label>
       <label index="email_order_proposal_letter">E-mail proposal letter</label>
-      <label index="customer">customer</label>
+      <label index="customer">Customer</label>
       <label index="new_customer">new customer</label>
       <label index="created_by">Created by</label>
       <label index="admin_proposals">Proposals</label>
@@ -667,6 +667,11 @@
 	  <label index="address">address</label>
 	  <label index="verify_email_address">Verify e-mail address</label>
 	  <label index="repeated_email_is_not_equal_as_email">Repeated email is not equal as email</label>
+	  <label index="view_contents">View contents</label>
+	  <label index="go_directly_to_checkout">Go directly to checkout</label>
+	  <label index="admin_alert_quantity_threshold">Alert quantity threshold</label>
+	  <label index="email_alert_quantity_threshold_letter">Alert quantity threshold e-mail content</label>	  
+	  <label index="ordered_by">Ordered by</label>	  
     </languageKey>
     <languageKey index="nl" type="array">
       <label index="list_mode_1">Mode 1</label>
@@ -765,7 +770,7 @@
       <label index="product_options">Product Opties</label>
       <label index="coupon_code">Kortingscode</label>
       <label index="discount">Korting</label>
-      <label index="update_shopping_cart">Wijzig</label>
+      <label index="update_shopping_cart">Update winkelwagen</label>
       <label index="no_products_available">Helaas zijn er hier nog geen producten beschikbaar gesteld.</label>
       <label index="specials">Aanbiedingen</label>
       <label index="search_for">Zoek naar</label>
@@ -1217,7 +1222,7 @@
       <label index="email">E-mail</label>
       <label index="convert_to_order">Zet om naar bestelling</label>
       <label index="email_order_proposal_letter">E-mail offerte bericht</label>
-      <label index="customer">Klant</label>
+      <label index="customer">Debiteur</label>
       <label index="new_customer">nieuwe klant</label>
       <label index="created_by">Aangemaakt door</label>
       <label index="admin_proposals">Offertes</label>
@@ -1321,7 +1326,12 @@
 	  <label index="edit">bewerken</label>
 	  <label index="address">adres</label>
 	  <label index="verify_email_address">Verifieer E-mailadres</label>	  
-	  <label index="repeated_email_is_not_equal_as_email">Het herhaalde emailadres is niet gelijk aan emailadres</label>	  
+	  <label index="repeated_email_is_not_equal_as_email">Het herhaalde emailadres is niet gelijk aan emailadres</label>
+	  <label index="view_contents">Bekijk inhoud</label>
+	  <label index="go_directly_to_checkout">Ga direct naar afrekenen</label>
+	  <label index="admin_alert_quantity_threshold">Alert hoeveelheid drempel</label>
+	  <label index="email_alert_quantity_threshold_letter">Alert hoeveelheid drempel e-mail content</label>
+	  <label index="ordered_by">Besteld door</label>	  	  
     </languageKey>
     <languageKey index="fi" type="array">
       <label index="list_mode_1">Malli 1</label>

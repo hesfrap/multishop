@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 /***************************************************************
 *  Copyright notice
 *
@@ -128,8 +130,11 @@ class tx_mslib_order extends tslib_pibase {
 					
 					$product_tax_data['total_attributes_tax'] = (string) $attributes_tax;
 					$product_tax_data['total_tax_rate'] = (string) number_format($tax_rate, 2, '.', ',');
-					
 					$final_price = $row_prod['final_price'];
+					// b2b mode 1 cent bugfix: 2013-05-09 cbc in grand total. this came from the products final price that must be round first
+					// I have fixed the b2b issue by updating all the products prices in the database to have max 2 decimals
+					// therefore I disabled below bugfix, cause thats a ducktape solution that can break b2c sites
+					//$final_price=round($final_price,2);
 					$tax = $final_price * $tax_rate;
 					$product_tax_data['total_tax'] = (string) $tax;
 					
@@ -163,24 +168,31 @@ class tx_mslib_order extends tslib_pibase {
 			}	
 		}
 	}
-	function mailOrder($orders_id,$copy_to_merchant=1,$custom_email_address='',$mail_template='')
-	{
+	function mailOrder($orders_id,$copy_to_merchant=1,$custom_email_address='',$mail_template='') {
 		$order=mslib_fe::getOrder($orders_id);
 		$order['mail_template'] = $mail_template;
-
-		if (!$custom_email_address) $custom_email_address=$order['billing_email'];
+		if (!$custom_email_address) {
+			$custom_email_address=$order['billing_email'];
+		}
 		$billing_address='';
 		$delivery_address='';
 		$full_customer_name=$order['billing_first_name'];
-		if ($order['billing_middle_name']) 	$full_customer_name.=' '.$order['billing_middle_name'];
-		if ($order['billing_last_name']) 	$full_customer_name.=' '.$order['billing_last_name'];			
+		if ($order['billing_middle_name']) {
+			$full_customer_name.=' '.$order['billing_middle_name'];
+		}
+		if ($order['billing_last_name']) {
+			$full_customer_name.=' '.$order['billing_last_name'];			
+		}
 		$delivery_full_customer_name=$order['delivery_first_name'];
-		if ($order['delivery_middle_name']) 	$delivery_full_customer_name.=' '.$order['delivery_middle_name'];
-		if ($order['delivery_last_name']) 		$delivery_full_customer_name.=' '.$order['delivery_last_name'];				
+		if ($order['delivery_middle_name']) {
+			$delivery_full_customer_name.=' '.$order['delivery_middle_name'];
+		}
+		if ($order['delivery_last_name']) {
+			$delivery_full_customer_name.=' '.$order['delivery_last_name'];				
+		}
 		$full_customer_name =	preg_replace('/\s+/', ' ', $full_customer_name);
 		$delivery_full_customer_name =	preg_replace('/\s+/', ' ', $delivery_full_customer_name);		
-		if (!$order['delivery_address'] or !$order['delivery_city'])
-		{
+		if (!$order['delivery_address'] or !$order['delivery_city']) {
 			$order['delivery_company']		= $order['billing_company'];
 			$order['delivery_street_name']		= $order['billing_street_name'];
 			$order['delivery_address']		= $order['billing_address'];
@@ -192,19 +204,39 @@ class tx_mslib_order extends tslib_pibase {
 			$order['delivery_telephone']	= $order['billing_telephone'];
 			$order['delivery_mobile']		= $order['billing_mobile'];
 		}
-		if ($order['delivery_company']) 		$delivery_address=$order['delivery_company']."<br />";
-		if ($delivery_full_customer_name) 		$delivery_address.=$delivery_full_customer_name."<br />";
-		if ($order['delivery_address']) 		$delivery_address.=$order['delivery_address']."<br />";
-		if ($order['delivery_zip'] and $order['delivery_city']) 				$delivery_address.=$order['delivery_zip']." ".$order['delivery_city'];			
-		if ($order['delivery_country']) 		$delivery_address.='<br />'.ucfirst($order['delivery_country']);
+		if ($order['delivery_company']) {
+			$delivery_address=$order['delivery_company']."<br />";
+		}
+		if ($delivery_full_customer_name) {
+			$delivery_address.=$delivery_full_customer_name."<br />";
+		}
+		if ($order['delivery_address']) {
+			$delivery_address.=$order['delivery_address']."<br />";
+		}
+		if ($order['delivery_zip'] and $order['delivery_city']) {
+			$delivery_address.=$order['delivery_zip']." ".$order['delivery_city'];			
+		}
+		if ($order['delivery_country']) {
+			$delivery_address.='<br />'.mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$order['delivery_country']);
+		}
 //		if ($order['delivery_telephone']) 		$delivery_address.=ucfirst($this->pi_getLL('telephone')).': '.$order['delivery_telephone']."<br />";
 //		if ($order['delivery_mobile']) 			$delivery_address.=ucfirst($this->pi_getLL('mobile')).': '.$order['delivery_mobile']."<br />";
 
-		if ($order['billing_company']) 		$billing_address=$order['billing_company']."<br />";
-		if ($full_customer_name) 			$billing_address.=$full_customer_name."<br />";
-		if ($order['billing_address']) 		$billing_address.=$order['billing_address']."<br />";
-		if ($order['billing_zip'] and $order['billing_city']) 	$billing_address.=$order['billing_zip']." ".$order['billing_city'];		
-		if ($order['billing_country']) 		$billing_address.='<br />'.ucfirst($order['billing_country']);
+		if ($order['billing_company']) {
+			$billing_address=$order['billing_company']."<br />";
+		}
+		if ($full_customer_name) {
+			$billing_address.=$full_customer_name."<br />";
+		}
+		if ($order['billing_address']) {
+			$billing_address.=$order['billing_address']."<br />";
+		}
+		if ($order['billing_zip'] and $order['billing_city']) {
+			$billing_address.=$order['billing_zip']." ".$order['billing_city'];		
+		}
+		if ($order['billing_country']) {
+			$billing_address.='<br />'.mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$order['billing_country']);
+		}
 
 		// loading the email template
 		$page=array();
@@ -222,8 +254,7 @@ class tx_mslib_order extends tslib_pibase {
 					$page=mslib_fe::getCMScontent($mail_template,$GLOBALS['TSFE']->sys_language_uid);
 				break;
 			}				
-		}
-		elseif ($order['is_proposal']) {
+		} else if ($order['is_proposal']) {
 			// proposal template
 			$mail_template='email_order_proposal';
 			$page=mslib_fe::getCMScontent($mail_template,$GLOBALS['TSFE']->sys_language_uid);	
@@ -438,8 +469,11 @@ class tx_mslib_order extends tslib_pibase {
 	}	
 	function getOrderTotalPrice ($orders_id,$skip_method_costs=0) {
 		$order=mslib_fe::getOrder($orders_id);
-		if ($skip_method_costs) return round($order['orders_tax_data']['sub_total'],2);
-		else return round($order['orders_tax_data']['grand_total'],2);	
+		if ($skip_method_costs) {
+			return round($order['orders_tax_data']['sub_total'],2);
+		} else {
+			return round($order['orders_tax_data']['grand_total'],2);	
+		}
 	}
 	function getOrder($string,$field='orders_id') {
 		$filter=array();
@@ -453,7 +487,9 @@ class tx_mslib_order extends tslib_pibase {
 				$filter[]="o.hash='".addslashes($string)."'";				
 			break;			
 		}
-		if (!count($filter)) return false;
+		if (!count($filter)) {
+			return false;
+		}
 //		$filter[]='osd.language_id=o.language_id';
 		$str = $GLOBALS['TYPO3_DB']->SELECTquery(
 			'o.*, osd.name as orders_status', // SELECT ...
@@ -517,8 +553,6 @@ class tx_mslib_order extends tslib_pibase {
 		$orders['subtotal_amount'] 			= round($total_amount,2);
 		$orders['shipping_method_costs'] 	= round($orders['shipping_method_costs'],2);
 		$orders['payment_method_costs'] 	= round($orders['payment_method_costs'],2);
-
-		
 		
 		/* if ($orders['orders_tax_data']['shipping_tax'] || $orders['orders_tax_data']['payment_tax']) {
 			$extra_vat=0;
@@ -538,20 +572,19 @@ class tx_mslib_order extends tslib_pibase {
 		
 		return $orders;
 	}	
-	function createOrder($address)
-	{
-		if (is_numeric($address['uid'])) $customer_id=$address['uid'];
-		else
-		{
-			if (!$address['email']) return false;
+	function createOrder($address) {
+		if (is_numeric($address['uid'])) {
+			$customer_id=$address['uid'];
+		} else {
+			if (!$address['email']) {
+				return false;
+			}
 			$tmp_user=mslib_fe::getUser($address['email'],'email');
-			if ($tmp_user['uid'])
-			{
+			if ($tmp_user['uid']) {
 				$customer_id=$tmp_user['uid'];
-			}			
+			}
 		}
-		if (!$customer_id)
-		{
+		if (!$customer_id) {
 			// add new account
 			$insertArray=array();				
 			$insertArray['page_uid']			=	$this->shop_pid;
@@ -563,7 +596,9 @@ class tx_mslib_order extends tslib_pibase {
 			$insertArray['username']			=	$address['email'];
 			$insertArray['email']				=	$address['email'];
 			$insertArray['street_name']			=	$address['street_name'];
-			if (!$insertArray['street_name']) $insertArray['street_name']=$address['address'];
+			if (!$insertArray['street_name']) {
+				$insertArray['street_name']=$address['address'];
+			}
 			$insertArray['address_number']		=	$address['address_number'];
 			$insertArray['address_ext']			=	$address['address_ext'];
 			$insertArray['address']				=	$insertArray['street_name'].' '.$insertArray['address_number'].$insertArray['address_ext'];
@@ -580,21 +615,16 @@ class tx_mslib_order extends tslib_pibase {
 			$insertArray['password'] 			=	mslib_befe::getHashedPassword(mslib_befe::generateRandomPassword(10,$insertArray['username']));
 			$query = $GLOBALS['TYPO3_DB']->INSERTquery('fe_users', $insertArray);
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
-			if ($res)
-			{
+			if ($res) {
 				$customer_id=$GLOBALS['TYPO3_DB']->sql_insert_id();
 			}
 		}	
-		if ($customer_id)
-		{
-			if ($this->ms['MODULES']['DISABLE_VAT_RATE_WHEN_CROSS_BORDERS'])
-			{
+		if ($customer_id) {
+			if ($this->ms['MODULES']['DISABLE_VAT_RATE_WHEN_CROSS_BORDERS']) {
 				// if store country is different than customer country change VAT rate to zero
-				if ($address['country'])
-				{
+				if ($address['country']) {
 					$iso_customer=mslib_fe::getCountryByName($address['country']);
-					if ($iso_customer['cn_iso_nr'] != $this->ms['MODULES']['COUNTRY_ISO_NR'])
-					{
+					if ($iso_customer['cn_iso_nr'] != $this->ms['MODULES']['COUNTRY_ISO_NR']) {
 						$this->ms['MODULES']['DISABLE_VAT_RATE']=1;
 					}
 				}
@@ -615,7 +645,9 @@ class tx_mslib_order extends tslib_pibase {
 			$insertArray['billing_gender']				=	$address['gender'];	
 			$insertArray['billing_birthday']			=	$address['birthday'];
 			
-			if (!$address['street_name']) $address['street_name']=$address['address'];	
+			if (!$address['street_name']) {
+				$address['street_name']=$address['address'];
+			}
 			$insertArray['billing_street_name']			=	$address['street_name'];			
 			$insertArray['billing_address_number']		=	$address['address_number'];			
 			$insertArray['billing_address_ext']			=	$address['address_ext'];		
@@ -631,8 +663,7 @@ class tx_mslib_order extends tslib_pibase {
 			$insertArray['billing_mobile']				=	$address['mobile'];	
 			$insertArray['billing_fax']					=	'';		
 			$insertArray['billing_vat_id']				=	'';	
-			if (!$address['different_delivery_address'])
-			{
+			if (!$address['different_delivery_address']) {
 				$insertArray['delivery_email']					=$insertArray['billing_email'];
 				$insertArray['delivery_company']				=$insertArray['billing_company'];
 				$insertArray['delivery_first_name']				=$insertArray['billing_first_name'];
@@ -651,9 +682,7 @@ class tx_mslib_order extends tslib_pibase {
 				$insertArray['delivery_telephone']				=$insertArray['billing_telephone'];
 				$insertArray['delivery_region']					=$insertArray['billing_region'];
 				$insertArray['delivery_name']					=$insertArray['billing_name'];
-			}
-			else
-			{
+			} else {
 				$insertArray['delivery_company']			=	$address['delivery_company'];	
 				$insertArray['delivery_first_name']			=	$address['delivery_first_name'];
 				$insertArray['delivery_middle_name']		=	$address['delivery_middle_name'];		
@@ -662,7 +691,9 @@ class tx_mslib_order extends tslib_pibase {
 				$insertArray['delivery_email']				=	$address['delivery_email'];				
 				$insertArray['delivery_gender']				=	$address['delivery_gender'];				
 				
-				if (!$address['delivery_street_name']) $address['delivery_street_name']=$address['delivery_address'];	
+				if (!$address['delivery_street_name']) {
+					$address['delivery_street_name']=$address['delivery_address'];	
+				}
 				$insertArray['delivery_street_name']		=	$address['street_name'];			
 				$insertArray['delivery_address_number']		=	$address['address_number'];			
 				$insertArray['delivery_address_ext']		=	$address['address_ext'];		
@@ -692,16 +723,13 @@ class tx_mslib_order extends tslib_pibase {
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 			// now add the order eof		
 			$orders_id=$GLOBALS['TYPO3_DB']->sql_insert_id();	
-			if ($orders_id)
-			{
+			if ($orders_id) {
 				return $orders_id;
 			}			
 		}
 	}
-	function createOrdersProduct($orders_id,$orders_product=array())
-	{
-		if ($orders_id)
-		{
+	function createOrdersProduct($orders_id,$orders_product=array()) {
+		if ($orders_id) {
 			$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_orders_products', $orders_product);
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 			$orders_products_id=$GLOBALS['TYPO3_DB']->sql_insert_id();

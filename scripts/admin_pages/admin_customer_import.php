@@ -1,4 +1,21 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
+set_time_limit(86400); 
+ignore_user_abort(true);
+if ($this->get['delete'] and is_numeric($this->get['job_id'])) {
+	// delete job
+	$query = $GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_import_jobs', 'id='.$this->get['job_id'].' and type=\'customers\'');
+	$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
+}
+if (is_numeric($this->get['job_id']) and is_numeric($this->get['status'])) {
+	// update the status of a job
+	$updateArray=array();
+	$updateArray['status']	 =	$this->get['status'];
+	$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_import_jobs', 'id=\''.$this->get['job_id'].'\' and type=\'customers\'',$updateArray);
+	$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
+	// update the status of a job eof
+}
 $default_country = mslib_fe::getCountryByIso($this->ms['MODULES']['COUNTRY_ISO_NR']);
 $GLOBALS['TSFE']->additionalHeaderData['tx_multishop_pi1_block_ui'] = mslib_fe::jQueryBlockUI();
 // define the different columns
@@ -46,7 +63,10 @@ if(is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/adm
 }
 natsort($coltypes);
 // define the different columns eof
-if($this->post['action'] == 'customer-import-preview' || (is_numeric($this->get['job_id'])and $this->get['action'] == 'edit_job')) {
+if ($this->post['job_id']) {
+	$this->get['job_id']=$this->post['job_id'];
+}
+if ($this->post['action'] == 'customer-import-preview' or (is_numeric($this->get['job_id']) and $_REQUEST['action'] == 'edit_job')) {
 	// preview
 	if(is_numeric($this->get['job_id'])) {
 		$this->ms['mode'] = 'edit';
@@ -72,31 +92,32 @@ if($this->post['action'] == 'customer-import-preview' || (is_numeric($this->get[
 	}
 	if($this->post['database_name']) {
 		$file_location = $this->post['database_name'];
-	} else if($this->post['file_url']) {
-		if(strstr($this->post['file_url'], "../")) {
-			die();
-		}
-		$filename = time();
-		$file_location = $this->DOCUMENT_ROOT . 'uploads/tx_multishop/tmp/' . $filename;
-		$file_content = mslib_fe::file_get_contents($this->post['file_url']);
-		if(!$file_content or !mslib_fe::file_put_contents($file_location, $file_content)) {
+	} elseif ($this->post['file_url']) {
+		if (strstr($this->post['file_url'],"../")) die();	
+		$filename=time();
+		$file_location=$this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/'.$filename;
+		$file_content=mslib_fe::file_get_contents($this->post['file_url']);
+		if (!$file_content or !mslib_fe::file_put_contents($file_location,$file_content)) {
 			die('cannot save the file or the file is empty');
 		}
-	} else if($this->ms['mode'] == 'edit') {
-		$filename = $this->post['filename'];
-		$file_location = $this->DOCUMENT_ROOT . 'uploads/tx_multishop/tmp/' . $filename;
-	} else {
-		$file = $_FILES['file']['tmp_name'];
-		$filename = time();
-		$file_location = $this->DOCUMENT_ROOT . 'uploads/tx_multishop/tmp/' . $filename;
-		move_uploaded_file($file, $file_location);
+	} elseif($this->ms['mode']=='edit') {
+		$filename=$this->post['filename'];
+		$file_location=$this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/'.$filename;
+	} if($_FILES['file']['tmp_name']) {
+		$file=$_FILES['file']['tmp_name'];
+		$filename=time().'.import';
+		$file_location=$this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/'.$filename;
+		$this->post['filename']=$filename;
+  		move_uploaded_file($file,$file_location);
+		if (preg_match("/\.gz$/",$_FILES['file']['name'])) {
+			// lets uncompress realtime
+			$str=mslib_fe::file_get_contents($file_location,1);
+			file_put_contents($file_location,$str);			
+		}
 	}
 	if((file_exists($file_location)or $this->post['database_name'])) {
 		if(!$this->post['database_name']) {
 			$str = mslib_fe::file_get_contents($file_location);
-			if(strstr($this->post['file_url'], 'm4n.nl')) {
-				$this->post['parser_template'] = 'm4n';
-			}
 		}
 		if($this->post['parser_template']) {
 			if(strstr($this->post['parser_template'], "..")) {
@@ -247,6 +268,10 @@ if($this->post['action'] == 'customer-import-preview' || (is_numeric($this->get[
 		<input name="filename" type="hidden" value="' . $filename . '" />
 		<input name="file_url" type="hidden" value="' . $this->post['file_url'] . '" />			
 		';
+		if ($this->ms['mode'] =='edit' or $this->post['preProcExistingTask']) {
+			// if the existing import task is rerunned indicate it so we dont save the task double
+			$tmpcontent.='<input name="preProcExistingTask" type="hidden" value="1" />';
+		}		
 		if(!$rows) {
 			$tmpcontent .= '<h1>No customers available.</h1>';
 		} else {
@@ -340,16 +365,13 @@ if($this->post['action'] == 'customer-import-preview' || (is_numeric($this->get[
 		<script type="text/javascript">
 		jQuery(document).ready(function($) {
 			var add_property_html=\'' . addslashes($importer_add_aux_input). '\';
-			jQuery(".delete_property").live("click", function()
-			{
+			jQuery(".delete_property").live("click", function() {
 				jQuery(this).parent().hide("fast");
 			});	
-			$(".importer_add_property").click(function(event)
-			{
+			$(".importer_add_property").click(function(event) {
 				$(this).prev().append(add_property_html);			
 			});			
-			$(".importer_advanced_settings").click(function(event)
-			{
+			$(".importer_advanced_settings").click(function(event) {
 				$(this).next().toggle();			
 			});
 		});			
@@ -408,48 +430,48 @@ if($this->post['action'] == 'customer-import-preview' || (is_numeric($this->get[
 	// class="fullwidth_div">'.mslib_fe::shadowBox($tmpcontent).'</div>';
 	}
 	// preview eof
-} elseif((is_numeric($this->get['job_id'])and $this->get['action'] == 'run_job') or($this->post['action'] == 'customer-import' and(($this->post['filename'] and file_exists($this->DOCUMENT_ROOT . 'uploads/tx_multishop/tmp/' . $this->post['filename'])) or $this->post['database_name']))) {
-	if(($this->post['cron_name'] and !$this->post['skip_import']) || ($this->post['skip_import'] and $this->post['duplicate'])) {
-		// we have to save the import job
-		$updateArray = array();
-		$updateArray['name'] = $this->post['cron_name'];
-		$updateArray['status'] = 1;
-		$updateArray['last_run'] = time();
-		$updateArray['code'] = md5(uniqid());
-		$updateArray['period'] = $this->post['cron_period'];
-		$updateArray['prefix_source_name'] = $this->post['prefix_source_name'];
+} elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') or ($this->post['action'] == 'customer-import' and (($this->post['filename'] and file_exists($this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/'.$this->post['filename'])) or $this->post['database_name']))) {
+	if ((!$this->post['preProcExistingTask'] and $this->post['cron_name'] and !$this->post['skip_import']) or ($this->post['skip_import'] and $this->post['duplicate'])) {
+	// we have to save the import job 
+		$updateArray=array();
+		$updateArray['name']					=$this->post['cron_name'];
+		$updateArray['status']					=1;
+		$updateArray['last_run']				=time();
+		$updateArray['code']					=md5(uniqid());
+		$updateArray['period']					=$this->post['cron_period'];
+		$updateArray['prefix_source_name']		=$this->post['prefix_source_name'];
 		
-		$cron_data = array();
-		$cron_data[0] = unserialize($this->post['cron_period']);
-		$this->post['cron_period'] = '';
-		$cron_data[1] = $this->post;
-		$updateArray['data'] = serialize($cron_data);
-		$updateArray['page_uid'] = $this->shop_pid;
-		$updateArray['categories_id'] = $this->post['cid'];
-		$updateArray['type'] = 'customers';
+		$cron_data=array();
+		$cron_data[0]							=unserialize($this->post['cron_period']);
+		$this->post['cron_period']='';
+		$cron_data[1]							=$this->post;
+		$updateArray['data']					=serialize($cron_data);
+		$updateArray['page_uid']				=$this->shop_pid;
+		$updateArray['categories_id']			=$this->post['cid'];
+		$updateArray['type']					='customers';
 		$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_import_jobs', $updateArray);
-		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
-		// we have to save the import job eof
-		$this->ms['show_default_form'] = 1;
-	} else if($this->post['skip_import']) {
-		// we have to update the import job
-		$updateArray = array();
-		$updateArray['name'] = $this->post['cron_name'];
-		$updateArray['status'] = 1;
-		$updateArray['last_run'] = time();
-		$updateArray['period'] = $this->post['cron_period'];
-		$updateArray['prefix_source_name'] = $this->post['prefix_source_name'];
-		$cron_data = array();
-		$cron_data[0] = unserialize($this->post['cron_period']);
-		$this->post['cron_period'] = '';
-		$cron_data[1] = $this->post;
-		$updateArray['data'] = serialize($cron_data);
-		$updateArray['page_uid'] = $this->shop_pid;
-		$updateArray['categories_id'] = $this->post['cid'];
-		$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_import_jobs', 'id=' . $this->post['job_id'], $updateArray);
-		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
-		// we have to update the import job eof
-		$this->ms['show_default_form'] = 1;
+		$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
+	// we have to save the import job eof
+		$this->ms['show_default_form']=1;
+	} elseif ($this->post['skip_import']) {
+	// we have to update the import job 
+		$updateArray=array();
+		$updateArray['name']					=$this->post['cron_name'];
+		$updateArray['status']					=1;
+		$updateArray['last_run']				=time();
+		$updateArray['period']					=$this->post['cron_period'];
+		$updateArray['prefix_source_name']		=$this->post['prefix_source_name'];		
+		$cron_data=array();
+		$cron_data[0]							=unserialize($this->post['cron_period']);
+		$this->post['cron_period']='';
+		$cron_data[1]							=$this->post;
+		$updateArray['data']					=serialize($cron_data);
+		$updateArray['page_uid']				=$this->shop_pid;
+		$updateArray['categories_id']			=$this->post['cid'];
+		$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_import_jobs', 'id='.$this->post['job_id'],$updateArray);
+		$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
+	// we have to update the import job eof
+		$this->ms['show_default_form']=1;		
 	}
 	if(!$this->post['skip_import']) {
 		if(is_numeric($this->get['job_id'])) {
@@ -642,13 +664,17 @@ if($this->post['action'] == 'customer-import-preview' || (is_numeric($this->get[
 					if($this->post['database_name']) {
 						$item['table_unique_id'] = $row[0];
 					}
+					// aux
+					$input=array();
 					// name
 					for($i = 0; $i < $cols; $i++) {
 						$tmpitem[$i] = trim($tmpitem[$i]);
 						$char = '';
 						$item[$this->post['select'][$i]] = $tmpitem[$i];
-						if($item[$this->post['select'][$i]] == $char and $char)
+						if($item[$this->post['select'][$i]] == $char and $char) {
 							$item[$this->post['select'][$i]] = '';
+						}
+						$input[$this->post['select'][$i]]=$this->post['input'][$i];
 					}
 					if($item['uid']) {
 						$item['extid'] = md5($this->post['prefix_source_name'] . '_' . $item['uid']);
@@ -673,27 +699,41 @@ if($this->post['action'] == 'customer-import-preview' || (is_numeric($this->get[
 						if(!$item['username']) {
 							$item['username'] = $item['email'];
 						}
-						if(!$item['usergroup']) {
-							$item['usergroup'] = $this->conf['fe_customer_usergroup'];
-						} else {
-							// sometimes excel changs comma to dot
-							if(strstr($item['usergroup'], '.'))
-								$item['usergroup'] = str_replace(".", ",", $item['usergroup']);
-							if(!strstr($item['usergroup'], ",")and !is_numeric($item['usergroup'])) {
-								$str = "SELECT * from fe_groups where pid='" . $this->conf['fe_customer_pid'] . "' and title='" . addslashes($item['usergroup']). "'";
-								$qry = $GLOBALS['TYPO3_DB']->sql_query($str);
-								if($GLOBALS['TYPO3_DB']->sql_num_rows($qry)) {
-									$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
-									$item['usergroup'] = $row['uid'];
+						$usergroups=array();
+						$usergroups[]=$this->conf['fe_customer_usergroup'];					
+						if($item['usergroup']) {
+							// sometimes excel changes comma to dot
+							if ($input['usergroup']) {
+								// use aux
+								$item['usergroup'] = str_replace($input['usergroup'],',',$item['usergroup']);
+							} elseif(strstr($item['usergroup'],'.')) {
+								$item['usergroup'] = str_replace('.',',',$item['usergroup']);
+							}							
+							if(!strstr($item['usergroup'],",") and !is_numeric($item['usergroup'])) {
+								$groups=array();
+								$groups[]=$item['usergroup'];
+							} else {
+								$groups=explode(',',$item['usergroup']);
+							}
+							foreach ($groups as $group) {
+								if (is_numeric($group)) {
+									$usergroups[] = $group;
 								} else {
-									$updateArray = array();
-									$updateArray['pid'] = $this->conf['fe_customer_pid'];
-									$updateArray['title'] = $item['usergroup'];
-									$updateArray['crdate'] = time();
-									$updateArray['tstamp'] = time();
-									$query = $GLOBALS['TYPO3_DB']->INSERTquery('fe_groups', $updateArray);
-									$res = $GLOBALS['TYPO3_DB']->sql_query($query);
-									$item['usergroup'] = $GLOBALS['TYPO3_DB']->sql_insert_id();
+									$str = "SELECT * from fe_groups where pid='" . $this->conf['fe_customer_pid'] . "' and title='" . addslashes($group). "'";
+									$qry = $GLOBALS['TYPO3_DB']->sql_query($str);
+									if($GLOBALS['TYPO3_DB']->sql_num_rows($qry)) {
+										$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
+										$usergroups[] = $row['uid'];
+									} else {
+										$updateArray = array();
+										$updateArray['pid'] = $this->conf['fe_customer_pid'];
+										$updateArray['title'] = $group;
+										$updateArray['crdate'] = time();
+										$updateArray['tstamp'] = time();
+										$query = $GLOBALS['TYPO3_DB']->INSERTquery('fe_groups', $updateArray);
+										$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+										$usergroups[] = $GLOBALS['TYPO3_DB']->sql_insert_id();
+									}									
 								}
 							}
 						}
@@ -702,7 +742,7 @@ if($this->post['action'] == 'customer-import-preview' || (is_numeric($this->get[
 							$user['uid'] = $item['uid'];
 						}
 						$user['username'] = $item['username'];
-						$user['usergroup'] = $item['usergroup'];
+						$user['usergroup'] = implode(",",$usergroups);
 						$user['first_name'] = $item['first_name'];
 						$user['middle_name'] = $item['middle_name'];
 						$user['last_name'] = $item['last_name'];
@@ -781,6 +821,22 @@ if($this->post['action'] == 'customer-import-preview' || (is_numeric($this->get[
 						} else {
 							$update = 1;
 						}
+						// custom hook that can be controlled by third-party
+						// plugin
+						if(is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_customer_import.php']['msCustomerImporterInsertUpdateUserPreHook'])) {
+							$params = array(
+								'user' => &$user,
+								'item' => &$item,
+								'user_check' => &$user_check,
+								'prefix_source_name' => $this->post['prefix_source_name'],
+								'update' => &$update
+							);
+							foreach($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_customer_import.php']['msCustomerImporterInsertUpdateUserPreHook'] as $funcRef){
+								t3lib_div::callUserFunction($funcRef, $params, $this);
+							}
+						}
+						// custom hook that can be controlled by third-party
+						// plugin eof
 						$uid = '';
 						if($update) {
 							if(!$user['country']) {
@@ -834,6 +890,9 @@ if($this->post['action'] == 'customer-import-preview' || (is_numeric($this->get[
 							}
 							// custom hook that can be controlled by third-party
 							// plugin eof
+							if (!$user['gender']) {
+								$user['gender']=0;
+							}
 							$query = $GLOBALS['TYPO3_DB']->INSERTquery('fe_users', $user);
 							$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 							$uid = $GLOBALS['TYPO3_DB']->sql_insert_id();
@@ -954,6 +1013,99 @@ if($this->ms['show_default_form']) {
 	 <form action="' . mslib_fe::typolink(',2003', 'tx_multishop_pi1[page_section]=admin_customer_import'). '" method="post" enctype="multipart/form-data" name="form1" id="form1">
 	 ' . $this->ms['upload_customerfeed_form'] . '		 
 	</form>';
+// load the jobs templates
+	$str="SELECT * from tx_multishop_import_jobs where page_uid='".$this->shop_pid."' and type='customers' order by prefix_source_name asc, id desc";
+	$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+	$jobs=array();	
+	while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {	
+		$jobs[]=$row;
+	}	
+	if (count($jobs) >0) {
+		$schedule_content.='
+		<fieldset id="scheduled_import_jobs_form"><legend>'.$this->pi_getLL('import_tasks').'</legend>
+		<table width="100%" border="0" align="center" class="msZebraTable msadmin_border" id="admin_modules_listing">
+		<th>'.$this->pi_getLL('source_name').'</th>
+		<th>'.$this->pi_getLL('name').'</th>
+		<th>'.$this->pi_getLL('last_run').'</th>
+		<th>'.$this->pi_getLL('action').'</th>
+		<th>'.ucfirst($this->pi_getLL('status')).'</th>
+		<th>'.ucfirst($this->pi_getLL('delete')).'</th>
+		<th>'.$this->pi_getLL('file_exists').'</th>
+		<th>'.$this->pi_getLL('upload_file').'</th>
+		';
+		$switch='';
+		foreach ($jobs as $job) {
+			if ($switch=='odd') $switch='even';
+			else $switch='odd';
+			$schedule_content.='<tr class="'.$switch.'">';
+			$schedule_content.='<td>'.$job['prefix_source_name'].'</td>
+			<td><a href="'.mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_customer_import&job_id='.$job['id']).'&action=edit_job">'.$job['name'].'</a></td>
+			';
+			$schedule_content.='<td nowrap align="right">'.date("Y-m-d",$job['last_run']).'<br />'.date("G:i:s",$job['last_run']).'</td>';
+			if (!$job['period']) 	$schedule_content.='<td>manual<br /><a href="'.mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_customer_import&job_id='.$job['id'].'&action=run_job&limit=99999999').'" class="msadmin_button" onClick="return CONFIRM(\''.addslashes($this->pi_getLL('are_you_sure_you_want_to_run_the_import_job')).': '.htmlspecialchars(addslashes($job['name'])).'?\')"><i>'.$this->pi_getLL('run_now').'</i></a><br /><a href="" class="copy_to_clipboard" rel="'.htmlentities('/usr/bin/wget -O /dev/null --tries=1 --timeout=30 -q "'.$this->FULL_HTTP_URL.mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_customer_import&job_id='.$job['id'].'&code='.$job['code'].'&action=run_job&run_as_cron=1&limit=99999999',1).'" >/dev/null 2>&1').'" ><i>'.$this->pi_getLL('run_by_crontab').'</i></a></td>';
+			else					$schedule_content.='<td>'.date("Y-m-d G:i:s",$job['last_run']+$job['period']).'</td>';
+			$schedule_content.='<td class="status_field" align="center">';
+			if (!$job['status']) {
+				$schedule_content.='<span class="admin_status_red" alt="Disable"></span>';								
+				$schedule_content.='<a href="'.mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_customer_import&job_id='.$job['id'].'&status=1').'"><span class="admin_status_green_disable" alt="Enabled"></span></a>';					
+			} else {
+				$schedule_content.='<a href="'.mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_customer_import&job_id='.$job['id'].'&status=0').'"><span class="admin_status_red_disable" alt="Disabled"></span></a>';								
+				$schedule_content.='<span class="admin_status_green" alt="Enable"></span>';					
+			}		
+			$schedule_content.='</td>
+			<td align="center">
+			<a href="'.mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_customer_import&delete=1&job_id='.$job['id']).'&action=delete_category" onClick="return CONFIRM(\'Are you sure you want to delete the import job: '.htmlspecialchars($job['name']).'?\')" alt="Remove '.htmlspecialchars($job['name']).'" class="admin_menu_remove" title="Remove '.htmlspecialchars($job['name']).'"></a>
+			</td>
+			<td align="center">
+				';
+			$data=unserialize($job['data']);
+			if ($data[1]['filename']) {
+				$file_location=$this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/'.$data[1]['filename'];
+				if (file_exists($file_location)) {
+					$schedule_content.='<span class="admin_status_green" alt="Enable"></span>';
+				} else {
+					$schedule_content.='<span class="admin_status_red" alt="Disable"></span>';		
+				}
+			}
+	$schedule_content.= '
+			</td>
+			<td>
+				 <form action="'.mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_customer_import').'" method="post" enctype="multipart/form-data" name="form1" id="form1">
+					<input type="file" name="file" />		
+					<input type="submit" name="Submit" class="submit msadmin_button" id="cl_submit" value="'.$this->pi_getLL('upload').'" />
+					<input name="skip_import" type="hidden" value="1" />
+					<input name="preProcExistingTask" type="hidden" value="1" />
+					<input name="job_id" type="hidden" value="'.$job['id'].'" />				
+					<input name="action" type="hidden" value="edit_job" />								
+				</form>
+				</td>
+			';
+			$schedule_content.='</tr>';
+		}
+		$schedule_content.='</table>
+		</fieldset>
+		<script type="text/javascript">
+		jQuery(document).ready(function($)
+		{
+			$(".copy_to_clipboard").click(function(event)
+			{				
+				event.preventDefault();
+				var string=$(this).attr("rel");	
+				$.blockUI({ 
+				theme:     true, 
+				title:    \''.addslashes($this->pi_getLL('copy_below_text_and_add_it_to_crontab')).'\', 
+				message:  \'<p>\'+string+\'</p>\', 
+				timeout:   8000 
+				}); 
+			});	
+		});	
+		</script>
+		';
+		$tmptab='';
+		$content.=$schedule_content;
+//		$tabs['tasks']=array($this->pi_getLL('import_tasks'),$schedule_content);
+	}
+	// load the jobs templates eof		
 }
 $content .= '<p class="extra_padding_bottom"><a class="msadmin_button" href="' . mslib_fe::typolink() . '">' . t3lib_div::strtoupper($this->pi_getLL('admin_close_and_go_back_to_catalog')) . '</a></p>';
 $content = '<div class="fullwidth_div">' . mslib_fe::shadowBox($content). '</div>';

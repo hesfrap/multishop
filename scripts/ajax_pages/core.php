@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $this->ms['page']=$this->get['tx_multishop_pi1']['page_section'];		
 switch ($this->ms['page'])
 {
@@ -285,22 +287,14 @@ switch ($this->ms['page'])
 		exit();
 	break;
 	case 'confirm_create_account':
-		if ($this->get['tx_multishop_pi1']['hash'])
-		{
+		if ($this->get['tx_multishop_pi1']['hash']) {
 			// hook
-			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/core.php']['confirm_create_account']))
-			{
-				$params = array (
-					'this' => &$this,
-					'get' => $this->get,
-				); 
-				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/core.php']['confirm_create_account'] as $funcRef)
-				{
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/core.php']['confirm_create_account'])) {
+				$params = array('content'=>&$content); 
+				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/core.php']['confirm_create_account'] as $funcRef) {
 					t3lib_div::callUserFunction($funcRef, $params, $this);
 				}
-			}
-			else
-			{
+			} else {
 				require(t3lib_extMgm::extPath('multishop').'scripts/ajax_pages/confirm_create_account.php');
 			}
 		}
@@ -308,8 +302,9 @@ switch ($this->ms['page'])
 	break;
 	case 'download_invoice':
 		if ($this->get['tx_multishop_pi1']['hash']) {	
-			if (strstr($this->ms['MODULES']['DOWNLOAD_INVOICE_TYPE'],"..")) die('error in DOWNLOAD_INVOICE_TYPE value');
-			else {
+			if (strstr($this->ms['MODULES']['DOWNLOAD_INVOICE_TYPE'],"..")) {
+				die('error in DOWNLOAD_INVOICE_TYPE value');
+			} else {
 				if (strstr($this->ms['MODULES']['DOWNLOAD_INVOICE_TYPE'],"/")) {
 					// relative mode
 					require($this->DOCUMENT_ROOT.$this->ms['MODULES']['DOWNLOAD_INVOICE_TYPE'].'.php');	
@@ -581,6 +576,46 @@ switch ($this->ms['page'])
 		}
 		exit();				
 	break;
+	case 'fetch_attributes':
+		// this is the AJAX server for deleting the product attributes
+		if ($this->ADMIN_USER) {
+			$option_id 		= $this->post['data_id'];
+			$return_data 	= array();
+			
+			$str2="select * from tx_multishop_products_options_values_to_products_options povp, tx_multishop_products_options_values pov where povp.products_options_id='".$option_id."' and povp.products_options_values_id=pov.products_options_values_id and pov.language_id='0' order by povp.sort_order";
+			$qry2 = $GLOBALS['TYPO3_DB']->sql_query($str2);
+			
+			$counter = 0;
+			while (($row2 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry2)) != false) {
+				$value = htmlspecialchars($row2['products_options_values_name']);
+				
+				$return_data['results'][$counter]['values_id'] = $row2['products_options_values_id'];
+				$return_data['results'][$counter]['values_name'] = htmlspecialchars($row2['products_options_values_name']);
+				
+				$lang_counter = 0;
+				foreach ($this->languages as $key => $language) {
+					$str3="select products_options_values_name from tx_multishop_products_options_values pov where pov.products_options_values_id='".$row2['products_options_values_id']."' and pov.language_id='".$key."'";
+					$qry3 = $GLOBALS['TYPO3_DB']->sql_query($str3);
+					while (($row3 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry3)) != false) {
+						if ($row3['products_options_values_name']) {
+							$value=htmlspecialchars($row3['products_options_values_name']);
+						}
+					}
+					
+					$return_data['results'][$counter]['language'][$lang_counter]['lang_title'] = $this->languages[$key]['title'];
+					$return_data['results'][$counter]['language'][$lang_counter]['lang_id'] = $key;
+					$return_data['results'][$counter]['language'][$lang_counter]['lang_values'] = $value;
+					
+					$lang_counter++;
+				}
+				$counter++;
+			}
+			
+			$json_data = mslib_befe::array2json($return_data);
+			echo $json_data;
+		}
+		exit();
+	break;
 	case 'delete_attributes':
 		// this is the AJAX server for deleting the product attributes
 		if ($this->ADMIN_USER) {
@@ -654,7 +689,7 @@ switch ($this->ms['page'])
 			echo $json_data;
 		}
 		exit();
-		break;
+	break;
 	case 'update_customer_order_details':
 		if ($this->ADMIN_USER and is_numeric($this->get['orders_id'])) {
 			$order = mslib_fe::getOrder($this->get['orders_id']);
@@ -816,6 +851,12 @@ switch ($this->ms['page'])
 	break;
 	case "get_discount":
 		require(t3lib_extMgm::extPath('multishop').'scripts/ajax_pages/get_discount.php');
+		exit();		
+	break;
+	case "cronjob":
+		if ($this->get['tx_multishop_pi1']['encryption_key'] and ($this->get['tx_multishop_pi1']['encryption_key']==$this->ms['MODULES']['MULTISHOP_ENCRYPTION_KEY'])) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/ajax_pages/cronjob.php');
+		}
 		exit();		
 	break;
     case "ultrasearch_server":

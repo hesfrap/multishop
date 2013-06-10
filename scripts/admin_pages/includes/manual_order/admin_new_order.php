@@ -1,4 +1,6 @@
 <?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 $cart = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->cart_page_uid);
 $products = $cart['products'];
 if (count($products) < 0)

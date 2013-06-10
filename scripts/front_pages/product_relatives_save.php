@@ -1,4 +1,6 @@
-<?php 
+<?php
+if (!defined('TYPO3_MODE')) die ('Access denied.');
+
 if($_REQUEST['status'] == "del"){
 	$where_relatives = 'products_id = '. $_REQUEST['pid'] .' AND relative_product_id = '. $_REQUEST['product_id'];
 	$query = $GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_products_to_relative_products', $where_relatives);
