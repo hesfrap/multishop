@@ -382,22 +382,21 @@ switch ($_REQUEST['action'])
 		if ($restore_files['data'])
 		{
 			$database=unserialize(mslib_fe::file_get_contents($restore_files['data']));
-			if ($mode=='bvbshop')
-			{
-				if (count($database['customers']))
-				{
+			if ($mode=='bvbshop') {
+				if (is_array($database['orders_status']) and count($database['orders_status'])) {
+					$database['orders_status_description']=$database['orders_status'];
+				}
+				if (is_array($database['customers']) and count($database['customers'])) {
 					$tx_multishop_customer_ids=array();						
 					// lets import the old customers
-					foreach ($database['orders_status_history'] as &$row)
-					{
+					foreach ($database['orders_status_history'] as &$row) {
 						$row['crdate']=strtotime($row['date_added']);
 					}
-					foreach ($database['customers'] as $row)
-					{
+					foreach ($database['customers'] as $row) {
 						$user=mslib_fe::getUser($row['customers_email_address'],'email');
-						if ($user['uid']) $tx_multishop_customer_ids[$row['customers_id']]=$user['uid'];
-						else
-						{
+						if ($user['uid']) {
+							$tx_multishop_customer_ids[$row['customers_id']]=$user['uid'];
+						} else {
 							// add user
 							$insertArray=array();
 							$insertArray['username']				= $row['customers_email_address'];
@@ -475,6 +474,7 @@ switch ($_REQUEST['action'])
 				$db_ms2bvb['orders_products']						='tx_multishop_orders_products';
 				$db_ms2bvb['orders_products_attributes']			='tx_multishop_orders_products_attributes';
 				$db_ms2bvb['orders_status']							='tx_multishop_orders_status';
+				$db_ms2bvb['orders_status_description']				='tx_multishop_orders_status_description';
 				$db_ms2bvb['orders_status_history']					='tx_multishop_orders_status_history';
 				$db_ms2bvb['products']								='tx_multishop_products';
 				$db_ms2bvb['products_description']					='tx_multishop_products_description';
@@ -492,50 +492,57 @@ switch ($_REQUEST['action'])
 				$db_ms2bvb['product_wishlist']						='tx_multishop_product_wishlist';
 				$db_ms2bvb['reviews']								='tx_multishop_reviews';
 				$db_ms2bvb['reviews_description']					='tx_multishop_reviews_description';
+				$db_ms2bvb['specials']								='tx_multishop_specials';
 				// here we will flip the keys with the values so we can easily compare 2 ways
 				$db_bvb2ms=array_flip($db_ms2bvb);
 				// first we load the column names of the multishop tables so we can pre-setuo every new record with those columns
 				$final_db=array();
-				foreach ($db_ms2bvb as $bvb_table => $multishop_table)
-				{
+				foreach ($db_ms2bvb as $bvb_table => $multishop_table) {
 					$sql = "describe ".$multishop_table;
 					$qry = $GLOBALS['TYPO3_DB']->sql_query($sql);
-					while (($rs = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false)
-					{
+					while (($rs = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
 						if ($rs['Field']) $final_db[$multishop_table][$rs['Field']]='';
 					}					
-				}				
+				}						
 				// now that we know the needed columns we can try to map them automatically
 				$final_database=array();
 				
-				if (count($database['orders']))
-				{
-					if (count($database['orders_status']))
-					{
-						foreach ($database['orders_status'] as $key => $record)
-						{
-							if (!$language_key and $database['orders_status'][$key]['language_id'] == 6) $language_key=6;
-							if (!$language_key and $database['orders_status'][$key]['language_id'] == 8) $language_key=8;
-							if ($database['orders_status'][$key]['language_id']  == $language_key)
-							{
-								if ($database['orders_status'][$key]['orders_status_name'])
-								{
-									if (!mb_detect_encoding($database['orders_status'][$key]['orders_status_name'], 'UTF-8', true))
-									{
-										$database['orders_status'][$key]['orders_status_name']=mslib_befe::convToUtf8($database['orders_status'][$key]['orders_status_name']);
-									}									
+				if (is_array($database['orders']) and count($database['orders'])) {
+					if (is_array($database['orders_status']) and count($database['orders_status'])) {
+						$tables=array();
+						$tables[]='orders_status';
+						$tables[]='orders_status_description';
+						foreach ($tables as $table) {
+							foreach ($database[$table] as $key => $record) {
+								if (!$language_key and $database[$table][$key]['language_id'] == 6) 	$language_key=6;
+								elseif (!$language_key and $database[$table][$key]['language_id'] == 6) $language_key=6;
+								if ($database[$table][$key]['language_id']  == $language_key) {
+									if ($database[$table][$key]['orders_status_name']) {
+										if (!mb_detect_encoding($database[$table][$key]['orders_status_name'], 'UTF-8', true)) {
+											$database[$table][$key]['orders_status_name']=mslib_befe::convToUtf8($database[$table][$key]['orders_status_name']);
+										}										
+									}
+									$database[$table][$key]['name']=$database[$table][$key]['orders_status_name'];
+									switch($table) {
+										case 'orders_status':
+											$database[$table][$key]['crdate']=0;
+											$database[$table][$key]['id']=$database[$table][$key]['orders_status_id'];
+											$database[$table][$key]['page_uid']=$this->post['page_uid'];
+										break;
+										case 'orders_status_description':
+											$database[$table][$key]['orders_status_id']=$database[$table][$key]['orders_status_id'];
+											$database[$table][$key]['language_id']=0;
+										break;
+									}
+//									unset($database[$table][$key]['orders_status_name']);
+//									unset($database[$table][$key]['language_id']);
 								}
-								$database['orders_status'][$key]['name']=$database['orders_status'][$key]['orders_status_name'];
-								unset($database['orders_status'][$key]['orders_status_name']);
-								unset($database['orders_status'][$key]['language_id']);
+								else unset($database[$table][$key]);
 							}
-							else unset($database['orders_status'][$key]);
 						}
 					}
-					if (count($database['orders_products']))
-					{
-						foreach ($database['orders_products'] as $key => $record)
-						{
+					if (count($database['orders_products'])) {
+						foreach ($database['orders_products'] as $key => $record) {
 							$database['orders_products'][$key]['qty']=$database['orders_products'][$key]['products_quantity'];						
 							// calculate price excluding vat
 	$database['orders_products'][$key]['products_price']=($database['orders_products'][$key]['products_price']/(100+$database['orders_products'][$key]['products_tax'])*100);
@@ -543,29 +550,22 @@ switch ($_REQUEST['action'])
 							unset($database['orders_products'][$key]['products_quantity']);
 						}
 					}
-					if (count($database['orders_products_attributes']))
-					{
-						foreach ($database['orders_products_attributes'] as $key => $record)
-						{
+					if (count($database['orders_products_attributes'])) {
+						foreach ($database['orders_products_attributes'] as $key => $record) {
 							// calculate price excluding vat
 							$database['orders_products_attributes'][$key]['options_values_price']=($database['orders_products_attributes'][$key]['options_values_price']/(100+19)*100);
 						}
 					}
-					foreach ($database['orders'] as $key => $record)
-					{
+					foreach ($database['orders'] as $key => $record) {
 						$user=array();
 						$customer_id='';
-						if (count($tx_multishop_customer_ids))
-						{
+						if (count($tx_multishop_customer_ids)) {
 							$customer_id=$tx_multishop_customer_ids[$record['customers_id']];
 							$user=mslib_fe::getUser($customer_id,'uid');
-						}
-						else
-						{
+						} else {
 							$user=mslib_fe::getUser($record['customers_email_address'],'email');
 						}
-						if ($user['uid'])
-						{
+						if ($user['uid']) {
 							$row=array();
 							$row['page_uid']					= $this->post['page_uid'];
 							$row['customer_id']					= $user['uid'];
@@ -727,20 +727,15 @@ switch ($_REQUEST['action'])
 						}
 					}
 				}
-				foreach ($database as $table => $records)
-				{
-					if (in_array($table,$db_bvb2ms))
-					{
+				foreach ($database as $table => $records) {
+					if (in_array($table,$db_bvb2ms)) {
 						$record_count=0;
-						foreach ($records as $record)
-						{
+						foreach ($records as $record) {
 							$final_database[$db_ms2bvb[$table]][$record_count]=$final_db[$db_ms2bvb[$table]];
 							$colcount=0;
-							foreach ($record as $col_key => $col_value)
-							{		
+							foreach ($record as $col_key => $col_value) {		
 								if ($col_key=='language_id') $col_value=0;
-								if (isset($final_database[$db_ms2bvb[$table]][$record_count][$col_key]))
-								{
+								if (isset($final_database[$db_ms2bvb[$table]][$record_count][$col_key])) {
 									// we already mapped the same col name so lets add the value to it
 									$final_database[$db_ms2bvb[$table]][$record_count][$col_key]=$col_value;										
 								}
@@ -753,6 +748,8 @@ switch ($_REQUEST['action'])
 				unset($database);
 				$database=$final_database;
 			}
+//			print_r($database['tx_multishop_orders_status_description']);
+//			die();
 			foreach ($database as $key => $records)
 			{
 				$insert_records=0;
@@ -799,7 +796,7 @@ switch ($_REQUEST['action'])
 						// older multishop versions has sometimes columnes that are not existing in the newer version. lets filter them out EOF
 						$res = $GLOBALS['TYPO3_DB']->exec_INSERTquery($key,$record);
 						if ($GLOBALS['TYPO3_DB']->sql_insert_id() or $GLOBALS['TYPO3_DB']->sql_affected_rows())	$insert_records++;
-						error_log($GLOBALS['TYPO3_DB']->sql_insert_id().' inserted by Multishop mod1');				
+						//error_log($GLOBALS['TYPO3_DB']->sql_insert_id().' inserted by Multishop mod1');				
 					}
 				}
 				// FULL IMPORT EOF
@@ -1059,13 +1056,29 @@ $record['products_status']=1;
 						// skip at this moment
 						break;
 						case 'tx_multishop_specials':
-						foreach ($records as $record)
-						{
-							$record['specials_id']='';
-							$record['products_id']			=$tx_multishop_products_ids[$record['products_id']];
-							$record['categories_id']		=$tx_multishop_categories_ids[$record['categories_id']];
-							$record['page_uid']=$this->post['page_uid'];				
+						foreach ($records as $record) {
+							$record['specials_id'] 		= '';
+							$record['products_id']		= $tx_multishop_products_ids[$record['products_id']];
+							$record['page_uid'] 		= $this->post['page_uid'];
+
+							if ($record['specials_date_added']>0) {
+								$record['specials_date_added'] = strtotime($record['specials_date_added']);
+							}
+							if ($record['specials_last_modified']>0) {
+								$record['specials_last_modified'] = strtotime($record['specials_last_modified']);
+							}
+							if ($record['start_date']>0) {
+								$record['start_date'] = strtotime($record['start_date']);
+							}
+							if ($record['expires_date']>0) {
+								$record['expires_date'] = strtotime($record['expires_date']);
+							}
+							if ($record['date_status_change']>0) {
+								$record['date_status_change'] = strtotime($record['date_status_change']);
+							}
+							
 							$res = $GLOBALS['TYPO3_DB']->exec_INSERTquery($key,$record);
+							
 							$insert_records++;
 						}				
 						break;

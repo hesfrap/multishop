@@ -18,7 +18,7 @@ if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
     	$this->ms['title']=$row['name'];
     }
 	if(!$this->conf['disableMetatags']) {		
-	    $output_array['meta']['title'] ='<title>'.htmlspecialchars($this->ms['title']).' :: '.$this->ms['MODULES']['STORE_NAME'].'</title>';
+	    $output_array['meta']['title'] ='<title>'.htmlspecialchars($this->ms['title']).$this->ms['MODULES']['PAGE_TITLE_DELIMETER'].$this->ms['MODULES']['STORE_NAME'].'</title>';
     	if (is_array($output_array['meta']) and count($output_array['meta'])) {
     		$GLOBALS['TSFE']->additionalHeaderData=array_merge($GLOBALS['TSFE']->additionalHeaderData,$output_array['meta']);				
     	}

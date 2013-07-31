@@ -10,8 +10,10 @@ if ($this->conf['admin_cms_tmpl_path']) {
 
 // Extract the subparts from the template
 $subparts=array();
-$subparts['template'] 	= $this->cObj->getSubpart($template, '###TEMPLATE###');
-$subparts['cms_list'] 		= $this->cObj->getSubpart($subparts['template'], '###CMS_LIST###');
+$subparts['template'] 		= $this->cObj->getSubpart($template, '###TEMPLATE###');
+$subparts['results'] 		= $this->cObj->getSubpart($subparts['template'], '###RESULTS###');
+$subparts['cms_list'] 		= $this->cObj->getSubpart($subparts['results'], '###CMS_LIST###');
+$subparts['noresults'] 	= $this->cObj->getSubpart($subparts['template'], '###NORESULTS###');
 
 //$tmpcontent.='<div class="main-heading"><h2>'.htmlspecialchars(ucfirst(t3lib_div::strtolower($this->pi_getLL('admin_cms')))).'</h2></div>';
 if (is_numeric($this->get['status']) and is_numeric($this->get['cms_id'])) {
@@ -138,7 +140,10 @@ if ($p >0)  {
 }
 $pageset=mslib_fe::getRecordsPageSet($queryData);
 if (!count($pageset['dataset'])) {
-	$content.=$this->pi_getLL('no_records_found','No records found.').'.<br />';
+	$subpartArray = array();
+	$subpartArray['###LABEL_NO_RESULTS###'] = $this->pi_getLL('no_records_found','No records found.');
+	$no_results = $this->cObj->substituteMarkerArrayCached($subparts['noresults'], array(), $subpartArray);
+	
 } else {
 	$tr_type='even';
 	$contentItem = '';
@@ -169,8 +174,70 @@ if (!count($pageset['dataset'])) {
 		$markerArray['CMS_STATUS'] 			= $status_html;
 		$markerArray['CMS_REMOVE_BUTTON'] 	= '<a href="'.mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]='.$this->ms['page'].'&cms_id='.$row['id'].'&delete=1').'" onclick="return confirm(\''.htmlspecialchars($this->pi_getLL('are_you_sure')).'?\')" class="admin_menu_remove" alt="Remove"></a>';
 		$contentItem .= $this->cObj->substituteMarkerArray($subparts['cms_list'], $markerArray,'###|###');
-	}	
+	}
+
+	$subpartArray = array();
+	$query_string=mslib_fe::tep_get_all_get_params(array('tx_multishop_pi1[action]','tx_multishop_pi1[order_by]','tx_multishop_pi1[order]','p','Submit','weergave','clearcache'));
+	$key='id';
+	if ($this->get['tx_multishop_pi1']['order_by']==$key) {
+		$final_order_link=$order_link;
+	} else {
+		$final_order_link='a';
+	}
+	$subpartArray['###HEADER_SORTBY_LINK_ID###'] 			= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
+	$subpartArray['###LABEL_HEADER_CMS_ID###'] 				= htmlspecialchars($this->pi_getLL('id'));
+	$subpartArray['###FOOTER_SORTBY_LINK_ID###'] 			= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
+	$subpartArray['###LABEL_FOOTER_CMS_ID###'] 				= htmlspecialchars($this->pi_getLL('id'));
+	
+	$key='name';
+	if ($this->get['tx_multishop_pi1']['order_by']==$key) {
+		$final_order_link=$order_link;
+	} else {
+		$final_order_link='a';
+	}
+	$subpartArray['###HEADER_SORTBY_LINK_TITLE###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
+	$subpartArray['###LABEL_HEADER_CMS_TITLE###'] 			= htmlspecialchars($this->pi_getLL('name'));
+	$subpartArray['###FOOTER_SORTBY_LINK_TITLE###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
+	$subpartArray['###LABEL_FOOTER_CMS_TITLE###'] 			= htmlspecialchars($this->pi_getLL('name'));
+	
+	$key='type';
+	if ($this->get['tx_multishop_pi1']['order_by']==$key) {
+		$final_order_link=$order_link;
+	} else {
+		$final_order_link='a';
+	}
+	$subpartArray['###HEADER_SORTBY_LINK_TYPE###'] 			= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
+	$subpartArray['###FOOTER_SORTBY_LINK_TYPE###'] 			= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
+	
+	$key='crdate';
+	if ($this->get['tx_multishop_pi1']['order_by']==$key) {
+		$final_order_link=$order_link;
+	} else {
+		$final_order_link='a';
+	}
+	$subpartArray['###HEADER_SORTBY_LINK_DATE_ADDED###'] 	= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
+	$subpartArray['###LABEL_HEADER_CMS_DATE_ADDED###'] 		= htmlspecialchars($this->pi_getLL('date_added'));
+	$subpartArray['###FOOTER_SORTBY_LINK_DATE_ADDED###'] 	= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
+	$subpartArray['###LABEL_FOOTER_CMS_DATE_ADDED###'] 		= htmlspecialchars($this->pi_getLL('date_added'));
+	
+	
+	$subpartArray['###LABEL_HEADER_STATUS###'] 				= $this->pi_getLL('status');
+	$subpartArray['###LABEL_HEADER_CMS_ACTION###'] 			= $this->pi_getLL('action');
+	$subpartArray['###LABEL_FOOTER_STATUS###'] 				= $this->pi_getLL('status');
+	$subpartArray['###LABEL_FOOTER_CMS_ACTION###'] 			= $this->pi_getLL('action');
+	$subpartArray['###CMS_LIST###'] 						= $contentItem;
+	$results = $this->cObj->substituteMarkerArrayCached($subparts['results'], array(), $subpartArray);
+	
+	// pagination
+	if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['PAGESET_LIMIT']) {
+		$content = '';
+		require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_pagination.php');
+		$results .= $content;
+		$content = '';
+	}
+	// pagination eof
 }
+
 
 $subpartArray = array();
 $subpartArray['###CMS_GROUP_ID###'] 				= htmlspecialchars($group);
@@ -179,65 +246,12 @@ $subpartArray['###LABEL_KEYWORD###'] 				= ucfirst($this->pi_getLL('keyword'));
 $subpartArray['###VALUE_KEYWORD###'] 				= htmlspecialchars($this->get['tx_multishop_pi1']['keyword']);
 $subpartArray['###LABEL_SEARCH###'] 				= $this->pi_getLL('search');
 $subpartArray['###INPUT_LIMIT_RESULT_SELECTBOX###'] = $limit_search_result_selectbox;
+$subpartArray['###RESULTS###'] 						= $results;
+$subpartArray['###NORESULTS###'] 					= $no_results;
 
-$query_string=mslib_fe::tep_get_all_get_params(array('tx_multishop_pi1[action]','tx_multishop_pi1[order_by]','tx_multishop_pi1[order]','p','Submit','weergave','clearcache'));
-$key='id';
-if ($this->get['tx_multishop_pi1']['order_by']==$key) {
-	$final_order_link=$order_link;
-} else {
-	$final_order_link='a';
-}
-$subpartArray['###HEADER_SORTBY_LINK_ID###'] 			= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-$subpartArray['###LABEL_HEADER_CMS_ID###'] 				= htmlspecialchars($this->pi_getLL('id'));
-$subpartArray['###FOOTER_SORTBY_LINK_ID###'] 			= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-$subpartArray['###LABEL_FOOTER_CMS_ID###'] 				= htmlspecialchars($this->pi_getLL('id'));
+$content = $this->cObj->substituteMarkerArrayCached($subparts['template'], array(), $subpartArray);
 
-$key='name';
-if ($this->get['tx_multishop_pi1']['order_by']==$key) {
-	$final_order_link=$order_link;
-} else {
-	$final_order_link='a';
-}
-$subpartArray['###HEADER_SORTBY_LINK_TITLE###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-$subpartArray['###LABEL_HEADER_CMS_TITLE###'] 			= htmlspecialchars($this->pi_getLL('name'));
-$subpartArray['###FOOTER_SORTBY_LINK_TITLE###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-$subpartArray['###LABEL_FOOTER_CMS_TITLE###'] 			= htmlspecialchars($this->pi_getLL('name'));
-
-$key='type';
-if ($this->get['tx_multishop_pi1']['order_by']==$key) {
-	$final_order_link=$order_link;
-} else {
-	$final_order_link='a';
-}
-$subpartArray['###HEADER_SORTBY_LINK_TYPE###'] 			= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-$subpartArray['###FOOTER_SORTBY_LINK_TYPE###'] 			= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-
-$key='crdate';
-if ($this->get['tx_multishop_pi1']['order_by']==$key) {
-	$final_order_link=$order_link;
-} else {
-	$final_order_link='a';
-}
-$subpartArray['###HEADER_SORTBY_LINK_DATE_ADDED###'] 	= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-$subpartArray['###LABEL_HEADER_CMS_DATE_ADDED###'] 		= htmlspecialchars($this->pi_getLL('date_added'));
-$subpartArray['###FOOTER_SORTBY_LINK_DATE_ADDED###'] 	= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_cms&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-$subpartArray['###LABEL_FOOTER_CMS_DATE_ADDED###'] 		= htmlspecialchars($this->pi_getLL('date_added'));
-
-
-$subpartArray['###LABEL_HEADER_STATUS###'] 				= $this->pi_getLL('status');
-$subpartArray['###LABEL_HEADER_CMS_ACTION###'] 			= $this->pi_getLL('action');
-$subpartArray['###LABEL_FOOTER_STATUS###'] 				= $this->pi_getLL('status');
-$subpartArray['###LABEL_FOOTER_CMS_ACTION###'] 			= $this->pi_getLL('action');
-$subpartArray['###CMS_LIST###'] 						= $contentItem;
-$content .= $this->cObj->substituteMarkerArrayCached($subparts['template'], array(), $subpartArray);
-
-// pagination
-if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['PAGESET_LIMIT']) {
-	require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_pagination.php');	
-}
-// pagination eof
-
-$content='<div class="fullwidth_div">'.mslib_fe::shadowBox($content).'</div>';
+$content ='<div class="fullwidth_div">'.mslib_fe::shadowBox($content).'</div>';
 $content.='<div class="float_right"><a href="'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&action=edit_cms').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 500} )" class="admin_menu_add label">'.htmlspecialchars($this->pi_getLL('add_new_page')).'</a></div>';
 $content.='<p class="extra_padding_bottom"><a class="msadmin_button" href="'.mslib_fe::typolink().'">'.t3lib_div::strtoupper($this->pi_getLL('admin_close_and_go_back_to_catalog')).'</a></p>';
 

@@ -496,9 +496,11 @@ $("#multishop_update_button").live("click", function(e) {
 				}
 				this.fixed = on; // flag for use on dragging
 				},
+/*
 				onAfterExpand: function() {
 				this.fix(true); // fix the popup to viewport coordinates
 				},
+*/				
 				onBeforeClose: function() {
 				this.fix(false); // unfix to get the animation right
 				},

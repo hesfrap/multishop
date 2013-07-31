@@ -103,14 +103,10 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 					}
 					$actifsub=0;
 					$act=0;
-					if ($user_crumbar[$nested_level]['id'] == $cat['categories_id'])
-					{
-						if ($user_crumbar[($nested_level+1)])
-						{
+					if ($user_crumbar[$nested_level]['id'] == $cat['categories_id']) {
+						if ($user_crumbar[($nested_level+1)]) {
 							$actifsub=1;
-						}
-						else
-						{
+						} else {
 							$act=1;
 						}
 					}
@@ -119,20 +115,22 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 					$content.='<li ';
 					
 					if ($this->ADMIN_USER) $content.='id="sortable_maincat_'.$cat['categories_id'].'" ';
-					$content.=(($actifsub or $act)?'class="active"':'').'><a href="'.$link.'" class="ajax_link" title="'.htmlspecialchars($meta_description).'" '.$target.'><span>'.$categories_name.'</span></a>';
+					$this->class='';
+					if ($actifsub) {
+						$this->class='activeHasSubs';
+					} elseif ($act) {
+						$this->class='active';
+					}
+					$content.='class="'.$this->class.'"><a href="'.$link.'" class="ajax_link" title="'.htmlspecialchars($meta_description).'" '.$target.'><span>'.$categories_name.'</span></a>';
 					// level 0 eof
-					if ($this->maxDEPTH > $nested_level or ($actifsub or $act))
-					{							
+					if ($this->maxDEPTH > $nested_level or ($actifsub or $act)) {							
 						$catlist2=mslib_fe::getSubcatsOnly($cat['categories_id']);
-						if (count($catlist2) > 0)
-						{
+						if (count($catlist2) > 0) {
 							// level 1
 							$content.='<ul>';
-							foreach ($catlist2 as $cat)
-							{					
+							foreach ($catlist2 as $cat) {					
 								$nested_level=2;
-								if ($cat['categories_url'])
-								{
+								if ($cat['categories_url']) {
 									$parsed_url = @parse_url($cat['categories_url']);
 									if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
 										$target="target=\"_blank\"";	
@@ -140,19 +138,15 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 										$target='';
 									}
 									$link=$cat['categories_url'];
-								}
-								else
-								{
+								} else {
 									$target="";								
 									// get all cats to generate multilevel fake url
 									$level=0;
 									$cats=mslib_fe::Crumbar($cat['categories_id']);				
 									$cats=array_reverse($cats);
 									$where='';
-									if (count($cats) > 0)
-									{
-										foreach ($cats as $item)
-										{
+									if (count($cats) > 0) {
+										foreach ($cats as $item) {
 											$where.="categories_id[".$level."]=".$item['id']."&";
 											$level++;
 										}
@@ -187,7 +181,13 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 								if ($this->get['categories_id'] == $cat['categories_id']){
 									
 								}
-								$content.='<li '.(($actifsub or $act)?'class="subactive"':'').'><a href="'.$link.'" class="ajax_link" title="'.htmlspecialchars($meta_description).'" '.$target.'><span>'.$categories_name.'</span></a>';
+								$this->class='';
+								if ($actifsub) {
+									$this->class='activeHasSubs';
+								} elseif ($act) {
+									$this->class='active';
+								}								
+								$content.='<li class="'.$this->class.'"><a href="'.$link.'" class="ajax_link" title="'.htmlspecialchars($meta_description).'" '.$target.'><span>'.$categories_name.'</span></a>';
 								$content.='</li>';
 							}
 							$content.='</ul>';		
@@ -589,7 +589,13 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 									$content .= $cat_level_3 .'</ul>';
 									
 								} else {
-									$content.='<li '.(($actifsub or $act)?'class="subactive"':'').'><a href="'.$link.'" title="'.htmlspecialchars($meta_description).'" '.$target.'><span>'.$categories_name.'</span></a>';
+									$this->class='';
+									if ($actifsub) {
+										$this->class='activeHasSubs';
+									} elseif ($act) {
+										$this->class='active';
+									}									
+									$content.='<li class="'.$this->class.'"><a href="'.$link.'" title="'.htmlspecialchars($meta_description).'" '.$target.'><span>'.$categories_name.'</span></a>';
 								}
 								//level submenu 2 eof
 								$content.='</li>';

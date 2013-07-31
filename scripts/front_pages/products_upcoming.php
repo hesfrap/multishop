@@ -25,7 +25,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 	else			$extrameta='';
 	if(!$this->conf['disableMetatags'])
 	{		
-		$GLOBALS['TSFE']->additionalHeaderData['title'] 		= '<title>'.ucfirst($this->pi_getLL('search_for')).' '.htmlspecialchars($this->get['skeyword']).' :: '.$this->ms['MODULES']['STORE_NAME'].'</title>';	
+		$GLOBALS['TSFE']->additionalHeaderData['title'] 		= '<title>'.ucfirst($this->pi_getLL('search_for')).' '.htmlspecialchars($this->get['skeyword']).$this->ms['MODULES']['PAGE_TITLE_DELIMETER'].$this->ms['MODULES']['STORE_NAME'].'</title>';	
 //		$GLOBALS['TSFE']->additionalHeaderData['description'] 	= '<meta name="description" content="Bekijk hier ons nieuwste aanbod met gadgets en andere razend populaire producten." />';
 	}
 	if ($p >0) $offset=(((($p)*$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'])));

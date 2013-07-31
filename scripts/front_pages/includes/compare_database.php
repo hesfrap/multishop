@@ -82,6 +82,22 @@ if (!$skipMultishopUpdates) {
 			}	
 		}
 		
+		$str="select tx_multishop_vat_id from fe_users limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `fe_users` ADD `tx_multishop_vat_id` varchar(127) default '', ADD KEY `vat_id` (tx_multishop_vat_id)";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}
+		
+		$str="select tx_multishop_coc_id from fe_users limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `fe_users` ADD `tx_multishop_coc_id` varchar(127) default '', ADD KEY `coc_id` (tx_multishop_coc_id)";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}
+		
 		$str="select type from tx_multishop_import_jobs limit 1";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		if (!$qry) {
@@ -778,21 +794,35 @@ if (!$skipMultishopUpdates) {
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);		
 		}
 		
-		
-		
+		$tables=array();
+		$tables[]='tx_multishop_categories_description';
+		$tables[]='tx_multishop_products_description';
+		$tables[]='tx_multishop_products_options';
+		$tables[]='tx_multishop_products_options_values';
+		$tables[]='tx_multishop_products_options_values_extra';
+		foreach ($tables as $table) {
+			$str="describe ".$table;
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
+				if ($row['Field']=='language_id') {
+					if ($row['Default']=='1') {
+						$str2="ALTER TABLE  `".$table."` CHANGE  `language_id`  `language_id` INT( 5 ) NOT NULL DEFAULT  '0'";
+						$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
+						$messages[]=$str2;						
+					}
+				}
+			}			
+		}
 		$str="describe `tx_multishop_products_description`";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-		while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false)
-		{
-			if ($row['Field']=='products_shortdescription')
-			{
-				if ($row['Type']=='varchar(500)' or $row['Type']=='varchar(255)')
-				{
-					$str="ALTER TABLE  `tx_multishop_products_description` CHANGE  `products_shortdescription`  `products_shortdescription` text default ''";
-					$qry=$GLOBALS['TYPO3_DB']->sql_query($str);		
+		while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
+			if ($row['Field']=='products_shortdescription') {
+				if ($row['Type']=='varchar(500)' or $row['Type']=='varchar(255)') {
+					$str2="ALTER TABLE  `tx_multishop_products_description` CHANGE  `products_shortdescription`  `products_shortdescription` text default ''";
+					$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);		
 					$messages[]=$str;							
-					$str="ALTER TABLE  `tx_multishop_products_description_flat` CHANGE  `products_shortdescription`  `products_shortdescription` text default ''";
-					$qry=$GLOBALS['TYPO3_DB']->sql_query($str);		
+					$str2="ALTER TABLE  `tx_multishop_products_description_flat` CHANGE  `products_shortdescription`  `products_shortdescription` text default ''";
+					$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
 					$messages[]=$str;							
 				}
 			}

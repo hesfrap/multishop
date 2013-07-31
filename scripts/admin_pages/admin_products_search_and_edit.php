@@ -1,6 +1,8 @@
 <?php
 if (!defined('TYPO3_MODE')) die ('Access denied.');
-
+if (!is_numeric($this->get['cid'])) {
+	$this->get['cid']=$this->categoriesStartingPoint;
+}
 // now parse all the objects in the tmpl file
 if ($this->conf['admin_products_search_and_edit_tmpl_path']) {
 	$template = $this->cObj->fileResource($this->conf['admin_products_search_and_edit_tmpl_path']);
@@ -51,8 +53,16 @@ if ($this->post['submit']) {
 			$price = str_replace(",",".",$price);
 		}
 		$data_update[$pid]['price'] = $price;
-		$sql_upd = "update tx_multishop_products set products_price = '".$price."' where products_id = ".$pid;
-		$GLOBALS['TYPO3_DB']->sql_query($sql_upd);
+		$updateArray=array();
+		$updateArray['products_price']=$price;
+		// if product is originally coming from products importer we have to define that the merchant changed it
+		$str="select products_id from tx_multishop_products where imported_product=1 and lock_imported_product=0 and products_id='".$pid."'";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);			
+		if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0) {
+			$updateArray['lock_imported_product']=1;
+		}
+		$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products', 'products_id=\''.$pid.'\'',$updateArray);			
+		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 		if ($this->ms['MODULES']['FLAT_DATABASE']) {
 			$updateFlatProductIds[]=$pid;
 		}
@@ -407,6 +417,17 @@ if ($pageset['total_rows'] > 0) {
 	$subpartArray['###LABEL_FOOTER_STOCK###'] 				= t3lib_div::strtoupper($this->pi_getLL('admin_stock'));
 	$subpartArray['###LABEL_FOOTER_WEIGHT###'] 				= t3lib_div::strtoupper($this->pi_getLL('admin_weight'));
 	$subpartArray['###LABEL_FOOTER_ACTION###'] 				= t3lib_div::strtoupper($this->pi_getLL('admin_action'));
+
+	// custom page hook that can be controlled by third-party plugin
+	if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_products_search_and_edit.php']['adminProductsSearchAndEditTmplPreProc'])) {
+		$params = array (
+			'subpartArray' => &$subpartArray
+		);
+		foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_products_search_and_edit.php']['adminProductsSearchAndEditTmplPreProc'] as $funcRef) {
+			t3lib_div::callUserFunction($funcRef, $params, $this);
+		}
+	}
+	// custom page hook that can be controlled by third-party plugin eof
 	
 	$s=0;
 	$productsItem = '';
@@ -459,6 +480,18 @@ if ($pageset['total_rows'] > 0) {
 			$cat_crumbar .= '<li class="'.$class.'"><a href="'.mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=admin_ajax&cid='.$cats[$i]['id'].'&action=edit_category').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 500} )">'.$cats[$i]['name'].'</a></li>';
 		}
 		$cat_crumbar .= '</ul>';
+		
+		$status = '';
+		if (!$rs['products_status'])
+		{
+			$status.='<span class="admin_status_red" alt="Disable"></span>';
+			$status.='<a href="#" class="update_product_status" rel="'.$rs['products_id'].'"><span class="admin_status_green_disable" alt="Enabled"></span></a>';
+		}
+		else
+		{
+			$status.='<a href="#" class="update_product_status" rel="'.$rs['products_id'].'"><span class="admin_status_red_disable" alt="Disabled"></span></a>';
+			$status.='<span class="admin_status_green" alt="Enable"></span>';
+		}
 			
 		$product_tax_rate 	= 0;
 		$data 				= mslib_fe::getTaxRuleSet($rs['tax_id'], 0);
@@ -510,6 +543,17 @@ if ($pageset['total_rows'] > 0) {
 		$markerArray['EDIT_PRODUCT_LINK1'] 				= $link_edit_prod;
 		$markerArray['PRODUCT_DETAIL_LINK'] 			= $product_detail_link;
 		$markerArray['DELETE_PRODUCT_LINK'] 			= $link_delete_prod;
+		// custom page hook that can be controlled by third-party plugin
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_products_search_and_edit.php']['adminProductsSearchAndEditTmplIteratorPreProc'])) {
+			$params = array (
+				'markerArray' => &$markerArray,
+				'rs' => &$rs
+			);
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_products_search_and_edit.php']['adminProductsSearchAndEditTmplIteratorPreProc'] as $funcRef) {
+				t3lib_div::callUserFunction($funcRef, $params, $this);
+			}
+		}
+		// custom page hook that can be controlled by third-party plugin eof		
 		$productsItem .= $this->cObj->substituteMarkerArray($subparts['products_item'], $markerArray,'###|###');
 		
 		$s++;
@@ -559,7 +603,8 @@ if ($pageset['total_rows'] > 0) {
 	$subpartArray['###LABEL_ADMIN_YES###'] 					= $this->pi_getLL('admin_yes');
 	$subpartArray['###LABEL_ADMIN_NO###'] 					= $this->pi_getLL('admin_no');
 	$subpartArray['###AJAX_UPDATE_PRODUCT_STATUS_URL###'] 	= mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=update_products_status');
-	$subpartArray['###AJAX_GET_TAX_RULESET_URL###'] 		= mslib_fe::typolink($this->shop_pid . ',2002','&tx_multishop_pi1[page_section]=get_tax_ruleset');
+	$subpartArray['###AJAX_GET_TAX_RULESET_URL0###'] 		= mslib_fe::typolink($this->shop_pid . ',2002','&tx_multishop_pi1[page_section]=get_tax_ruleset');
+	$subpartArray['###AJAX_GET_TAX_RULESET_URL1###'] 		= mslib_fe::typolink($this->shop_pid . ',2002','&tx_multishop_pi1[page_section]=get_tax_ruleset');
 	
 	$subpartArray['###PRODUCTS_ITEM###'] 					= $productsItem;
 	$tmp_content_results = $this->cObj->substituteMarkerArrayCached($subparts['results'], array(), $subpartArray);

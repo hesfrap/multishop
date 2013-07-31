@@ -2074,6 +2074,11 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 											$str2="INSERT into tx_multishop_products_options_values_to_products_options  (products_options_id,products_options_values_id,sort_order) VALUES ('".$products_options_id."','".$option_value_id."',".time().")";
 											$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);										
 										}
+										// added 2013-07-31 due to double records when re-importing the same partial feed
+										if ($this->post['incremental_update'] and $products_id) {									
+											$query	= $GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_products_attributes', 'products_id='.$products_id.' and options_id=\''.$products_options_id.'\' and options_values_id=\''.$option_value_id.'\'');
+											$res 	= $GLOBALS['TYPO3_DB']->sql_query($query);																			
+										}										
 										$str2="INSERT into tx_multishop_products_attributes   (products_id,options_id,options_values_id,options_values_price,price_prefix) VALUES ('".$products_id."','".$products_options_id."','".$option_value_id."','".$option_price."','+')";
 										$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
 

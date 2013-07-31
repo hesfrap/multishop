@@ -80,6 +80,8 @@ CREATE TABLE `fe_users` (
   `street_name` varchar(75) NOT NULL DEFAULT '',
   `http_referer` text NOT NULL,
   `ip_address` text NOT NULL,
+  `tx_multishop_vat_id` varchar(127) DEFAULT '',
+  `tx_multishop_coc_id` varchar(127) DEFAULT '',
   PRIMARY KEY (`uid`),
   KEY `username` (`username`),
   KEY `is_online` (`is_online`),
@@ -104,7 +106,9 @@ CREATE TABLE `fe_users` (
   KEY `mobile` (`mobile`),
   KEY `first_name` (`first_name`),
   KEY `middle_name` (`middle_name`),
-  KEY `last_name` (`last_name`)
+  KEY `last_name` (`last_name`),
+  KEY `vat_id` (`tx_multishop_vat_id`),
+  KEY `coc_id` (`tx_multishop_coc_id`)
 ) ENGINE=InnoDB ;
 
 CREATE TABLE `tx_multishop_cart_contents` (

@@ -13,7 +13,7 @@ $subparts=array();
 $subparts['template'] 	= $this->cObj->getSubpart($template, '###TEMPLATE###');
 $subparts['item']		= $this->cObj->getSubpart($subparts['template'], '###ITEM###');
 
-$str="SELECT m.manufacturers_id, m.manufacturers_name from tx_multishop_manufacturers m, tx_multishop_manufacturers_info mi where m.status=1 and mi.language_id='".$this->sys_language_uid."' and m.manufacturers_id=mi.manufacturers_id order by m.sort_order";
+$str="SELECT m.manufacturers_id, m.manufacturers_name, m.manufacturers_image from tx_multishop_manufacturers m, tx_multishop_manufacturers_info mi where m.status=1 and mi.language_id='".$this->sys_language_uid."' and m.manufacturers_id=mi.manufacturers_id order by m.sort_order";
 $qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 $manufacturers=array();	
 while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
@@ -39,6 +39,11 @@ if (count($manufacturers) > 0) {
 		$markerArray['MANUFACTURERS_LINK'] 					= $output['manufacturers_link'];
 		$markerArray['MANUFACTURERS_NAME'] 					= $output['manufacturers_name'];
 		
+		if ($row['manufacturers_image']) {
+			$markerArray['MANUFACTURERS_IMAGE_NORMAL'] = '<img src="'.mslib_befe::getImagePath($row['manufacturers_image'],'manufacturers','normal').'">';	
+		} else {
+			$markerArray['MANUFACTURERS_IMAGE_NORMAL'] ='';	
+		}
 		$contentItem .= $this->cObj->substituteMarkerArray($subparts['item'], $markerArray,'###|###');
 	}
 	

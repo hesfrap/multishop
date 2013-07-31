@@ -15,7 +15,8 @@ if ($this->post['products_id'])
 		$data['added_product']['products_model']=$product['products_model'];
 	}
 }
-$cart = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->cart_page_uid);
+//$cart = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->cart_page_uid);
+$cart = $mslib_cart->getCart();
 $totalitems=0;
 if (count($cart['products']) >0)
 {

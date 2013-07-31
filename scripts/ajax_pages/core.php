@@ -370,10 +370,15 @@ switch ($this->ms['page'])
 									}
 									if (copy($temp_file,$target)) {
 										$filename=mslib_befe::resizeCategoryImage($target,$filename,$this->DOCUMENT_ROOT.t3lib_extMgm::siteRelPath($this->extKey),1);
+//												error_log('bass'.print_r($this->ds,1));
+										$fileLocation=$this->FULL_HTTP_URL.mslib_befe::getImagePath($filename,'profile_images','100');
+//										error_log($fileLocation);
 										$result=array();
 										$result['success']=true;
 										$result['error']=false;
 										$result['filename']=$filename;
+										$result['fileLocation']=$fileLocation;
+										
 										echo htmlspecialchars(json_encode($result), ENT_NOQUOTES);
 										exit();										
 									}
@@ -833,6 +838,10 @@ switch ($this->ms['page'])
 	break;	
 	case "products_to_basket":
 		require(t3lib_extMgm::extPath('multishop').'scripts/ajax_pages/products_to_basket.php');
+		exit();		
+	break;
+	case "remove_from_basket":
+		require(t3lib_extMgm::extPath('multishop').'scripts/ajax_pages/remove_from_basket.php');
 		exit();		
 	break;
 	case "get_staffel_price":

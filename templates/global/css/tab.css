@@ -402,12 +402,15 @@ ul#ui-menu-manual-option li.ui-menu-item span#more-results:hover { background:#0
 .qq-upload-failed-text {display:none;}
 .qq-upload-fail .qq-upload-failed-text {display:inline;}
 
-#tx_multishop_pi1_core #tab-container .tab_container #cms_details.tab_content .account-field div { float:left; }
-#tx_multishop_pi1_core #tab-container .tab_container #cms_details.tab_content .account-field div ul { margin:0; padding:0; list-style:none; }
-#tx_multishop_pi1_core #tab-container .tab_container #cms_details.tab_content .account-field div ul li { background:url(../images/bullet_black.gif) left 8px no-repeat; margin:0; padding:0 0 0 10px; line-height:20px; }
-#tx_multishop_pi1_core #tab-container .tab_container #cms_details.tab_content .account-field div ul li span { display:inline-block; }
-#tx_multishop_pi1_core #tab-container .tab_container #cms_details.tab_content .account-field div ul li span.marker_description { padding:0 7px 0 0; }
-#tx_multishop_pi1_core #tab-container .tab_container #cms_details.tab_content .account-field div ul li span.marker_key { font-weight:bold; }
+#tx_multishop_pi1_core #tab-container .tab_container #cms_details.tab_content .account-field div.valueField { float:left; }
+#tx_multishop_pi1_core #tab-container .tab_container #cms_details.tab_content .account-field div.valueField ul { margin:0; padding:0; list-style:none; }
+#tx_multishop_pi1_core #tab-container .tab_container #cms_details.tab_content .account-field div.valueField ul li { background:url(../images/bullet_black.gif) left 8px no-repeat; margin:0; padding:0 0 0 10px; line-height:20px; }
+#tx_multishop_pi1_core #tab-container .tab_container #cms_details.tab_content .account-field div.valueField ul li span { display:inline-block; }
+#tx_multishop_pi1_core #tab-container .tab_container #cms_details.tab_content .account-field div.valueField ul li span.marker_description { padding:0 7px 0 0; }
+#tx_multishop_pi1_core #tab-container .tab_container #cms_details.tab_content .account-field div.valueField ul li span.marker_key { font-weight:bold; }
+
+.account-field .mce-tinymce.mce-container.mce-panel,
+.form-fieldset .mce-tinymce.mce-container.mce-panel { float:left; }
 
 .highslide-header ul li.highslide-move { background:url(../images/admin_move.png) 10px top no-repeat; }
 .highslide-header ul li.highslide-close { background:url(../images/admin_close.png) 10px top no-repeat; }

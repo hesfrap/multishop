@@ -95,24 +95,34 @@ if ($this->post) {
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['updateCustomerUserPreProc'])) {
 				$params = array (
 					'uid' => $this->post['tx_multishop_pi1']['cid'],									
-					'updateArray' => &$updateArray
+					'updateArray' => &$updateArray,
+					'user' => $user,
+					'erno' => $erno
 				);
 				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['updateCustomerUserPreProc'] as $funcRef) {
 					t3lib_div::callUserFunction($funcRef, $params, $this);
 				}
 			}	
-			// custom hook that can be controlled by third-party plugin eof				
-			$query = $GLOBALS['TYPO3_DB']->UPDATEquery('fe_users', 'uid='.$this->post['tx_multishop_pi1']['cid'],$updateArray);
-			$res = $GLOBALS['TYPO3_DB']->sql_query($query);		
-			// custom hook that can be controlled by third-party plugin
-			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['updateCustomerUserPostProc'])) {
-				$params = array (
-					'uid' => $this->post['tx_multishop_pi1']['cid']
-				);
-				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['updateCustomerUserPostProc'] as $funcRef) {
-					t3lib_div::callUserFunction($funcRef, $params, $this);
-				}
-			}	
+			if (count($erno)) {
+				$this->get['tx_multishop_pi1']['cid']=$this->post['tx_multishop_pi1']['cid'];
+				$continue=0;
+			} else {
+				$continue=1;
+			}
+			if ($continue) {
+				// custom hook that can be controlled by third-party plugin eof				
+				$query = $GLOBALS['TYPO3_DB']->UPDATEquery('fe_users', 'uid='.$this->post['tx_multishop_pi1']['cid'],$updateArray);
+				$res = $GLOBALS['TYPO3_DB']->sql_query($query);		
+				// custom hook that can be controlled by third-party plugin
+				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['updateCustomerUserPostProc'])) {
+					$params = array (
+						'uid' => $this->post['tx_multishop_pi1']['cid']
+					);
+					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['updateCustomerUserPostProc'] as $funcRef) {
+						t3lib_div::callUserFunction($funcRef, $params, $this);
+					}
+				}	
+			}
 			// custom hook that can be controlled by third-party plugin eof				
 		} else {
 			// insert mode

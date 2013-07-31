@@ -24,7 +24,7 @@ $current_year 	= date("Y");
 
 $content.='<div class="order_stats_mode_wrapper" style="width:250px">';
 $content.='<span class="float_right">[<span><strong>'.htmlspecialchars($this->pi_getLL('stats_turnover_per_year', 'Turnover per year')).'</strong></span>]</span>';
-$content.='<span>[<a href="'.mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_orders_stats&tx_multishop_pi1[stats_section]=turnoverPerMonth').'">'.htmlspecialchars($this->pi_getLL('stats_turnover_per_month', 'Turnover per month')).'</a>]</span>';
+$content.='<span>[<a href="'.mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_stats_orders&tx_multishop_pi1[stats_section]=turnoverPerMonth').'">'.htmlspecialchars($this->pi_getLL('stats_turnover_per_month', 'Turnover per month')).'</a>]</span>';
 $content.='</div>';
 
 $content.='

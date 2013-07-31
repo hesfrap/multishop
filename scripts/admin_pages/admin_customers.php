@@ -6,7 +6,7 @@ if ($GLOBALS['TSFE']->fe_user->user['uid'] and $this->get['login_as_customer'] &
 {
 	$user=mslib_fe::getUser($this->get['customer_id']);
 	if ($user['uid']) {
-		mslib_befe::loginAsUser($user['uid']);
+		mslib_befe::loginAsUser($user['uid'],'admin_customers');
 	}	
 }
 $GLOBALS['TSFE']->additionalHeaderData[] = '
@@ -235,6 +235,9 @@ switch ($this->get['tx_multishop_pi1']['order_by']) {
 	case 'grand_total_this_year':
 		$order_by='grand_total_this_year';
 		break;
+	case 'disable':
+		$order_by='f.disable';
+		break;
 	case 'uid':
 	default:
 		$order_by='f.uid';
@@ -269,8 +272,9 @@ $startTime=strtotime(date("Y-01-01 00:00:00"));
 $endTime=strtotime(date("Y-12-31 23:59:59"));
 $select[]='(select sum(grand_total) from tx_multishop_orders where customer_id=f.uid and crdate BETWEEN '.$startTime.' and '.$endTime.') as grand_total_this_year';
 $pageset=mslib_fe::getCustomersPageSet($filter,$offset,$this->ms['MODULES']['PAGESET_LIMIT'],$orderby,$having,$select,$where);
-$customers=$pageset['customers'];		
-if ($pageset['total_rows'] > 0) {
+
+$customers=$pageset['customers'];
+if ($pageset['total_rows'] > 0 && isset($pageset['customers'])) {
 	require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_customers_listing.php');	
 	// pagination
 	if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['PAGESET_LIMIT']) {

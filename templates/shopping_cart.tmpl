@@ -68,7 +68,24 @@ jQuery(document).ready(function($){
 		{
 			$("#shopping_cart_form").submit();
 		}
-	})
+	});
+	
+	$(".qty_minus").click(function() {
+		var qty_id = "#" + $(this).attr("rel");
+		var qty = parseInt($(qty_id).val());
+		
+		if (qty > 1) {
+			var new_val = parseInt(qty - 1);
+			$(qty_id).val(new_val);
+		}		
+	});
+	
+	$(".qty_plus").click(function() {
+		var qty_id = "#" + $(this).attr("rel");
+		var qty = parseInt($(qty_id).val());
+		var new_val = parseInt(qty + 1);
+		$(qty_id).val(new_val);		
+	});
 });	
 </script>
 <!-- ###TEMPLATE### end -->

@@ -174,7 +174,7 @@ if ($cms['id'] or $_REQUEST['action']=='edit_cms')
 		</script>		
 		<div class="account-field">
 			<label>Dynamic markers</label>
-			<div>
+			<div class="valueField">
 				<ul>
 ';
 $markers=array();

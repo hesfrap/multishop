@@ -144,21 +144,38 @@ while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
 	$zones[]=$row;
 }	
 $shipping_methods=mslib_fe::loadShippingMethods();
+
+$shipping_cost_types = array();
+$shipping_cost_types[] = array('value' => 'flat', 'title' => $this->pi_getLL('flat_based'));
+$shipping_cost_types[] = array('value' => 'weight', 'title' => $this->pi_getLL('weight_based'));
+// hook to add shipping cost type
+if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_shipping_cost.php']['addShippingCostType'])) {
+	$params = array (
+			'shipping_cost_types' => &$shipping_cost_types,
+	);
+	foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_shipping_cost.php']['addShippingCostType'] as $funcRef) {
+		t3lib_div::callUserFunction($funcRef, $params, $this);
+	}
+}
+// hook to add shipping cost type eof
+
 $tr_type='even';
 if (count($shipping_methods) > 0) {
-	$content.='<form class="edit_form" action="'.mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]='.$this->ms['page']).'" method="post">';
+	$content.='<form class="edit_form" action="'.mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]='.$this->ms['page']).'" method="post" enctype="multipart/form-data">';
 	$jumShippingMethod = array();
 	foreach ($shipping_methods as $row) {
 
 		$content.='<fieldset class="multishop_fieldset">';
 		$content.='<legend>'.$this->pi_getLL('shipping_method').': '.$row['name'].'</legend>';
 		$content.='<select name="costs['.$row['id'].']" id="flat_weight'.$row['id'].'">
-		<option value="">'.$this->pi_getLL('no_shipping_costs').'</option>
-		<option value="flat" '.(($row['shipping_costs_type']=='flat')?'selected':'').'>'.$this->pi_getLL('flat_based').'</option>
-		<option value="weight" '.(($row['shipping_costs_type']=='weight')?'selected':'').'>'.$this->pi_getLL('weight_based').'</option>
-		</select>
-		<input type="hidden" id="based_old'.$row['id'].'" value="'. $row['shipping_costs_type'] .'" />
-		';
+		<option value="">'.$this->pi_getLL('no_shipping_costs').'</option>';
+		
+		foreach ($shipping_cost_types as $shipping_cost_type) {
+			$content.='<option value="'.$shipping_cost_type['value'].'" '.(($row['shipping_costs_type']==$shipping_cost_type['value'])?'selected':'').'>'.$shipping_cost_type['title'].'</option>';
+		}
+		
+		$content.='</select>
+		<input type="hidden" id="based_old'.$row['id'].'" value="'. $row['shipping_costs_type'] .'" />';
 		
 		$content .='<div id="has'.$row['id'].'">';
 		//if empty
@@ -233,11 +250,11 @@ if (count($shipping_methods) > 0) {
 				$content.='</fieldset>';
 			}
 		
-		} else {
+		} else if ($row['shipping_costs_type']=='weight') {
 			// start for weight based
 			foreach ($zones as $zone) {
 				$content.='<fieldset>';
-				$content.='<legend>1Zone: '.$zone['name'];
+				$content.='<legend>Zone: '.$zone['name'];
 				$str2="SELECT * from static_countries c, tx_multishop_countries_to_zones c2z where c2z.zone_id='".$zone['id']."' and c2z.cn_iso_nr=c.cn_iso_nr order by c.cn_short_en";
 				$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
 				$content.=' (';
@@ -322,7 +339,7 @@ if (count($shipping_methods) > 0) {
 					for ($i= count($shipping_cost) ; $i<=10; $i++) {
 						$nextVal = $i + 1;
 						$content .= '
-							<tr>
+							<tr id="row_22631_'.$zone_pid .'_NivLevel'.$i.'">
 							<td><div id="22631_'.$zone_pid .'_NivLevel'.$i.'" style="display:none;"><b> Level '.$i.':</b></div></td>
 							<td width="70" align="right"><div style="display:none;" id="22631_'.$zone_pid .'_BeginWeightLevel'.$i.'" >0 '.$this->pi_getLL('admin_shipping_kg').'</div></td>
 							<td width="70" align="center"><div style="display:none;" id="22631_'. $zone_pid .'_TotLevel'.$i.'" > to </div></td>
@@ -357,6 +374,20 @@ if (count($shipping_methods) > 0) {
 				$content.='</fieldset>';
 				//break;
 			} //end for weight based
+			
+		} else {
+			// hook to process custom visual shipping cost type
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_shipping_cost.php']['processZoneShippingCostType'])) {
+				$params = array (
+					'row' => &$row,
+					'zones' => &$zones,
+					'content' => &$content
+				);
+				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_shipping_cost.php']['processZoneShippingCostType'] as $funcRef) {
+					t3lib_div::callUserFunction($funcRef, $params, $this);
+				}
+			}
+			// hook to process custom visual shipping cost type eof
 		}
 		$content.='</div></fieldset>';
 		$jumShippingMethod[] = $row['id'];
@@ -370,7 +401,7 @@ if (count($shipping_methods) > 0) {
 	</form>';
 	
 	if (isset($this->ms['MODULES']['SHIPPING_COST_WEIGHT_JS_AJAX']) && !empty($this->ms['MODULES']['SHIPPING_COST_WEIGHT_JS_AJAX'])) {
-		$url_relative = $this->ms['MODULES']['SHIPPING_COST_WEIGHT_JS_AJAX'];	
+		$url_relative = $this->ms['MODULES']['SHIPPING_COST_WEIGHT_JS_AJAX'];
 	} else {
 		$url_relative = '&tx_multishop_pi1[page_section]=admin_shipping_costs_ajax';
 	}

@@ -30,7 +30,7 @@ foreach ($tmporders as $order) {
 	} else {
 		$tr_type='even';			
 	}
-	if ($this->masterShop) {				
+	if ($this->masterShop) {
 		$master_shop_col ='<td align="left" nowrap>'.mslib_fe::getShopNameByPageUid($order['page_uid']).'</td>';
 	}
 	if ($order['billing_company']) {

@@ -109,7 +109,7 @@ class tx_mslib_cart extends tslib_pibase {
 						$discount_percentage=mslib_fe::getUserGroupDiscount($user_check['uid']);				
 						if ($discount_percentage) {
 							$this->cart['coupon_code']	='';
-							$this->cart['discount']		=$discount_percentage;
+							$this->cart['discount']		= $discount_percentage;
 							$this->cart['discount_type']	='percentage';			
 						}
 					}
@@ -134,7 +134,20 @@ class tx_mslib_cart extends tslib_pibase {
 							$this->cart['discount_percentage']=$discount_percentage;
 						break;
 					}				
-				}							
+				}
+				
+				// custom hook that can be controlled by third-party plugin
+				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_cart.php']['getCartPostCalc'])) {
+					$params = array (
+							'cart' => &$this->cart,
+					);
+				
+					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_cart.php']['getCartPostCalc'] as $funcRef) {
+						t3lib_div::callUserFunction($funcRef, $params, $this);
+					}
+				}
+				// custom hook that can be controlled by third-party plugin eofq
+				
 				// calculate totals
 				$this->cart['summarize']['grand_total_excluding_vat']=($this->cart['summarize']['sub_total']+$this->cart['user']['shipping_method_costs']+$this->cart['user']['payment_method_costs']-$this->cart['discount_amount']);
 				$this->cart['summarize']['grand_total']=($this->cart['summarize']['sub_total_including_vat']+$this->cart['user']['shipping_method_costs_including_vat']+$this->cart['user']['payment_method_costs_including_vat']-$this->cart['discount_amount']);
@@ -147,13 +160,57 @@ class tx_mslib_cart extends tslib_pibase {
 				//$this->cart['summarize']['grand_total']=round($this->cart['summarize']['grand_total_excluding_vat'],2) + round($this->cart['summarize']['grand_total_vat'],2);
 			}
 		}
+		
+		// custom hook that can be controlled by third-party plugin
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_cart.php']['getCartPreSave'])) {
+			$params = array (
+				'cart' => &$this->cart,
+			);
+		
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_cart.php']['getCartPreSave'] as $funcRef) {
+				t3lib_div::callUserFunction($funcRef, $params, $this);
+			}
+		}
+		// custom hook that can be controlled by third-party plugin eofq
+		
 		$GLOBALS['TSFE']->fe_user->setKey('ses',$this->cart_page_uid, $this->cart);
 		$GLOBALS['TSFE']->fe_user->storeSessionData();		
 		return $this->cart;
 	}	
 	function updateCart() {
-//		error_log("bastest");
-		//hook
+		if (!$this->ms['MODULES']['ALLOW_ORDER_OUT_OF_STOCK_PRODUCT']) {
+			$product_id = $this->post['products_id'];
+			
+			if (is_numeric($this->get['products_id']) and $this->get['tx_multishop_pi1']['action']=='add_to_cart') {
+				$product_id = $this->get['products_id'];
+			}
+			
+			if (is_numeric($product_id)) {
+				$product=mslib_fe::getProduct($product_id);
+				if ($product['products_quantity'] < 1) {
+					if ($product['categories_id']) {
+						// get all cats to generate multilevel fake url
+						$level=0;
+						$cats=mslib_fe::Crumbar($product['categories_id']);
+						$cats=array_reverse($cats);
+						$where='';
+						if (count($cats) > 0) {
+							foreach ($cats as $cat) {
+								$where .= "categories_id[".$level."]=".$cat['id']."&";
+								$level++;
+							}
+							$where=substr($where,0,(strlen($where)-1));
+						}
+					}
+					$link=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$product_id.'&tx_multishop_pi1[page_section]=products_detail');										
+					header("Location: ".$this->FULL_HTTP_URL.$link);
+					exit;
+				}
+			}
+		}
+		
+		// error_log("bastest");
+		// hook
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['updateCart'])) {
 			$params = array (); 
 			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['updateCart'] as $funcRef) {
@@ -252,7 +309,17 @@ class tx_mslib_cart extends tslib_pibase {
 						
 						$product['final_price'] = (mslib_fe::calculateStaffelPrice($product['staffel_price'],$quantity)/$quantity);
 					}
-					
+					// custom hook that can be controlled by third-party plugin
+					if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['updateCartProductPricePostHook'])) {
+						$params = array (
+							'shopping_cart_item'			=> $shopping_cart_item,
+							'product' 						=> &$product
+						);
+						foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['updateCartProductPricePostHook'] as $funcRef) {
+							t3lib_div::callUserFunction($funcRef, $params, $this);
+						}
+					}	
+					// custom hook that can be controlled by third-party plugin eof						
 					// add product to the cart (through form on products_detail page)
 					$product['description'] 				= '';
 					
@@ -1855,6 +1922,12 @@ class tx_mslib_cart extends tslib_pibase {
 			foreach ($keys as $key) {
 				$markerArray[$key] = $item[$key];
 			}
+			foreach ($item as $key => $val) {
+				// hooked plugins wants to add more types. lets find them and add them
+				if (!in_array($key,$keys)) {
+					$markerArray[$key] = $item[$key];
+				}
+			}			
 			$contentItem .= $this->cObj->substituteMarkerArray($subparts['ITEMS_WRAPPER'], $markerArray,'###|###');
 		}
 		$subpartArray['###ITEMS_WRAPPER###'] = $contentItem;
@@ -2085,6 +2158,11 @@ class tx_mslib_cart extends tslib_pibase {
 */		
 		return $orderDetails;
 	}	
+	function removeFromCart($itemKey) {
+		unset($this->cart['products'][$itemKey]);
+		$GLOBALS['TSFE']->fe_user->setKey('ses',$this->cart_page_uid, $this->cart);
+		$GLOBALS['TSFE']->fe_user->storeSessionData();			
+	}
 	function emptyCart() {
 		unset($this->cart['products']);
 		$GLOBALS['TSFE']->fe_user->setKey('ses',$this->cart_page_uid, $this->cart);

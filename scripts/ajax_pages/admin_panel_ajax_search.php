@@ -163,6 +163,7 @@ if ($this->ADMIN_USER) {
 				$items[] ="cd.name LIKE '%".addslashes($this->get['q'])."%'";				
 				//$items[] ="cd.content LIKE '%".addslashes($this->get['q'])."%'";				
 				$filter[]='('.implode(" or ",$items).')';
+				$filter[]='c.status = 1';
 			}	
 			//if (!$this->masterShop) $filter[]='page_uid='.$this->shop_pid;
 			$select[]='cd.id, cd.name';
@@ -234,6 +235,7 @@ if ($this->ADMIN_USER) {
 				$items=array();
 				$items[] ="cd.categories_name LIKE '%".addslashes($this->get['q'])."%'";				
 				$filter[]='('.implode(" or ",$items).')';
+				$filter[]='c.status = 1';
 				//$filter[]='(f.disable=0 and f.deleted=0)';
 			}	
 			if (!$this->masterShop) {
@@ -270,7 +272,7 @@ if ($this->ADMIN_USER) {
 				$items[] ="orders_id='".addslashes($this->get['q'])."'";
 				$items[] ="customer_id LIKE '%".addslashes($this->get['q'])."%'";				
 				$filter[]='('.implode(" or ",$items).')';
-				//$filter[]='(f.disable=0 and f.deleted=0)';
+				$filter[]='(o.deleted=0)';
 			}	
 			if (!$this->masterShop) {
 				$filter[]='o.page_uid='.$this->showCatalogFromPage;
@@ -416,28 +418,33 @@ if ($this->ADMIN_USER) {
 				} else {
 					$tbl='pd.';
 				}
-				$filter[]=$tbl.'products_id like "'.addslashes($this->get['q']).'%"';
+				$items[]=$tbl.'products_id like "'.addslashes($this->get['q']).'%"';
 				if ($this->ms['MODULES']['REGULAR_SEARCH_MODE'] == '%keyword') {
 					// do normal indexed search
-					$filter[]="(".$tbl."products_name like '%".addslashes($this->get['q'])."')";				
+					$items[]="(".$tbl."products_name like '%".addslashes($this->get['q'])."')";				
 				} else if ($this->ms['MODULES']['REGULAR_SEARCH_MODE'] == 'keyword%') {
 					// do normal indexed search
-					$filter[]="(".$tbl."products_name like '".addslashes($this->get['q'])."%')";
+					$items[]="(".$tbl."products_name like '".addslashes($this->get['q'])."%')";
 				
 				} else {
 					// do normal indexed search
-					$filter[]="(".$tbl."products_name like '%".addslashes($this->get['q'])."%')";
+					$items[]="(".$tbl."products_name like '%".addslashes($this->get['q'])."%')";
 				}					
 				if ($this->ms['MODULES']['FLAT_DATABASE']) {
 					$tbl='pf.';
 				} else {
 					$tbl='p.';
 				}
-				$filter[]="(".$tbl."products_model like '%".addslashes($this->get['q'])."%')";
-				$filter[]="(".$tbl."sku_code like '%".addslashes($this->get['q'])."%')";
-				$filter[]="(".$tbl."ean_code like '%".addslashes($this->get['q'])."%')";
-				$filter[]="(".$tbl."vendor_code like '%".addslashes($this->get['q'])."%')";
-				$filter='('.implode(" OR ",$filter).')';
+				$items[]="(".$tbl."products_model like '%".addslashes($this->get['q'])."%')";
+				$items[]="(".$tbl."sku_code like '%".addslashes($this->get['q'])."%')";
+				$items[]="(".$tbl."ean_code like '%".addslashes($this->get['q'])."%')";
+				$items[]="(".$tbl."vendor_code like '%".addslashes($this->get['q'])."%')";
+				$filter[]='('.implode(" OR ",$items).')';
+				if ($this->ms['MODULES']['FLAT_DATABASE']) {
+					$filter[]="pf.sstatus=1";
+				} else {
+					$filter[]="p.products_status=1";
+				}
 			}	
 			if (is_numeric($parent_id) and $parent_id > 0) {
 				if ($this->ms['MODULES']['FLAT_DATABASE']) {

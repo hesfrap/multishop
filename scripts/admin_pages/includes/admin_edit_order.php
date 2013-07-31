@@ -1941,15 +1941,17 @@ $tmpcontent.='
 	$tmpcontent='';
 	$tmpcontent.='
 	<div class="account-field">
-		<label for="order_memo">'.$this->pi_getLL('order_status').'</label>
+		<label for="order_status">'.$this->pi_getLL('order_status').'</label>
 		';
 	$all_orders_status=mslib_fe::getAllOrderStatus();
-	if (is_array($all_orders_status) and count($all_orders_status))
-	{
+	if (is_array($all_orders_status) and count($all_orders_status)) {
 		$tmpcontent.='<select name="order_status">';
-		foreach ($all_orders_status as $row)
-		{
-			$tmpcontent.='<option value="'.$row['id'].'" '.(($orders['status']==$row['id'])?'selected':'').'>'.$row['name'].'</option>'."\n";
+		foreach ($all_orders_status as $row) {
+			if ($this->get['tx_multishop_pi1']['is_manual'] == '1' && $this->get['action'] == 'edit_order' && $orders['orders_status_id'] == 0) {
+				$tmpcontent.='<option value="'.$row['id'].'" '.(($row['default_status'] > 0)?'selected':'').'>'.$row['name'].'</option>'."\n";
+			} else {
+				$tmpcontent.='<option value="'.$row['id'].'" '.(($orders['orders_status_id']==$row['id'])?'selected':'').'>'.$row['name'].'</option>'."\n";
+			}
 		}
 		$tmpcontent.='</select>
 		';

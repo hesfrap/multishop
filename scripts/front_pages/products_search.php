@@ -28,7 +28,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 	else			$extrameta='';
 	if(!$this->conf['disableMetatags'])
 	{		
-		$GLOBALS['TSFE']->additionalHeaderData['title'] 		= '<title>'.ucfirst($this->pi_getLL('search_for')).' '.htmlspecialchars($this->get['skeyword']).' :: '.$this->ms['MODULES']['STORE_NAME'].'</title>';	
+		$GLOBALS['TSFE']->additionalHeaderData['title'] 		= '<title>'.ucfirst($this->pi_getLL('search_for')).' '.htmlspecialchars($this->get['skeyword']).$this->ms['MODULES']['PAGE_TITLE_DELIMETER'].$this->ms['MODULES']['STORE_NAME'].'</title>';	
 		$GLOBALS['TSFE']->additionalHeaderData['description'] 	= '<meta name="description" content="'.ucfirst($this->pi_getLL('search_for')).' '.htmlspecialchars($this->get['skeyword']).'." />';
 	}
 	if ($p >0) $offset=(((($p)*$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'])));

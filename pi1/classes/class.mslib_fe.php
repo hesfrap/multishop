@@ -57,6 +57,7 @@ class mslib_fe
 		$this->LLkey=&$ref->LLkey;
 		$this->LOCAL_LANG=&$ref->LOCAL_LANG;
 		$this->excluded_userGroups=&$ref->excluded_userGroups;
+		$this->categoriesStartingPoint=&$ref->categoriesStartingPoint;
 		$this->REMOTE_ADDR=&$ref->REMOTE_ADDR;
 		$this->cookie=&$ref->cookie;
 		$this->initLanguage($ref->LOCAL_LANG);
@@ -1128,11 +1129,19 @@ class mslib_fe
 			return 0;
 		}
 	}
+	function getUsersByGroup($group_id) {
+		if (is_numeric($group_id)) {
+			$additional_where=array();
+			$additional_where[]='FIND_IN_SET(\''.$group_id.'\',usergroup) > 0';
+			$users=mslib_befe::getRecords(0, 'fe_users', 'disable', $additional_where);
+			return $users;
+		}
+	}	
 	function mailFeGroup($group_id, $subject, $body, $from_address='noreply@mysite.com',$from_name='TYPO3 Multishop') {
 		if (!is_numeric($group_id)) {
 			return false;
 		}
-		$users=mslib_fe::getUsersByGroup($group_id);
+		$users=mslib_befe::getUsersByGroup($group_id);
 		if (is_array($users) and count($users)) {
 			foreach ($users as $user) {
 				mslib_fe::mailUser($user, $subject, $body,$from_address,$from_name);	
@@ -1222,14 +1231,6 @@ class mslib_fe
 		  intval($tm_mday),
 		  intval($tm_year)+1900
 		));
-	}
-	function mailbas($input, $subject='') {
-		global $SCRIPT_NAME;
-		if ($subject) {
-			mail('bas@bvbmedia.com',$subject,$SCRIPT_NAME.': '."\n".$input);
-		} else {
-			mail('bas@bvbmedia.com',$SCRIPT_NAME,$input);
-		}
 	}
 	function ifMobile ($USER_AGENT) {
 		$types=array();
@@ -1726,6 +1727,7 @@ class mslib_fe
 			(is_array($query_elements['order_by'])?implode(",",$query_elements['order_by']):''),    // ORDER BY...
 			(is_array($query_elements['limit'])?implode(",",$query_elements['limit']):'')            // LIMIT ...
 		);
+//		error_log($str);
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		$product=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
 		if (!$this->ms['MODULES']['SHOW_PRICES_INCLUDING_VAT']) {
@@ -3048,7 +3050,7 @@ class mslib_fe
 		if (!is_numeric($shipping_method_id)) {
 			return false;
 		}
-		$str3="SELECT sm.shipping_costs_type, c.price from tx_multishop_shipping_methods sm, tx_multishop_shipping_methods_costs c, tx_multishop_countries_to_zones c2z where c.shipping_method_id='".$shipping_method_id."' and sm.id=c.shipping_method_id and c.zone_id=c2z.zone_id and c2z.cn_iso_nr=".$countries_id;		
+		$str3="SELECT sm.shipping_costs_type, c.price, c.zone_id from tx_multishop_shipping_methods sm, tx_multishop_shipping_methods_costs c, tx_multishop_countries_to_zones c2z where c.shipping_method_id='".$shipping_method_id."' and sm.id=c.shipping_method_id and c.zone_id=c2z.zone_id and c2z.cn_iso_nr=".$countries_id;		
 		$qry3=$GLOBALS['TYPO3_DB']->sql_query($str3);
 		if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry3)) {
 			$row3=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry3);
@@ -3088,7 +3090,17 @@ class mslib_fe
 				}
 				$shipping_cost=$current_price;
 			} else {
-				$shipping_cost=$row3['price'];				
+				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getShippingCostsCustomType'])) {
+					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getShippingCostsCustomType'] as $funcRef) {
+						$params['row3']=&$row3;
+						$params['shipping_method']=&$shipping_method;
+						$params['shipping_method_id'] = &$shipping_method_id;
+						$params['shipping_cost'] = &$shipping_cost;
+						t3lib_div::callUserFunction($funcRef, $params, $this);
+					}
+				} else {
+					$shipping_cost = $row3['price'];
+				}
 			}
 			// custom code to change the shipping costs based on cart amount
 			if (strstr($shipping_cost,",")) {
@@ -3513,7 +3525,8 @@ class mslib_fe
 	}
 	function getUserGroupDiscount($uid) {
 		$user=mslib_fe::getUser($uid);
-		$discount=0;		
+		$discount=0;
+		$discount_sign = '-';
 		if ($user['tx_multishop_discount']) {
 			$discount=$user['tx_multishop_discount'];
 		}
@@ -3523,11 +3536,30 @@ class mslib_fe
 				foreach ($array as $group) {
 					$group=mslib_fe::getGroup($group,'uid');
 					if ($group['tx_multishop_discount']) {
-						if ($group['tx_multishop_discount'] > $discount) $discount=$group['tx_multishop_discount'];
+						if ($group['tx_multishop_discount'] > $discount) {
+							if (isset($group['tx_multishop_discount_sign'])) {
+								$discount_sign = $group['tx_multishop_discount_sign'];
+							}
+							$discount = $group['tx_multishop_discount'];
+						}
 					}
 				}
 			}
 		}
+	
+		// custom hook that can be controlled by third-party plugin
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getUserGroupDiscount'])) {
+			$params = array (
+					'discount' => &$discount,
+					'discount_sign' => &$discount_sign,
+			);
+	
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getUserGroupDiscount'] as $funcRef) {
+				t3lib_div::callUserFunction($funcRef, $params, $this);
+			}
+		}
+		// custom hook that can be controlled by third-party plugin eof
+	
 		return $discount;
 	}
 	function processmeta ($input='') {
@@ -4097,16 +4129,16 @@ class mslib_fe
 		return $html;
 	}
 	function getActiveShop() {
-		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
-		$multishop_content_objects = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
-					't.pid, p.title, p.uid as puid',
-					'tt_content t, pages p',
-					't.list_type = \'multishop_pi1\' and t.pi_flexform like \'%<value index="vDEF">coreshop</value>%\' and t.pi_flexform like \'%<field index="page_uid">
-	                    <value index="vDEF"></value>
-	                </field>%\' and p.hidden=0 and t.hidden=0 and p.deleted=0 and t.deleted=0 and t.pid=p.uid',
-					'p.sorting'
-		);
-	
+//		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
+	$multishop_content_objects = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
+		't.pid, p.title, p.uid as puid',
+		'tt_content t, pages p',
+		't.list_type = \'multishop_pi1\' and t.pi_flexform like \'%<value index="vDEF">coreshop</value>%\' and t.pi_flexform like \'%<field index="page_uid">
+                    <value index="vDEF"></value>
+                </field>%\' and p.hidden=0 and t.hidden=0 and p.deleted=0 and t.deleted=0 and t.pid=p.uid',
+		'p.sorting'
+	);
+//		error_log($GLOBALS['TYPO3_DB']->debug_lastBuiltQuery);
 		return $multishop_content_objects;
 	}
 	function jQueryAdminMenu() {
@@ -4318,8 +4350,9 @@ class mslib_fe
 		if ($this->ROOTADMIN_USER or $this->STORESADMIN_USER) {
 			// multishops
 			// now grab the active shops
-			$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
+			//$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
 			$multishop_content_objects = mslib_fe::getActiveShop();
+			//print_r($multishop_content_objects);
 			if (count($multishop_content_objects) > 1) {
 				$ms_menu['header']['ms_admin_stores']['label']='STORES';
 				$counter=0;
@@ -4837,7 +4870,20 @@ class mslib_fe
 			$rs_inv	= $GLOBALS['TYPO3_DB']->sql_fetch_assoc($query);
 			$prefix = $this->ms['MODULES']['INVOICE_PREFIX'] . date("Y");
 			if (preg_match("/^".$prefix."/",$rs_inv['invoice_id'])) {
+				//$invoice_id = ((int) $rs_inv['invoice_id'] + 1);
+				
+				if ($this->ms['MODULES']['INVOICE_PREFIX']) {
+					$rs_inv['invoice_id'] = str_replace($this->ms['MODULES']['INVOICE_PREFIX'], '', $rs_inv['invoice_id']);
+				}
+				
+				// if prefix not empty, the (int) will convert the whole invoice id to 1
+				
 				$invoice_id = ((int) $rs_inv['invoice_id'] + 1);
+				
+				if ($this->ms['MODULES']['INVOICE_PREFIX']) {
+					$invoice_id = $this->ms['MODULES']['INVOICE_PREFIX'] . $invoice_id;
+				}
+				
 			} else {
 				$invoice_id = $this->ms['MODULES']['INVOICE_PREFIX'] . date("Y").'00001';
 			}
@@ -4988,8 +5034,21 @@ class mslib_fe
 						require(PATH_site.$module_settings['ORDERS_PAID_CUSTOM_SCRIPT'].'.php');	
 					}
 				}					
-			}		
-			$tmp=mslib_fe::mailOrder($order['orders_id'],1,'','email_order_paid_letter');						
+			}
+			$mailOrder=1;
+			//hook to let other plugins further manipulate the replacers
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['updateOrderStatusToPaidPostProc'])) {
+				$params = array (
+					'order' => &$order,
+					'mailOrder' => &$mailOrder									
+				); 
+				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['updateOrderStatusToPaidPostProc'] as $funcRef) {
+					t3lib_div::callUserFunction($funcRef, $params, $this);
+				}
+			}	
+			if ($mailOrder) {					
+				$tmp=mslib_fe::mailOrder($order['orders_id'],1,'','email_order_paid_letter');
+			}
 			return true;
 		} else {
 			return false;
@@ -5398,15 +5457,15 @@ class mslib_fe
 		}
 	}
 	function getShopNameByPageUid($page_uid) {
-		if (!is_numeric($page_id)) {
+		if (!is_numeric($page_uid)) {
 			return false;
-		}
-		if (is_numeric($page_uid)) {
+		} else {
+			$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
 			$shop = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
 				't.pid, p.title, p.uid as puid',
 				'tt_content t, pages p',
-				'p.uid=\''.$page_uid.'\' and p.hidden=0 and t.hidden=0 and p.deleted=0 and t.deleted=0 and t.list_type = \'multishop_pi1\' and t.pi_flexform like \'%<value index="vDEF">coreshop</value>%\' and t.pid=p.uid',
-				'p.sorting'
+				'p.uid=\''.$page_uid.'\' and p.hidden=0 and t.hidden=0 and p.deleted=0 and t.deleted=0 and t.pid=p.uid',
+				''
 			);	
 			return $shop[0]['title'];
 		}

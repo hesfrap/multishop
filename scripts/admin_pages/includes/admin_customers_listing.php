@@ -136,6 +136,15 @@ if ($this->get['tx_multishop_pi1']['order_by']==$key) {
 }
 $subpartArray['###LABEL_CUSTOMER_LATEST_LOGIN###'] 	= '<a href="'.mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_customers&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string).'">'.ucfirst($this->pi_getLL('latest_login')).'</a>';
 
+
+$key='disable';
+if ($this->get['tx_multishop_pi1']['order_by']==$key) {
+	$final_order_link=$order_link;
+} else {
+	$final_order_link='a';
+}
+$subpartArray['###LABEL_CUSTOMER_STATUS###'] 	= '<a href="'.mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_customers&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string).'">'.ucfirst($this->pi_getLL('status')).'</a>';
+
 $key='grand_total';
 if ($this->get['tx_multishop_pi1']['order_by']==$key) {
 	$final_order_link=$order_link;
@@ -155,7 +164,6 @@ $subpartArray['###LABEL_CUSTOMER_TURN_OVER_THIS_YEAR###'] 	= '<a href="'.mslib_f
 $subpartArray['###LABEL_CUSTOMER_NAME###'] 							= ucfirst($this->pi_getLL('name'));
 $subpartArray['###LABEL_CUSTOMER_LATEST_ORDER###'] 					= ucfirst($this->pi_getLL('latest_order'));
 $subpartArray['###LABEL_CUSTOMER_LOGIN_AS_USER###'] 				= ucfirst($this->pi_getLL('login_as_user'));
-$subpartArray['###LABEL_CUSTOMER_STATUS###'] 						= ucfirst($this->pi_getLL('status'));
 $subpartArray['###LABEL_CUSTOMER_DELETE###'] 						= ucfirst($this->pi_getLL('delete'));
 $subpartArray['###LABEL_FOOTER_CUSTOMER_ID###'] 					= ucfirst($this->pi_getLL('admin_customer_id'));
 $subpartArray['###LABEL_FOOTER_CUSTOMER_USERNAME###'] 				= ucfirst($this->pi_getLL('username'));
@@ -170,5 +178,16 @@ $subpartArray['###LABEL_FOOTER_CUSTOMER_LOGIN_AS_USER###'] 			= ucfirst($this->p
 $subpartArray['###LABEL_FOOTER_CUSTOMER_STATUS###'] 				= ucfirst($this->pi_getLL('status'));
 $subpartArray['###LABEL_FOOTER_CUSTOMER_DELETE###'] 				= ucfirst($this->pi_getLL('delete'));
 $subpartArray['###CUSTOMERS###'] 							= $contentItem;
+// custom page hook that can be controlled by third-party plugin
+if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/customers/customers_listing.php']['adminCustomersListingTmplPreProc'])) {
+	$params = array (
+		'subpartArray' => &$subpartArray,
+		'customer' => &$customer
+	); 
+	foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/customers/customers_listing.php']['adminCustomersListingTmplPreProc'] as $funcRef) {
+		t3lib_div::callUserFunction($funcRef, $params, $this);
+	}
+}	
+// custom page hook that can be controlled by third-party plugin eof
 $content .= $this->cObj->substituteMarkerArrayCached($subparts['template'], array(), $subpartArray);
 ?>

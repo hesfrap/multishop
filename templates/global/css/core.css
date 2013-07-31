@@ -283,3 +283,7 @@ form.msadmin_form .account-field input[type="submit"]:hover { background:#e2e2e2
 .negative_icon { display:inline-block; overflow:hidden; width:14px; height:0; background:url(../images/icons_thumb_down.png) left top no-repeat; padding:14px 0 0; }
 
 .disabled { display:none; }
+
+.account-field .mce-tinymce.mce-container.mce-panel,
+.form-fieldset .mce-tinymce.mce-container.mce-panel { float:left; }
+.mce-btn button { height:28px; }

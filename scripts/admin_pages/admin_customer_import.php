@@ -749,10 +749,21 @@ if ($this->post['action'] == 'customer-import-preview' or (is_numeric($this->get
 						$item['first_name'] = preg_replace('/\s+/', ' ', $item['first_name']);
 						$item['last_name'] = preg_replace('/\s+/', ' ', $item['last_name']);
 						if(!$item['full_name']) {
-							$item['full_name'] = $item['first_name'] . ' ' . $item['middle_name'] . ' ' . $item['last_name'];
-						}
-						$item['full_name'] = preg_replace('/\s+/', ' ', $item['full_name']);
-						
+							$fullname=array();							
+							if ($item['first_name'] != '') {
+								$fullname[]=$item['first_name'];
+							}
+							if ($item['middle_name'] != '') {
+								$fullname[]=$item['middle_name'];
+							}
+							if ($item['last_name'] != '') {
+								$fullname[]=$item['last_name'];
+							}
+							if (count($fullname)) {
+								$item['full_name'] = implode(' ',$fullname);
+//								$item['full_name'] = preg_replace('/\s+/', ' ', $item['full_name']);
+							}							
+						}						
 						$user['name'] = $item['full_name'];
 						$user['company'] = $item['company_name'];
 						$user['tx_multishop_newsletter'] = $item['newsletter'];
@@ -859,7 +870,17 @@ if ($this->post['action'] == 'customer-import-preview' or (is_numeric($this->get
 							// plugin eof
 							$query = $GLOBALS['TYPO3_DB']->UPDATEquery('fe_users', 'uid=' . $user_check['uid'], $user);
 							$res = $GLOBALS['TYPO3_DB']->sql_query($query);
-							$content .= $user['email'] . ' has been updated.<br />';
+							$name=array();
+							if ($user['company'] != '') {
+								$name[]=$user['company'];
+							}
+							if ($user['name'] != '' and !in_array($user['name'],$name)) {
+								$name[]=$user['name'];
+							}
+							if ($user['email'] != '' and !in_array($user['email'],$name)) {
+								$name[]='email: '.$user['email'];
+							}							
+							$content .= implode(" / ",$name). ' has been updated.<br />';							
 							$uid = $user_check['uid'];
 						} else {
 							if(!$user['password'] or $user['password'] == 'NULL') {
@@ -897,7 +918,17 @@ if ($this->post['action'] == 'customer-import-preview' or (is_numeric($this->get
 							$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 							$uid = $GLOBALS['TYPO3_DB']->sql_insert_id();
 							if($uid) {
-								$content .= $user['email'] . ' has been added.<br />';
+								$name=array();
+								if ($user['company'] != '') {
+									$name[]=$user['company'];
+								}
+								if ($user['name'] != '' and !in_array($user['name'],$name)) {
+									$name[]=$user['name'];
+								}
+								if ($user['email'] != '' and !in_array($user['email'],$name)) {
+									$name[]='email: '.$user['email'];
+								}
+								$content .= implode(" / ",$name). ' has been added.<br />';
 							}
 						}
 						if($uid) {

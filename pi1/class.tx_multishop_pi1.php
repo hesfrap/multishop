@@ -230,6 +230,9 @@ class tx_multishop_pi1 extends tslib_pibase {
 				}
 			break;
 			case 'manufacturers':
+				if (!isset($this->ms['MODULES']['MANUFACTURERS_TYPE']) and isset($this->ms['MODULES']['MANUFACTURERS_LISTING_TYPE'])) {
+					$this->ms['MODULES']['MANUFACTURERS_TYPE']=$this->ms['MODULES']['MANUFACTURERS_LISTING_TYPE'];
+				}
 				if (strstr($this->ms['MODULES']['MANUFACTURERS_TYPE'],"/")) {
 					require($this->DOCUMENT_ROOT.$this->ms['MODULES']['MANUFACTURERS_TYPE'].'.php');	
 				} elseif($this->ms['MODULES']['MANUFACTURERS_TYPE']) {

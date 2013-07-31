@@ -34,7 +34,7 @@ if (is_numeric($this->get['manufacturers_id']))
 		else			$extrameta='';
 		if(!$this->conf['disableMetatags'])
 		{			
-			$GLOBALS['TSFE']->additionalHeaderData['title'] 		= '<title>'.htmlspecialchars($current['manufacturers_name']).' :: '.$this->ms['MODULES']['STORE_NAME'].'</title>';	
+			$GLOBALS['TSFE']->additionalHeaderData['title'] 		= '<title>'.htmlspecialchars($current['manufacturers_name']).$this->ms['MODULES']['PAGE_TITLE_DELIMETER'].$this->ms['MODULES']['STORE_NAME'].'</title>';	
 		}
 		if ($p >0) $offset=(((($p)*$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'])));
 		else 
@@ -45,7 +45,8 @@ if (is_numeric($this->get['manufacturers_id']))
 		$do_search=1;	
 		if ($do_search) {
 			if ($current['content'] and !$p) {
-				$content.=$current['content'];
+				$content.=mslib_fe::htmlBox('',$current['content'],'','msFrontManufacturersProductsListingCmsTop');
+				//$content.=$current['content'];
 			}
 			if ($this->get['skeyword']) {
 				$content.='<div class="main-heading"><h2></h2></div>';
@@ -81,7 +82,8 @@ if (is_numeric($this->get['manufacturers_id']))
 				$content.='<p>'.$this->pi_getLL('no_new_products_found_description').'</p>'."\n";
 			}
 			if ($current['content_footer'] and !$p) {
-				$content.=$current['content_footer'];
+				$content.=mslib_fe::htmlBox('',$current['content_footer'],'','msFrontManufacturersProductsListingCmsBottom');
+				//$content.=$current['content_footer'];
 			}			
 		}
 		if ($this->ms['MODULES']['CACHE_FRONT_END'])	$Cache_Lite->save($content);	

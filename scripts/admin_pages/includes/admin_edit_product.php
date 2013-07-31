@@ -5,8 +5,8 @@ $GLOBALS['TSFE']->additionalHeaderData[] = '
 <script type="text/javascript">
 window.onload = function() {
   var text_input = document.getElementById (\'products_name_0\');
-  text_input.focus ();
-  text_input.select ();
+  text_input.focus();
+  text_input.select();
 }
 function limitText(limitField, limitNum) {
     if (limitField.value.length > limitNum) {
@@ -1214,6 +1214,7 @@ if ($this->post) {
 				// $sql_pa = "select * from tx_multishop_products_attributes where
 				// products_id = " . $product['products_id'];
 				$sql_pa = "select popt.required,popt.products_options_id, popt.products_options_name, popt.listtype, patrib.* from tx_multishop_products_options popt, tx_multishop_products_attributes patrib where patrib.products_id='" . $product ['products_id'] . "' and popt.language_id = '0' and patrib.options_id = popt.products_options_id order by popt.sort_order";
+
 				$qry_pa = $GLOBALS ['TYPO3_DB']->sql_query ( $sql_pa );
 				if ($GLOBALS ['TYPO3_DB']->sql_num_rows ( $qry_pa ) > 0) {
 					$display_header = " ";

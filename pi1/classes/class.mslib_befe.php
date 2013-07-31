@@ -2419,7 +2419,7 @@ class mslib_befe {
 		}
 		return $f;
 	}	
-	function loginAsUser($uid) {
+	function loginAsUser($uid,$section='') {
 		if (!is_numeric($uid)) {
 			return false;
 		}
@@ -2436,12 +2436,13 @@ class mslib_befe {
 			$user=$GLOBALS['TSFE']->fe_user->fetchUserRecord($info['db_user'],$loginData['uname']);
 			$GLOBALS['TSFE']->fe_user->createUserSession($user);				
 			// auto login the user
-			$redirect_url=$this->FULL_HTTP_URL.mslib_fe::typolink($this->conf['page_profile_detail_pid']);
+			$redirect_url=$this->FULL_HTTP_URL.mslib_fe::typolink($this->shop_pid);
 			//hook to let other plugins further manipulate the redirect link
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['loginAsUserRedirectLinkPreProc'])) {
 				$params = array (
 					'user' => $user,
-					'redirect_url' => &$redirect_url			
+					'redirect_url' => &$redirect_url,
+					'section' => &$section
 				); 
 				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['loginAsUserRedirectLinkPreProc'] as $funcRef) {
 					t3lib_div::callUserFunction($funcRef, $params, $this);
@@ -2454,23 +2455,39 @@ class mslib_befe {
 		}
 	}
 	function ifExists($value, $table, $field, $additional_where=array()) {
-		if ($value and $table and $field) {
+		if (isset($value) and $table and $field) {
 			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
-				'*',         // SELECT ...
+				'1',         // SELECT ...
 				$table,     // FROM ...
 				$field.'="'.addslashes($value).'"'.(count($additional_where) ? ' AND '.implode(' AND ',$additional_where):''),    // WHERE...
 				'',            // GROUP BY...
 				'',    // ORDER BY...
 				'1'            // LIMIT ...
 			);
+			error_log($query);
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
 				return true;
 			}				
 		}
 	}
+	function getCount($value,$table,$field,$additional_where=array()) {
+		if (isset($value) and $table and $field) {
+			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
+				'count(1) as total',         // SELECT ...
+				$table,     // FROM ...
+				$field.'="'.addslashes($value).'"'.(count($additional_where) ? ' AND '.implode(' AND ',$additional_where):''),    // WHERE...
+				'',            // GROUP BY...
+				'',    // ORDER BY...
+				''            // LIMIT ...
+			);
+			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+			$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
+			return $row['total'];
+		}
+	}	
 	function getRecord($value, $table, $field, $additional_where=array()) {
-		if ($value and $table and $field) {
+		if (isset($value) and $table and $field) {
 			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
 				'*',         // SELECT ...
 				$table,     // FROM ...
@@ -2482,6 +2499,26 @@ class mslib_befe {
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
 				return $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
+			}				
+		}
+	}		
+	function getRecords($value, $table, $field, $additional_where=array()) {
+		if (isset($value) and $table and $field) {
+			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
+				'*',         // SELECT ...
+				$table,     // FROM ...
+				$field.'="'.addslashes($value).'"'.(count($additional_where) ? ' AND '.implode(' AND ',$additional_where):''),    // WHERE...
+				'',            // GROUP BY...
+				'',    // ORDER BY...
+				''            // LIMIT ...
+			);
+			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
+				$items=array();
+				while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
+					$items[]=$row;
+				}
+				return $items;
 			}				
 		}
 	}		
@@ -2506,6 +2543,18 @@ class mslib_befe {
 		}
 		return false;
      }	
+	 function strtoupper($value) {
+		// utf-8 support
+		return $GLOBALS['LANG']->csConvObj->conv_case($GLOBALS['LANG']->charSet, $value, 'toUpper');
+	 }
+	 function strtolower($value) {
+		// utf-8 support
+		return $GLOBALS['LANG']->csConvObj->conv_case($GLOBALS['LANG']->charSet, $value, 'toLower');
+	 }
+	 function strlen($value) {
+		// utf-8 support
+		return $GLOBALS['LANG']->csConvObj->strlen($GLOBALS['LANG']->charSet, $value);
+	 }
 }
 if (defined("TYPO3_MODE") && $TYPO3_CONF_VARS[TYPO3_MODE]["XCLASS"]["ext/multishop/pi1/classes/class.mslib_befe.php"])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]["XCLASS"]["ext/multishop/pi1/classes/class.mslib_befe.php"]);

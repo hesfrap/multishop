@@ -50,7 +50,7 @@ if ($this->cookie['stats_year_sb'] > 0) {
 }
 
 $content.='<div class="order_stats_mode_wrapper" style="width:250px">';
-$content.='<span class="float_right">[<a href="'.mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_orders_stats&tx_multishop_pi1[stats_section]=turnoverPerYear').'">'.htmlspecialchars($this->pi_getLL('stats_turnover_per_year', 'Turnover per year')).'</a>]</span>';
+$content.='<span class="float_right">[<a href="'.mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_stats_orders&tx_multishop_pi1[stats_section]=turnoverPerYear').'">'.htmlspecialchars($this->pi_getLL('stats_turnover_per_year', 'Turnover per year')).'</a>]</span>';
 $content.='<span>[<span><strong>'.htmlspecialchars($this->pi_getLL('stats_turnover_per_month', 'Turnover per month')).'</strong></span>]</span>';
 $content.='</div>';
 

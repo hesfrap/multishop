@@ -30,6 +30,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 	$output_array=array();
 	if ($current['categories_id'])
 	{
+		
 		if ($current['custom_settings'])
 		{
 			mslib_fe::updateCustomSettings($current['custom_settings']);
@@ -42,9 +43,9 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 		else								$meta_keywords='';
 		if(!$this->conf['disableMetatags'])
 		{
-			$output_array['meta']['title'] 							= '<title>'.htmlspecialchars($meta_title).' :: '.$this->ms['MODULES']['STORE_NAME'].'</title>';	
+			$output_array['meta']['title'] 							= '<title>'.htmlspecialchars($meta_title).$this->ms['MODULES']['PAGE_TITLE_DELIMETER'].$this->ms['MODULES']['STORE_NAME'].'</title>';	
 			$output_array['meta']['description'] 					= '<meta name="description" content="'.$meta_description.'" />';
-			if ($meta_keywords) $output_array['meta']['keywords'] 	= '<meta name="keywords" content="'.htmlspecialchars($meta_keywords).'" />';	
+			if ($meta_keywords) $output_array['meta']['keywords'] 	= '<meta name="keywords" content="'.htmlspecialchars($meta_keywords).'" />';
 		}
 	}
 	// create the meta tags eof
@@ -170,7 +171,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 		// first check if the meta_title exists
 		if ($current['meta_title'])	$meta_title=$current['meta_title'];
 		else						$meta_title=$current['categories_name'];
-		if ($meta_title) $meta_title.=' :: ';
+		if ($meta_title) $meta_title.=$this->ms['MODULES']['PAGE_TITLE_DELIMETER'];
 		$meta_title.=$this->ms['MODULES']['STORE_NAME'];		
 		if ($current['meta_description'])	$meta_description=$current['meta_description'];
 		else								$meta_description='Productlisting: '.htmlspecialchars($current['categories_name']);		
