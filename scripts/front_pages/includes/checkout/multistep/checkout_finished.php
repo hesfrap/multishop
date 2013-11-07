@@ -1,6 +1,7 @@
 <?php
 if (!defined('TYPO3_MODE')) die ('Access denied.');
 
+$content .= '<div class="checkout_thank_you">';
 $order_session = $GLOBALS['TSFE']->fe_user->getKey('ses', 'tx_multishop_order');
 if (!$order_session['orders_id'])
 {
@@ -14,25 +15,51 @@ else
 	$billing_address='';
 	$delivery_address='';
 	$full_customer_name=$order['billing_first_name'];
-	if ($order['billing_middle_name']) 	$full_customer_name.=' '.$order['billing_middle_name'];
-	if ($order['billing_last_name']) 	$full_customer_name.=' '.$order['billing_last_name'];			
+	if ($order['billing_middle_name']) {
+		$full_customer_name.=' '.$order['billing_middle_name'];
+	}
+	if ($order['billing_last_name']) {
+		$full_customer_name.=' '.$order['billing_last_name'];			
+	}
 	$delivery_full_customer_name=$order['delivery_first_name'];
-	if ($order['delivery_middle_name']) 	$delivery_full_customer_name.=' '.$order['delivery_middle_name'];
-	if ($order['delivery_last_name']) 		$delivery_full_customer_name.=' '.$order['delivery_last_name'];
-	$full_customer_name =	preg_replace('/\s+/', ' ', $full_customer_name);
-	$delivery_full_customer_name =	preg_replace('/\s+/', ' ', $delivery_full_customer_name);			
-	if ($order['delivery_company']) 		$delivery_address=$order['delivery_company']."<br />";
-	if ($delivery_full_customer_name) 		$delivery_address.=$delivery_full_customer_name."<br />";
-
-	if ($order['delivery_address']) 		$delivery_address.=$order['delivery_address']."<br />";
-	if ($order['delivery_zip'] and $order['delivery_city']) 				$delivery_address.=$order['delivery_zip']." ".$order['delivery_city'];			
-	if ($order['delivery_country']) 		$delivery_address.='<br />'.ucfirst(mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$order['delivery_country']));	
-	if ($order['billing_company']) 			$billing_address=$order['billing_company']."<br />";
-	if ($full_customer_name) 				$billing_address.=$full_customer_name."<br />";
-	if ($order['billing_address']) 			$billing_address.=$order['billing_address']."<br />";
-	if ($order['billing_zip'] and $order['billing_city'])	$billing_address.=$order['billing_zip']." ".$order['billing_city'];											
-	if ($order['billing_country']) 		$billing_address.='<br />'.ucfirst(mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$order['billing_country']));
-
+	if ($order['delivery_middle_name']) {
+		$delivery_full_customer_name.=' '.$order['delivery_middle_name'];
+	}
+	if ($order['delivery_last_name']) {
+		$delivery_full_customer_name.=' '.$order['delivery_last_name'];
+	}
+	$full_customer_name = preg_replace('/\s+/', ' ', $full_customer_name);
+	$delivery_full_customer_name = preg_replace('/\s+/', ' ', $delivery_full_customer_name);			
+	if ($order['delivery_company']) {
+		$delivery_address=$order['delivery_company']."<br />";
+	}
+	if ($delivery_full_customer_name) {
+		$delivery_address.=$delivery_full_customer_name."<br />";
+	}
+	if ($order['delivery_address']) {
+		$delivery_address.=$order['delivery_address']."<br />";
+	}
+	if ($order['delivery_zip'] and $order['delivery_city']) {
+		$delivery_address.=$order['delivery_zip']." ".$order['delivery_city'];			
+	}
+	if ($order['delivery_country']) {
+		$delivery_address.='<br />'.ucfirst(mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$order['delivery_country']));	
+	}
+	if ($order['billing_company']) {
+		$billing_address=$order['billing_company']."<br />";
+	}
+	if ($full_customer_name) {
+		$billing_address.=$full_customer_name."<br />";
+	}
+	if ($order['billing_address']) {
+		$billing_address.=$order['billing_address']."<br />";
+	}
+	if ($order['billing_zip'] and $order['billing_city']) {
+		$billing_address.=$order['billing_zip']." ".$order['billing_city'];
+	}
+	if ($order['billing_country']) {
+		$billing_address.='<br />'.ucfirst(mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$order['billing_country']));
+	}
 	$array1=array();
 	$array2=array();
 
@@ -107,6 +134,9 @@ else
 	
 	$array1[]='###PAYMENT_METHOD###';
 	$array2[]=$order['payment_method_label'];
+	
+	$array1[]='###ORDERS_ID###';
+	$array2[]=$order['orders_id'];	
 	
 	$invoice=mslib_fe::getOrderInvoice($order['orders_id'],0);
 	$invoice_id='';
@@ -236,4 +266,5 @@ else
 		}
 	}
 }
+$content .= '</div>';
 ?>

@@ -1,13 +1,11 @@
 <?php
 if (!defined('TYPO3_MODE')) die ('Access denied.');
 
-if (is_numeric($this->get['orders_id']))
-{
+if (is_numeric($this->get['orders_id'])) {
 	$invoice=mslib_fe::getOrderInvoice($this->get['orders_id']);
 	$order=mslib_fe::getOrder($this->get['orders_id']);
 	$orders_tax_data = $order['orders_tax_data'];
-	if ($order['orders_id'])
-	{
+	if ($order['orders_id']) {
 		$tmpcontent.='
 		<div class="float_right" id="msadmin_tools_nav">
 			<ul>
@@ -40,8 +38,7 @@ $tmpcontent.='
 		';		
 		//		<div class="barkode">*'.$order['orders_id'].'*</div>
 		// count total products		
-		if ($this->get['print'] == 'invoice')
-		{
+		if ($this->get['print'] == 'invoice') {
 			$invheader = '<table cellspacing="0" cellpadding="0" width="100%" class="invoice_header">
 				<tr>
 					<td width="50%">'. $this->pi_getLL('invoice') .'</td>
@@ -55,10 +52,8 @@ $tmpcontent.='
 			</td>
 			<td width="" align="right">&nbsp;</td>
 			<td>&nbsp;</td>			
-		</tr>';
-		}
-		else
-		{
+			</tr>';
+		} else {
 			$invheader = '<table cellspacing="0" cellpadding="0" width="100%" class="invoice_header">
 				<tr>
 					<td width="50%">'.$this->pi_getLL('packing_list').'</td>
@@ -69,14 +64,11 @@ $tmpcontent.='
 		}
 		$content_cms = mslib_fe::getCMScontent('invoice_header',$GLOBALS['TSFE']->sys_language_uid);
 		// count eof products
-		$tmpcontent .= '<form id="admin_product_edit_" class="admin_product_edit"><div style="display: block;" id="Order_Details" class="tab_content">
-		';	
-		if ($content_cms[0]['content'])
-		{
+		$tmpcontent .= '<form id="admin_product_edit_" class="admin_product_edit"><div style="display: block;" id="Order_Details" class="tab_content">';	
+		if ($content_cms[0]['content']) {
 			$tmpcontent .= '
 				<div id="logo-invoice"><div id="logo-invoice-img">'. $content_cms[0]['content'].'</div></div>
-				<div style="display: block;" id="Order_Details" class="tab_content"><h1>'.$invheader.'</h1>	
-			';
+				<div style="display: block;" id="Order_Details" class="tab_content"><h1>'.$invheader.'</h1>';
 		}
 		$tmpcontent .= '		
 		<fieldset class="tabs-fieldset">
@@ -142,8 +134,7 @@ $tmpcontent.='
 		//print_r($order); die();
 		$tr_type='even';
 		$tmpcontent.='<table class="msadmin_border" width="100%" border="1" cellspacing="0" cellpadding="2">';
-		if ($this->get['print'] == 'invoice')
-		{
+		if ($this->get['print'] == 'invoice') {
 			$tmpcontent.='<tr><th class="cell_qty align_right">'.ucfirst($this->pi_getLL('qty')).'</th>
 						  <th class="cell_products_id align_left">'.$this->pi_getLL('products_id').'</th>
 						  <th class="cell_products_model align_left">'.$this->pi_getLL('products_model').'</th>
@@ -152,9 +143,7 @@ $tmpcontent.='
 						  <th class="cell_products_vat align_right">'.$this->pi_getLL('vat').'</th>
 						  <th class="cell_products_final_price align_right">'.$this->pi_getLL('final_price_ex_vat').'</th>
 						  </tr>';
-		}
-		else
-		{
+		} else {
 			$tmpcontent.='<tr><th class="cell_qty align_right">'.$this->pi_getLL('qty').'</th>
 						  <th class="cell_products_id align_left">'.$this->pi_getLL('products_id').'</th>
 						  <th class="cell_products_model align_left">'.$this->pi_getLL('products_model').'</th>
@@ -162,10 +151,12 @@ $tmpcontent.='
 						  </tr>';
 		}		
 		$total_tax=0;
-		foreach ($order['products'] as $product)
-		{
-			if (!$tr_type or $tr_type=='even') 	$tr_type='odd';
-			else								$tr_type='even';			
+		foreach ($order['products'] as $product) {
+			if (!$tr_type or $tr_type=='even') {
+				$tr_type='odd';
+			} else {
+				$tr_type='even';			
+			}
 			$tmpcontent.='<tr class="'.$tr_type.'">';
 			$tmpcontent.='<td align="right" class="cell_products_qty">'.number_format($product['qty']).'</td>';		
 			$tmpcontent.='<td align="right" class="cell_products_id">'.$product['products_id'].'</td>';		
@@ -180,19 +171,26 @@ $tmpcontent.='
 			} else {
 				$tmpcontent.='<td align="left" class="cell_products_name"><strong>'.$product['products_name'];
 			}
-			if ($product['products_article_number'])
-			{
+			if ($product['products_article_number']) {
 				$tmpcontent.=' ('.$product['products_article_number'].')';
 			}
-			$tmpcontent.='</strong></td>';		
-			if ($this->get['print'] == 'invoice')
-			{
+			$tmpcontent.='</strong>';
+			if (!empty($product['ean_code'])) {
+				$tmpcontent .= '<br/>EAN: '.$product['ean_code'];
+			}
+			if (!empty($product['sku_code'])) {
+				$tmpcontent .= '<br/>SKU: '.$product['sku_code'];
+			}
+			if (!empty($product['vendor_code'])) {
+				$tmpcontent .= '<br/>Vendor code: '.$product['vendor_code'];
+			}
+			$tmpcontent.='</td>';		
+			if ($this->get['print'] == 'invoice') {
 				$tmpcontent.='<td align="right" class="cell_products_normal_price">'.mslib_fe::amount2Cents($product['final_price'],0).'</td>';	
-				$tmpcontent.='<td align="right" class="cell_products_vat">'.number_format($product['products_tax']).'%</td>';	
+				$tmpcontent.='<td align="right" class="cell_products_vat">'.str_replace('.00', '', number_format($product['products_tax'], 2)).'%</td>';	
 				$tmpcontent.='<td align="right" class="cell_products_final_price">'.mslib_fe::amount2Cents(($product['qty']*$product['final_price']),0).'</td>';
 			}
 			$tmpcontent.='</tr>';
-			
 			if (count($product['attributes'])) {
 				foreach ($product['attributes'] as $tmpkey => $options) {
 					if ($options['products_options_values']) {
@@ -216,7 +214,6 @@ $tmpcontent.='
 				}
 			}
 			$tmpcontent.='</tr>';
-			
 			// count the vat			
 			if ($order['final_price'] and $order['products_tax']) {
 				$item_tax 	= $order['qty'] * ($order['final_price'] * $order['products_tax'] /100);				
@@ -260,15 +257,12 @@ $tmpcontent.='
 				$tmpcontent.=$content_shipping_costs;
 				$tmpcontent.=$content_payment_costs;
 				$tmpcontent.=$content_vat;
-			}
-			else
-			{
+			} else {
 				$tmpcontent.=$content_vat;	
 				$tmpcontent.=$content_shipping_costs;
 				$tmpcontent.=$content_payment_costs;
 			}
-			if ($order['discount'] >0)
-			{
+			if ($order['discount'] >0) {
 				$tmpcontent.='
 				<div class="account-field">
 					<label>'.$this->pi_getLL('discount').'</label>

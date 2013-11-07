@@ -8,6 +8,8 @@ $selects['select_multiple']='Selectbox multiple';
 $selects['radio']='Radio';
 $selects['checkbox']='Checkbox';
 $selects['input']='Text input';
+$selects['textarea']='Textarea';
+$selects['hidden_field']='Hidden field';
 $selects['file']='File input';
 $selects['divider']='Divider';			
 
@@ -82,12 +84,15 @@ if ($rows) {
 		<h3>Option name <input name="option_names['.$row['products_options_id'].'][0]" type="text" value="'.htmlspecialchars($row['products_options_name']).'"  />';
 		$value=htmlspecialchars($row2['products_options_values_name']);																																																				
 		foreach ($this->languages as $key => $language) {
-			$str3="select products_options_name from tx_multishop_products_options where products_options_id='".$row['products_options_id']."' and language_id='".$key."'"; 
-			$qry3 = $GLOBALS['TYPO3_DB']->sql_query($str3);
-			while (($row3 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry3)) != false) {		
-				if ($row3['products_options_name']) $value=htmlspecialchars($row3['products_options_name']);			
-			}		
-			$content.=$this->languages[$key]['title'].' <input name="option_names['.$row['products_options_id'].']['.$key.']" type="text" value="'.$value.'"  />';
+			if ($key > 0) {
+				$str3="select products_options_name from tx_multishop_products_options where products_options_id='".$row['products_options_id']."' and language_id='".$key."'"; 
+				$qry3 = $GLOBALS['TYPO3_DB']->sql_query($str3);
+				while (($row3 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry3)) != false) {		
+					if ($row3['products_options_name']) $value=htmlspecialchars($row3['products_options_name']);			
+				}		
+			
+				$content.=$this->languages[$key]['title'].' <input name="option_names['.$row['products_options_id'].']['.$key.']" type="text" value="'.$value.'"  />';
+			}
 		}			
 		$content.='<a href="#" class="delete_options admin_menu_remove" rel="'.$row['products_options_id'].'">delete</a>&nbsp;<a href="#" class="msadmin_button fetch_attributes_values" id="button_label_'.$row['products_options_id'].'" rel="'.$row['products_options_id'].'">'.$this->pi_getLL('show_attributes_values', 'SHOW VALUES').'</a></h3>
 		<ul class="attribute_option_values_sortable" rel="'.$row['products_options_id'].'" id="vc_'.$row['products_options_id'].'" style="display:none">';	

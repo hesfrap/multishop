@@ -1,24 +1,32 @@
 <?php
 $output = array();	
 // now parse all the objects in the tmpl file
-if ($this->conf['categories_listing_tmpl_path'])  	$template = $this->cObj->fileResource($this->conf['categories_listing_tmpl_path']);
-elseif ($this->conf['categories_listing_tmpl'])  	$template = $this->cObj->fileResource($this->conf['categories_listing_tmpl']);
-else												$template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath($this->extKey).'templates/categories_listing.tmpl');
+if ($this->conf['categories_listing_tmpl_path']) {
+	$template = $this->cObj->fileResource($this->conf['categories_listing_tmpl_path']);
+} elseif ($this->conf['categories_listing_tmpl']) {
+	$template = $this->cObj->fileResource($this->conf['categories_listing_tmpl']);
+} else {
+	$template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath($this->extKey).'templates/categories_listing.tmpl');
+}
 // Extract the subparts from the template
 $subparts=array();
 $subparts['template'] 	= $this->cObj->getSubpart($template, '###TEMPLATE###');
 $subparts['item']		= $this->cObj->getSubpart($subparts['template'], '###ITEM###');
 // load optional cms content and show the current category name
-if ($current['content'])			$output['categories_header_description'] = mslib_fe::htmlBox($current['categories_name'],$current['content'],1);	
+if ($current['content']) {
+	$output['categories_header_description'] = mslib_fe::htmlBox($current['categories_name'],$current['content'],1);	
+}
 $output['categories_header'] = trim($current['categories_name']);
+if ($current['categories_id']==$this->conf['categoriesStartingPoint'] and $this->hideHeader) {
+	$output['categories_header']='';
+}
 // load optional cms content and show the current category name eof	
 $counter=0;
 $contentItem = '';
-foreach ($categories as $category)
-{
+foreach ($categories as $category) {
 	$counter++;			
 	$output['categories_name'] = trim($category['categories_name']);		
-	if ($category['categories_image']) 	{
+	if ($category['categories_image']) {
 		$output['image'] = '<img src="'.mslib_befe::getImagePath($category['categories_image'],'categories','normal').'" alt="'.htmlspecialchars($category['categories_name']).'">';
 	} else {
 		$output['image'] = '<div class="no_image"></div>';
@@ -26,7 +34,6 @@ foreach ($categories as $category)
 	// get all cats to generate multilevel fake url
 	$level=0;
 	$cats=mslib_fe::Crumbar($category['categories_id']);
-
 	$cats=array_reverse($cats);
 	$where='';
 	if (count($cats) > 0) {
@@ -38,7 +45,16 @@ foreach ($categories as $category)
 	}
 	// get all cats to generate multilevel fake url eof
 	if ($category['categories_url']) {
-		$output['target'] = ' target="_blank"';
+		$link_parse_url = parse_url($category['categories_url']);
+		if (isset($link_parse_url['host']) && !empty($link_parse_url['host'])) {
+			if (strpos($this->FULL_HTTP_URL, $link_parse_url['host']) === false) {
+				$output['target'] = ' target="_blank"';
+			} else {
+				$output['target'] = '';
+			}
+		} else {
+			$output['target'] = '';
+		}
 		$output['link'] = $category['categories_url'];
 	} else {
 		$output['target'] = "";
@@ -50,13 +66,17 @@ foreach ($categories as $category)
 		$output['admin_icons'] 					= '<div class="admin_menu"><a href="'.mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=admin_ajax&cid='.$category['categories_id']).'&action=edit_category" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 500} )" class="admin_menu_edit">Edit</a><a href="'.mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=admin_ajax&cid='.$category['categories_id'].'&action=delete_category').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 140} )" class="admin_menu_remove" title="Remove"></a></div>';
 	}
 	$markerArray=array();
-	$markerArray['ADMIN_ICONS']						= $output['admin_icons'];
-	$markerArray['CATEGORIES_ADMIN_SORTABLE_ID']	= $output['categories_admin_sortable_id'];
-	$markerArray['CATEGORIES_LINK'] 				= $output['link'];
-	$markerArray['CATEGORIES_COUNTER']				= $output['categories_counter'];
-	$markerArray['CATEGORIES_NAME']					= $output['categories_name'];
-	$markerArray['CATEGORIES_LINK_TARGET'] 			= $output['target'];
-	$markerArray['CATEGORIES_IMAGE'] 				= $output['image'];
+	$markerArray['ADMIN_ICONS'] = $output['admin_icons'];
+	$markerArray['CATEGORIES_ADMIN_SORTABLE_ID'] = $output['categories_admin_sortable_id'];
+	$markerArray['CATEGORIES_LINK'] = $output['link'];
+	$markerArray['CATEGORIES_COUNTER'] = $output['categories_counter'];
+	$markerArray['CATEGORIES_NAME'] = $output['categories_name'];
+	$markerArray['CATEGORIES_LINK_TARGET'] = $output['target'];
+	$markerArray['CATEGORIES_IMAGE'] = $output['image'];
+	
+	$markerArray['CATEGORIES_META_DESCRIPTION'] = $category['meta_description'];
+	$markerArray['CATEGORIES_META_KEYWORDS'] = $category['meta_keywords'];
+	$markerArray['CATEGORIES_META_TITLE'] = $category['meta_title'];
 	
 	// custom hook that can be controlled by third-party plugin
 	if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/front_pages/includes/categories_listing.php']['categoriesListingRecordHook'])) {

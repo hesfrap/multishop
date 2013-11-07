@@ -1,5 +1,7 @@
 <?php
-if (!defined('TYPO3_MODE')) die ('Access denied.');
+if (!defined('TYPO3_MODE')) {
+	die('Access denied.');
+}
 
 /***************************************************************
 *  Copyright notice
@@ -80,15 +82,15 @@ class tx_multishop {
 	 * Flattens an array, or returns FALSE on fail. 
 	 */ 
 	function array_flatten($array) { 
-		if (! is_array ( $array )) {
+		if (!is_array($array)) {
 			return FALSE;
 		}
 		$result = array ();
-		foreach ( $array as $key => $value ) {
-			if (is_array ( $value )) {
-				$result = array_merge ( $result, $this->array_flatten ( $value ) );
+		foreach ($array as $key => $value) {
+			if (is_array($value)) {
+				$result = array_merge ($result, $this->array_flatten($value));
 			} else {
-				$result [$key] = $value;
+				$result[$key] = $value;
 			}
 		}
 		return $result; 
@@ -101,8 +103,29 @@ class tx_multishop {
      */
     protected function preview($row) {		
 		$data = t3lib_div::xml2array($row['pi_flexform']);
-		$item ='Multishop: '.$data['data']['sDEFAULT']['lDEF']['method']['vDEF'];
-        return $item;
+		$selectedMethod=$data['data']['sDEFAULT']['lDEF']['method']['vDEF'];
+		if ($selectedMethod) {
+			$content='Multishop: '.$data['data']['sDEFAULT']['lDEF']['method']['vDEF'].'<br />';
+			$methodToTabArray=array();	
+			$methodToTabArray['categories']='s_listing';
+			$methodToTabArray['products']='s_products_listing';
+			$methodToTabArray['search']='s_search';
+			$methodToTabArray['specials']='s_specials';
+//manufacturers			
+			$methodToTabArray['misc']='s_misc';
+//			$methodToTabArray[]='s_advanced';	
+			if ($methodToTabArray[$selectedMethod]) {
+				foreach ($data['data'][$methodToTabArray[$selectedMethod]]['lDEF'] as $key => $valArray) {
+					if (isset($valArray['vDEF']) and $valArray['vDEF'] != '') {
+						$subContent.=$key.': '.$valArray['vDEF'].'<br />';
+					}
+				}
+			}
+			if ($subContent) {
+				$content.='<br />'.$subContent;
+			}
+		}		
+        return $content;
     }
 }
 ?>

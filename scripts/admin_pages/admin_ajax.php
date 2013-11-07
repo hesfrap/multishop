@@ -5,10 +5,12 @@ $GLOBALS['TSFE']->additionalHeaderData[] = '
 <script type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/jquery.blockUI.js"></script>
 <link href="'.$this->FULL_HTTP_URL_MS.'js/jqui/css/smoothness/jquery-ui-1.8.custom.css" rel="stylesheet" type="text/css"/>
 <link type="text/css" href="'.t3lib_extMgm::siteRelPath($this->extKey).'js/jqui/css/smoothness/jquery-ui-1.8.custom.css" rel="stylesheet" />
-<script type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/form-wizard/jquery.validate.js"></script>
-<script type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/form-wizard/jquery.validation.functions.js"></script>
+<script type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/jquery.h5validate.js"></script>
 <script src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/valums-file-uploader/client/fileuploader.js" type="text/javascript"></script>
 <script type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/multiselect/js/ui.multiselect_normal.js"></script>
+<script type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/jquery.timepicker/jquery-ui-sliderAccess.js"></script>
+<script type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/jquery.timepicker/jquery-ui-timepicker-addon.js"></script>
+<link href="'.t3lib_extMgm::siteRelPath($this->extKey).'js/jquery.timepicker/jquery-ui-timepicker-addon.css" rel="stylesheet" type="text/css"/>
 <link href="'.t3lib_extMgm::siteRelPath($this->extKey).'js/multiselect/css/ui.multiselect.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript">
 	jQuery(function($){
@@ -18,26 +20,26 @@ $GLOBALS['TSFE']->additionalHeaderData[] = '
 <script language="javascript" type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/tiny_mce/tinymce.min.js"></script>
 <script language="javascript" type="text/javascript">
 tinyMCE.init({
-        // General options
-        mode : "textareas",
-        plugins: [
-			"advlist autolink lists link image charmap print preview anchor",
-			"searchreplace visualblocks code fullscreen",
-			"insertdatetime media table contextmenu paste"
-    	],
-		toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
-        document_base_url : "'.$this->FULL_HTTP_URL.'",
-        relative_urls : false,
-        convert_urls : false,
-        height : 300,
-        editor_selector : "mceEditor",
-        apply_source_formatting : true,
-        //cleanup : false,
-        accessibility_warnings : false,
-        verify_html : false,
-	   forced_root_block : false,
-	   force_br_newlines : true,
-	   force_p_newlines : false
+	// General options
+	mode : "textareas",
+	plugins: [
+		"advlist autolink lists link image charmap print preview anchor",
+		"searchreplace visualblocks code fullscreen",
+		"insertdatetime media table contextmenu paste"
+	],
+	toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
+	document_base_url : "'.$this->FULL_HTTP_URL.'",
+	relative_urls : false,
+	convert_urls : false,
+	height : 300,
+	editor_selector : "mceEditor",
+	apply_source_formatting : true,
+	//cleanup : false,
+	accessibility_warnings : false,
+	verify_html : false,
+	forced_root_block : false,
+	force_br_newlines : true,
+	force_p_newlines : false
 });
 </script>
 <script type="text/javascript">
@@ -91,16 +93,13 @@ switch ($_REQUEST['action'])
 	break;
 	case 'add_product':
 	case 'edit_product':
-		if (strstr($this->ms['MODULES']['ADMIN_PRODUCTS_EDIT_TYPE'],"..")) die('error in ADMIN_PRODUCTS_EDIT_TYPE value');
-		else 
-		{
-			if (strstr($this->ms['MODULES']['ADMIN_PRODUCTS_EDIT_TYPE'],"/"))
-			{
+		if (strstr($this->ms['MODULES']['ADMIN_PRODUCTS_EDIT_TYPE'],"..")) {
+			die('error in ADMIN_PRODUCTS_EDIT_TYPE value');
+		} else {
+			if (strstr($this->ms['MODULES']['ADMIN_PRODUCTS_EDIT_TYPE'],"/")) {
 				// relative mode
 				require($this->DOCUMENT_ROOT.$this->ms['MODULES']['ADMIN_PRODUCTS_EDIT_TYPE'].'.php');	
-			}
-			else
-			{
+			} else {
 				require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_edit_product.php');
 			}
 		}	
@@ -110,16 +109,13 @@ switch ($_REQUEST['action'])
 	break;
 	case 'add_category':
 	case 'edit_category':
-		if (strstr($this->ms['MODULES']['ADMIN_CATEGORIES_EDIT_TYPE'],"..")) die('error in ADMIN_CATEGORIES_EDIT_TYPE value');
-		else 
-		{
-			if (strstr($this->ms['MODULES']['ADMIN_CATEGORIES_EDIT_TYPE'],"/"))
-			{
+		if (strstr($this->ms['MODULES']['ADMIN_CATEGORIES_EDIT_TYPE'],"..")) {
+			die('error in ADMIN_CATEGORIES_EDIT_TYPE value');
+		} else {
+			if (strstr($this->ms['MODULES']['ADMIN_CATEGORIES_EDIT_TYPE'],"/")) {
 				// relative mode
 				require($this->DOCUMENT_ROOT.$this->ms['MODULES']['ADMIN_CATEGORIES_EDIT_TYPE'].'.php');	
-			}
-			else
-			{
+			} else {
 				require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_edit_category.php');
 			}
 		}
@@ -131,20 +127,16 @@ switch ($_REQUEST['action'])
 		require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_delete_category.php');
 	break;	
 	case 'mail_order':
-	if ($this->post['orders_id'] and $this->post['tx_multishop_pi1']['email'])
-	{
+	if ($this->post['orders_id'] and $this->post['tx_multishop_pi1']['email']) {
 		mslib_fe::mailOrder($this->post['orders_id'],1,$this->post['tx_multishop_pi1']['email']);
 		$content.= '
 			<script type="text/javascript">
 			parent.window.location.reload();
 			</script>
 		';
-	}
-	elseif ($this->get['orders_id'])
-	{
+	} else if ($this->get['orders_id']) {
 		$order=mslib_fe::getOrder($this->get['orders_id']);
-		if ($order['orders_id'])
-		{
+		if ($order['orders_id']) {
 			$content.='
 			<div id="mini-form-field">
 				<form method="post" action="'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id'].'&action=mail_order').'">
@@ -161,27 +153,20 @@ switch ($_REQUEST['action'])
 	}
 	break;
 	case 'edit_order':
-		if (isset($_GET['print']))
-		{
-			if (strstr($this->ms['MODULES']['ADMIN_EDIT_ORDER_PRINT_TYPE'],"..")) die('error in ADMIN_EDIT_ORDER_PRINT_TYPE value');
-			elseif (strstr($this->ms['MODULES']['ADMIN_EDIT_ORDER_PRINT_TYPE'],"/"))
-			{
+		if (isset($_GET['print'])) {
+			if (strstr($this->ms['MODULES']['ADMIN_EDIT_ORDER_PRINT_TYPE'],"..")) {
+				die('error in ADMIN_EDIT_ORDER_PRINT_TYPE value');
+			} else if (strstr($this->ms['MODULES']['ADMIN_EDIT_ORDER_PRINT_TYPE'],"/")) {
 				require($this->DOCUMENT_ROOT.$this->ms['MODULES']['ADMIN_EDIT_ORDER_PRINT_TYPE'].'.php');	
-			}
-			else
-			{					
+			} else {					
 				require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_edit_order_print.php');
 			}
-		}
-		else
-		{
-			if (strstr($this->ms['MODULES']['ADMIN_EDIT_ORDER_TYPE'],"..")) die('error in ADMIN_EDIT_ORDER_TYPE value');
-			elseif (strstr($this->ms['MODULES']['ADMIN_EDIT_ORDER_TYPE'],"/"))
-			{
+		} else {
+			if (strstr($this->ms['MODULES']['ADMIN_EDIT_ORDER_TYPE'],"..")) {
+				die('error in ADMIN_EDIT_ORDER_TYPE value');
+			} else if (strstr($this->ms['MODULES']['ADMIN_EDIT_ORDER_TYPE'],"/")) {
 				require($this->DOCUMENT_ROOT.$this->ms['MODULES']['ADMIN_EDIT_ORDER_TYPE'].'.php');	
-			}
-			else
-			{					
+			} else {					
 				require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_edit_order.php');
 			}
 		}	
@@ -194,32 +179,26 @@ switch ($_REQUEST['action'])
 	break;	
     case 'add_manufacturer':
 	case 'edit_manufacturer':
-		if (strstr($this->ms['MODULES']['ADMIN_MANUFACTURERS_EDIT_TYPE'],"..")) die('error in ADMIN_MANUFACTURERS_EDIT_TYPE value');
-		else 
-		{
-			if (strstr($this->ms['MODULES']['ADMIN_MANUFACTURERS_EDIT_TYPE'],"/"))
-			{
+		if (strstr($this->ms['MODULES']['ADMIN_MANUFACTURERS_EDIT_TYPE'],"..")) {
+			die('error in ADMIN_MANUFACTURERS_EDIT_TYPE value');
+		} else {
+			if (strstr($this->ms['MODULES']['ADMIN_MANUFACTURERS_EDIT_TYPE'],"/")) {
 				// relative mode
 				require($this->DOCUMENT_ROOT.$this->ms['MODULES']['ADMIN_MANUFACTURERS_EDIT_TYPE'].'.php');	
-			}
-			else
-			{
+			} else {
 				require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_edit_manufacturer.php');
 			}
-		}				
+		}	
 	break;
     case 'add_customer':
     case 'edit_customer':
-		if (strstr($this->ms['MODULES']['ADMIN_CUSTOMERS_EDIT_TYPE'],"..")) die('error in ADMIN_CUSTOMERS_EDIT_TYPE value');
-		else 
-		{
-			if (strstr($this->ms['MODULES']['ADMIN_CUSTOMERS_EDIT_TYPE'],"/"))
-			{
+		if (strstr($this->ms['MODULES']['ADMIN_CUSTOMERS_EDIT_TYPE'],"..")) {
+			die('error in ADMIN_CUSTOMERS_EDIT_TYPE value');
+		} else {
+			if (strstr($this->ms['MODULES']['ADMIN_CUSTOMERS_EDIT_TYPE'],"/")) {
 				// relative mode
 				require($this->DOCUMENT_ROOT.$this->ms['MODULES']['ADMIN_CUSTOMERS_EDIT_TYPE'].'.php');	
-			}
-			else
-			{
+			} else {
 				require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_edit_customer.php');
 			}
 		}	
@@ -233,15 +212,12 @@ switch ($_REQUEST['action'])
 				'id' => $id,
 				'content' => &$content
 			); 
-			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_ajax.php']['customAdminAjaxPage'] as $funcRef)
-			{
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_ajax.php']['customAdminAjaxPage'] as $funcRef) {
 				t3lib_div::callUserFunction($funcRef, $params, $this);
 			}
 		}	
 	// custom page hook that can be controlled by third-party plugin eof
 	break;		
 }
-$content.='
-</div>
-';
+$content.='</div>';
 ?>

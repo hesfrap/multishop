@@ -147,7 +147,7 @@ foreach ($products as $row)
 	$query = $GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_products_to_categories', 'products_id='.$products_id);
 	$res = $GLOBALS['TYPO3_DB']->sql_query($query);		
 }
-$content.='<strong>'.count($products).'</strong> orphanned products_to_categories relations has been deleted.<br />';
+$content.='<strong>'.count($products).'</strong> orphaned products_to_categories relations has been deleted.<br />';
 $str="SELECT categories_id from tx_multishop_categories";
 $qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 $cats=array();

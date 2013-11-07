@@ -184,6 +184,11 @@ foreach ($categories as $category) {
 	$contentItem .= $this->cObj->substituteMarkerArray($subparts['categories'], $markerArray,'###|###');
 }
 
+$cat_selectbox = '<select name="move_to_cat" id="move_to_cat">
+<option value="0">HOOFD CATEGORIE</option>
+'.$cat_selectbox.'
+</select>';
+
 $subpartArray = array();
 $subpartArray['###ADMIN_CATEGORIES_HEADER###']  	= '<h1>Categories overview</h1>';
 $subpartArray['###FORM_ACTION_LINK###'] 			= mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_categories&cid='.$this->get['categories_id'].'&action=move_categories');

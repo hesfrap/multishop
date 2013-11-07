@@ -4,37 +4,29 @@ if (!defined('TYPO3_MODE')) die ('Access denied.');
 $active_shop = mslib_fe::getActiveShop();
 
 $GLOBALS['TSFE']->additionalHeaderData[] ='
-<script language="javascript" type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/tiny_mce/tiny_mce.js"></script>
+<script language="javascript" type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/tiny_mce/tinymce.min.js"></script>
 <script language="javascript" type="text/javascript">
 tinyMCE.init({
         // General options
         mode : "textareas",
-        theme : "advanced",
-		auto_reset_designmode : true,
-        plugins : "imagemanager,filemanager,safari,spellchecker,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template,imagemanager,filemanager",
-
-        // Theme options
-        theme_advanced_buttons1 : "bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect",
-        theme_advanced_buttons2 : "cut,copy,paste,pastetext,pasteword,|,search,replace,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,insertimage ,insertfile ,cleanup,help,code,|,forecolor,backcolor",
-        theme_advanced_buttons3 : "tablecontrols,|,hr,removeformat,visualaid,|,sub,sup,|,charmap,iespell,media,advhr,|,ltr,rtl",
-
-        theme_advanced_font_sizes : "12px=12px,7px=7px,8px=8px,9px=9px,10px=10px,11px=11px,12px=12px,13px=13px,14px=14px,15px=15px,16px=16px,17px=17px,18px=18px,19px=19px,20px=20px,21px=21px,22px=22px,23px=23px,24px=24px",
-        theme_advanced_toolbar_location : "top",
-        theme_advanced_toolbar_align : "left",
-        theme_advanced_statusbar_location : "bottom",
+        plugins: [
+			"advlist autolink lists link image charmap print preview anchor",
+			"searchreplace visualblocks code fullscreen",
+			"insertdatetime media table contextmenu paste"
+    	],
+		toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
         document_base_url : "'.$this->FULL_HTTP_URL.'",
         relative_urls : false,
         convert_urls : false,
-        content_css : "'.$this->FULL_HTTP_URL.t3lib_extMgm::siteRelPath($this->extKey).'js/tiny_mce/tinymce_editor.css",
-        width : \'80%\',
-        height : 75,
+        height : 300,
         editor_selector : "mceEditor",
-        //file_browser_callback : "ajaxfilemanager",
         apply_source_formatting : true,
         //cleanup : false,
         accessibility_warnings : false,
-        verify_html : false
-
+        verify_html : false,
+	   forced_root_block : false,
+	   force_br_newlines : true,
+	   force_p_newlines : false
 });
 jQuery(document).ready(function($){
 	$("#add_shipping_method").click(function(e){
@@ -566,7 +558,7 @@ if ($this->ms['show_main'])
 	
 	// shipping method admin system
 	$colspan=4;
-	$str="SELECT *,d.name from tx_multishop_shipping_methods p, tx_multishop_shipping_methods_description d where d.language_id='".$this->sys_language_uid."' and p.id=d.id order by p.sort_order";	
+	$str="SELECT *,d.name from tx_multishop_shipping_methods p, tx_multishop_shipping_methods_description d where d.language_id='".$this->sys_language_uid."' and (p.page_uid = '". $this->shop_pid ."' or p.page_uid = '0') and p.id=d.id order by p.sort_order";	
 	$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 	$tr_type='even';
 	if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0)

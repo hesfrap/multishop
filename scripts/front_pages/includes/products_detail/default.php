@@ -256,7 +256,7 @@ if (!$product['products_id']) {
 			}
 		}
 	}
-	$output['add_to_cart_button'].='<input name="products_id" id="products_id" type="hidden" value="'.$product['products_id'].'" />'.$order_now_button;
+	$output['add_to_cart_button'].='<span class="msFrontButton continueState arrowRight arrowPosLeft"><input name="products_id" id="products_id" type="hidden" value="'.$product['products_id'].'" />'.$order_now_button.'</span>';
 	// add to basket eof	
 	// now parse all the objects in the tmpl file
 	if ($this->conf['product_detail_tmpl_path'])  	$template = $this->cObj->fileResource($this->conf['product_detail_tmpl_path']);
@@ -275,14 +275,20 @@ if (!$product['products_id']) {
 	$markerArray['###PRODUCTS_IMAGE###'] 			= $output['products_image']; 
 	$markerArray['###PRODUCTS_IMAGE_MORE###'] 		= $output['products_image_more']; 
 	$markerArray['###PRODUCTS_PRICE###'] 			= $output['products_price']; 
+	$markerArray['###PRODUCTS_SKU###'] 				= $product['sku_code']; 
+	$markerArray['###PRODUCTS_EAN###'] 				= $product['ean_code']; 
 	$markerArray['###PRODUCTS_SPECIAL_PRICE###'] 	= $output['special_price']; 
 	$markerArray['###OTHER_CUSTOMERS_BOUGHT###'] 	= $output['customers_also_bought']; 
 
 	// new 
-	$markerArray['###QUANTITY###'] 					= $output['quantity']; 
-	$markerArray['###BACK_BUTTON###'] 				= $output['back_button']; 
+	$markerArray['###QUANTITY###'] 					= $output['quantity'];
+	$markerArray['###BACK_BUTTON###'] 				= $output['back_button'];
 	$markerArray['###ADD_TO_CART_BUTTON###'] 		= $output['add_to_cart_button'];
 	
+	$markerArray['###PRODUCTS_META_DESCRIPTION###']	= $product['products_meta_description'];
+	$markerArray['###PRODUCTS_META_KEYWORDS###']	= $product['products_meta_keywords'];
+	$markerArray['###PRODUCTS_META_TITLE###']		= $product['products_meta_title'];
+
 	// custom hook that can be controlled by third-party plugin
 	if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/front_pages/products_detail.php']['productsDetailsPagePostHook'])) {
 		$params = array (

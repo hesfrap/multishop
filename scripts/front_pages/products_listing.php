@@ -1,9 +1,11 @@
 <?php
-if (!defined('TYPO3_MODE')) die ('Access denied.');
-
-if ($this->ms['MODULES']['CACHE_FRONT_END'] and !$this->ms['MODULES']['CACHE_TIME_OUT_LISTING_PAGES']) $this->ms['MODULES']['CACHE_FRONT_END']=0;
-if ($this->ms['MODULES']['CACHE_FRONT_END'])
-{
+if (!defined('TYPO3_MODE')) {
+	die('Access denied.');
+}
+if ($this->ms['MODULES']['CACHE_FRONT_END'] and !$this->ms['MODULES']['CACHE_TIME_OUT_LISTING_PAGES']) {
+	$this->ms['MODULES']['CACHE_FRONT_END']=0;
+}
+if ($this->ms['MODULES']['CACHE_FRONT_END']) {
 	$options = array(
 		'caching' => true,
 		'cacheDir' => $this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/cache/',
@@ -12,12 +14,13 @@ if ($this->ms['MODULES']['CACHE_FRONT_END'])
 	$Cache_Lite = new Cache_Lite($options);
 	$string=$this->cObj->data['uid'].'_'.$this->server['REQUEST_URI'].$this->server['QUERY_STRING'];
 }
-if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get($string))
-{	
-	if ($this->get['p']) $p=$this->get['p'];
-	if (is_numeric($this->get['categories_id'])) 	$parent_id=$this->get['categories_id'];
-	else
-	{
+if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get($string)) {	
+	if ($this->get['p']) {
+		$p=$this->get['p'];
+	}
+	if (is_numeric($this->get['categories_id'])) {
+		$parent_id=$this->get['categories_id'];
+	} else {
 		$parent_id=$this->categoriesStartingPoint;
 		$this->get['categories_id']=$this->categoriesStartingPoint;
 	}
@@ -28,42 +31,44 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 	$current=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
 	// first check if the meta_title exists
 	$output_array=array();
-	if ($current['categories_id'])
-	{
-		
-		if ($current['custom_settings'])
-		{
+	if ($current['categories_id']) {		
+		if ($current['custom_settings']) {
 			mslib_fe::updateCustomSettings($current['custom_settings']);
 		}			
-		if ($current['meta_title'])			$meta_title=$current['meta_title'];
-		else								$meta_title=$current['categories_name'];
-		if ($current['meta_description'])	$meta_description=$current['meta_description'];
-		else								$meta_description='';
-		if ($current['meta_keywords'])		$meta_keywords=$current['meta_keywords'];
-		else								$meta_keywords='';
-		if(!$this->conf['disableMetatags'])
-		{
-			$output_array['meta']['title'] 							= '<title>'.htmlspecialchars($meta_title).$this->ms['MODULES']['PAGE_TITLE_DELIMETER'].$this->ms['MODULES']['STORE_NAME'].'</title>';	
-			$output_array['meta']['description'] 					= '<meta name="description" content="'.$meta_description.'" />';
-			if ($meta_keywords) $output_array['meta']['keywords'] 	= '<meta name="keywords" content="'.htmlspecialchars($meta_keywords).'" />';
+		if ($current['meta_title']) {
+			$meta_title=$current['meta_title'];
+		} else {
+			$meta_title=$current['categories_name'];
+		}
+		if ($current['meta_description']) {
+			$meta_description=$current['meta_description'];
+		} else {
+			$meta_description='';
+		}
+		if ($current['meta_keywords']) {
+			$meta_keywords=$current['meta_keywords'];
+		} else {
+			$meta_keywords='';
+		}
+		if(!$this->conf['disableMetatags']) {
+			$output_array['meta']['title'] = '<title>'.htmlspecialchars($meta_title).$this->ms['MODULES']['PAGE_TITLE_DELIMETER'].$this->ms['MODULES']['STORE_NAME'].'</title>';	
+			$output_array['meta']['description'] = '<meta name="description" content="'.$meta_description.'" />';
+			if ($meta_keywords) {
+				$output_array['meta']['keywords'] 	= '<meta name="keywords" content="'.htmlspecialchars($meta_keywords).'" />';
+			}
 		}
 	}
 	// create the meta tags eof
 	$subCats=mslib_fe::getSubcatsOnly($parent_id);
-	if ($this->ADMIN_USER and $this->get['sort_by'])
-	{
-		if (is_array($subCats) and count($subCats) > 0)
-		{
-			switch ($this->get['sort_by'])
-			{
+	if ($this->ADMIN_USER and $this->get['sort_by']) {
+		if (is_array($subCats) and count($subCats) > 0) {
+			switch ($this->get['sort_by']) {
 				case 'alphabet':
-				if (is_numeric($parent_id))
-				{
+				if (is_numeric($parent_id)) {
 					$str="SELECT * from tx_multishop_categories c, tx_multishop_categories_description cd where c.status=1 and c.parent_id='".$parent_id."' and c.page_uid='".$this->showCatalogFromPage."' and cd.language_id='".$this->sys_language_uid."' and c.categories_id=cd.categories_id order by cd.categories_name";
 					$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 					$counter=0;
-					while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry))
-					{
+					while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
 						$updateArray=array();
 						$updateArray['sort_order']=$counter;
 						$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_categories', 'categories_id='.$row['categories_id'],$updateArray);
@@ -97,8 +102,9 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 	if (is_array($categories) and count($categories) >0) {	
 		// create the meta tags	
 		// category listing
-		if (strstr($this->ms['MODULES']['CATEGORIES_LISTING_TYPE'],"..")) die('error in categories_listing_type value');
-		else {
+		if (strstr($this->ms['MODULES']['CATEGORIES_LISTING_TYPE'],"..")) {
+			die('error in categories_listing_type value');
+		} else {
 			if (strstr($this->ms['MODULES']['CATEGORIES_LISTING_TYPE'],"/")) {
 				require($this->DOCUMENT_ROOT.$this->ms['MODULES']['CATEGORIES_LISTING_TYPE'].'.php');	
 			} else {
@@ -141,6 +147,9 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 		} else {
 			$p=0;
 			$offset=0;
+		}
+		if ($this->productsLimit) {
+			$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']=$this->productsLimit;
 		}
 		if ($this->ADMIN_USER and $this->get['sort_by']) {
 			switch ($this->get['sort_by']) {
@@ -213,8 +222,12 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 				}
 			}			
 			// pagination
-			if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']) {
-				require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination.php');	
+			if (!$this->hidePagination and (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'])) {
+				if (!isset($this->ms['MODULES']['PRODUCTS_LISTING_PAGINATION_TYPE']) || $this->ms['MODULES']['PRODUCTS_LISTING_PAGINATION_TYPE'] == 'default') {
+					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination.php');	
+				} else {
+					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination_with_number.php');
+				}
 			}
 			// pagination eof	
 		}

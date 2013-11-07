@@ -16,6 +16,36 @@ if (is_array($this->get['categories_id'])) {
 		}
 	}
 }
+$this->productsID = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'productsID', 's_advanced');
+$this->categoriesID = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'categoriesID', 's_advanced');
+$this->searchKeywordListing = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'searchKeywordListing', 's_advanced');
+// if categoriesStartingPoint is defined through the template
+if (is_numeric($this->conf['categoriesStartingPoint'])) {
+	$this->categoriesStartingPoint=$this->conf['categoriesStartingPoint'];
+}
+// if categoriesStartingPoint is defined through flexform
+$this->categoriesStartingPointFlexForm = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'categoriesStartingPoint', 's_advanced');
+if ($this->categoriesStartingPointFlexForm) {
+	$this->categoriesStartingPoint=$this->categoriesStartingPointFlexForm;
+}
+if (!is_numeric($this->categoriesStartingPoint)) {
+	$this->categoriesStartingPoint=0;
+}
+if ($this->categoriesID and !$this->get['categories_id']) {
+	$this->get['categories_id']=$this->categoriesID;
+} elseif ($this->categoriesStartingPoint and !$this->get['categories_id']) {
+	$this->get['categories_id']=$this->categoriesStartingPoint;
+}
+$this->showCatalogFromPage = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'showCatalogFromPage', 's_advanced');
+if (!$this->showCatalogFromPage and $this->conf['catalog_shop_pid']) {
+	$this->showCatalogFromPage=$this->conf['catalog_shop_pid'];
+} elseif (!$this->showCatalogFromPage) {
+	$this->showCatalogFromPage=$this->shop_pid;
+}
+$this->masterShop = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'masterShop', 's_advanced');
+if (!$this->masterShop and $this->conf['masterShop']) {
+	$this->masterShop=$this->conf['masterShop'];
+}
 // load shop info from tt_address
 $this->tta_shop_info = mslib_fe::getAddressInfo();
 $this->tta_user_info = false;
@@ -117,29 +147,6 @@ if ($this->conf['fe_statisticsadmin_usergroup']) {
 }
 if ($this->conf['cacheConfiguration'] == '1') {
 	$this->ms['MODULES']['CACHE_FRONT_END']=1;
-}
-$this->productsID = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'productsID', 's_advanced');
-$this->searchKeywordListing = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'searchKeywordListing', 's_advanced');
-$this->categoriesStartingPoint = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'categoriesStartingPoint', 's_advanced');
-// if categoriesStartingPoint is defined through the template
-if (is_numeric($this->conf['categoriesStartingPoint'])) {
-	$this->categoriesStartingPoint=$this->conf['categoriesStartingPoint'];
-}
-if (!is_numeric($this->categoriesStartingPoint)) {
-	$this->categoriesStartingPoint=0;
-}
-if ($this->categoriesStartingPoint and !$this->get['categories_id']) {
-	$this->get['categories_id']=$this->categoriesStartingPoint;
-}
-$this->showCatalogFromPage = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'showCatalogFromPage', 's_advanced');
-$this->masterShop = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'masterShop', 's_advanced');
-if (!$this->masterShop and $this->conf['masterShop']) {
-	$this->masterShop=$this->conf['masterShop'];
-}
-if (!$this->showCatalogFromPage and $this->conf['catalog_shop_pid']) {
-	$this->showCatalogFromPage=$this->conf['catalog_shop_pid'];
-} elseif (!$this->showCatalogFromPage) {
-	$this->showCatalogFromPage=$this->shop_pid;
 }
 
 $lifetime=36000;
@@ -282,6 +289,9 @@ if (!$this->conf['admin_development_company_logo']) {
 }
 if (!$this->conf['admin_development_company_logo_gray_path']) {
 	$this->conf['admin_development_company_logo_gray_path']	= t3lib_extMgm::siteRelPath($this->extKey).'templates/images/powered_by_typo3multishop_gray.png';
+}
+if ($this->conf['cart_uid']) {
+	$this->ms['MODULES']['CART_PAGE_UID'] = $this->conf['cart_uid'];
 }
 $key='';
 if ($this->ms['MODULES']['CART_PAGE_UID']) {

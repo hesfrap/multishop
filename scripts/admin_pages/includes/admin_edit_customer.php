@@ -1,4 +1,5 @@
 <?php
+
 if (!defined('TYPO3_MODE')) die ('Access denied.');
 
 // now parse all the objects in the tmpl file
@@ -10,6 +11,7 @@ if ($this->conf['admin_edit_customer_tmpl_path']) {
 // Extract the subparts from the template
 $subparts=array();
 $subparts['template'] 	= $this->cObj->getSubpart($template, '###TEMPLATE###');
+$subparts['details'] 	= $this->cObj->getSubpart($subparts['template'], '###DETAILS###');
 
 if ($this->post) {
 	$erno=array();
@@ -56,6 +58,7 @@ if ($this->post) {
 		}
 		$updateArray['first_name']=$this->post['first_name'];
 		$updateArray['middle_name']=$this->post['middle_name'];
+
 		$updateArray['last_name']=$this->post['last_name'];
 		$updateArray['name']	=	$updateArray['first_name'].' '.$updateArray['middle_name'].' '.$updateArray['last_name'];
 		$updateArray['name']	=	preg_replace('/\s+/', ' ', $updateArray['name']);
@@ -77,6 +80,13 @@ if ($this->post) {
 		if ($this->post['password']) {		
 			$updateArray['password'] = mslib_befe::getHashedPassword($this->post['password']);		
 		}
+		if ($this->post['tx_multishop_pi1']['image']) {	
+			$updateArray['image']=$this->post['tx_multishop_pi1']['image'];
+		}
+		$updateArray['tx_multishop_vat_id']=$this->post['tx_multishop_vat_id'];
+		if ($this->post['page_uid'] and $this->masterShop) {
+			$updateArray['page_uid']=$this->post['page_uid'];
+		}		
 		if (is_numeric($this->post['tx_multishop_pi1']['cid'])) {
 			// update mode
 			if (count($this->post['tx_multishop_pi1']['groups'])) {
@@ -141,9 +151,13 @@ if ($this->post) {
 			} else {
 				$updateArray['password'] = mslib_befe::getHashedPassword(rand(1000000,9000000));
 			}
-			$updateArray['page_uid']			=	$this->shop_pid;			
+			if ($this->post['page_uid'] and $this->masterShop) {
+				$updateArray['page_uid']=$this->post['page_uid'];
+			} else {
+				$updateArray['page_uid'] = $this->shop_pid;
+			}			
 //			$updateArray['tx_multishop_newsletter']			=	$address['tx_multishop_newsletter'];			
-			$updateArray['cruser_id']			=	$GLOBALS['TSFE']->fe_user->user['uid'];
+			$updateArray['cruser_id'] =	$GLOBALS['TSFE']->fe_user->user['uid'];
 			// custom hook that can be controlled by third-party plugin
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['insertCustomerUserPreProc'])) {
 				$params = array (
@@ -254,218 +268,31 @@ if(!$this->post && is_numeric($this->get['tx_multishop_pi1']['cid'])) {
 }
 $head='';
 $head.='
-	 <script type="text/javascript">
-				/* <![CDATA[ */
-				jQuery(function(){
-				 jQuery("#username").validate({
-							expression: "if (VAL) return true; else return false;",
-							message: "'.$this->pi_getLL('username_is_required').'"
-					 });
-';
-if ($_REQUEST['action'] != 'edit_customer') {
-$head.='						 
-				jQuery("#password").validate({
-							expression: "if (VAL) return true; else return false;",
-							message: "'.$this->pi_getLL('password_is_required', 'Password is required').'"
-					 });
-';
-$head.='
-				jQuery("#company").validate();
-				jQuery("#radio").validate({
-				  expression: "if (jQuery(\'#radio\').is(\':checked\') || jQuery(\'#radio2\').is(\':checked\')) return true; else return false;",
-				  message: "'.$this->pi_getLL('title_is_required', 'Title is required').'"
-				});
-				  
-			  jQuery("#first_name").validate({
-						  expression: "if (VAL.match('.$regex_for_character.')) return true; else return false;",
-						  message: "'.$this->pi_getLL('first_name_required').'"
-					 });
-			
-			  jQuery("#last_name").validate({
-						  expression: "if (VAL.match('.$regex_for_character.')) return true; else return false;",
-						  message: "'.$this->pi_getLL('surname_is_required').'"
-					 });
-			  jQuery("#zip").validate({
-						  expression: "if (VAL) return true; else return false;",
-							message: "'.$this->pi_getLL('zip_is_required').'"
-					 });
-			  jQuery("#address").validate({
-						  expression: "if (VAL) return true; else return false;",
-							message: "'.$this->pi_getLL('street_address_is_required').'"
-					 });
-			  jQuery("#delivery_address_number").validate({
-						  expression: "if (VAL) return true; else return false;",
-							message: "'.$this->pi_getLL('street_number_is_required').' (delivery address)."
-					 });
-			  jQuery("#city").validate({
-						  expression: "if (VAL) return true; else return false;",
-							message: "'.$this->pi_getLL('city_is_required').'"
-					 });
-			  jQuery("#city").validate({
-						  expression: "if (VAL) return true; else return false;",
-							message: "'.$this->pi_getLL('city_is_required').' (delivery address)."
-					 });
-			  '.((count($enabled_countries) > 1)? '
-					jQuery("#country").validate({
-						  expression: "if (VAL != \'\') return true; else return false;",
-							message: "'.$this->pi_getLL('country_is_required').'"
-					 });
-					':'').'
-			  '.((count($enabled_countries) > 1)? '
-					jQuery("#delivery_country").validate({
-						  expression: "if (VAL != \'\') return true; else return false;",
-							message: "'.$this->pi_getLL('country_is_required').' (delivery address)."
-					 });
-					':'').'
-					jQuery("#email").validate({
-					expression: "if (VAL.match('.$regex.')) return true; else return false;",
-					message: "'.$this->pi_getLL('email_is_required').'"
-					 });
-					jQuery("#address_number").validate({
-						  expression: "if (VAL) return true; else return false;",
-							message: "'.$this->pi_getLL('street_number_is_required').'"
-					 });
-					jQuery("#telephone").validate({
-					  expression: "if (!isNaN(VAL) && VAL) return true; else return false;",
-						message: "'.$this->pi_getLL('telephone_is_required').'"
-					});
-';
-}
-$head.='
-					
-				});
-				/* ]]> */
-				jQuery().ready(function(){
-					jQuery("#company").bind("keyup",function(){
-						if(jQuery(this).val() ==  "" ){
-							jQuery(this).next().removeClass("error-yes");
-						}
-					});
-					jQuery("#company").bind("keypress",function(){
-						if(jQuery(this).length > 0 ){
-							jQuery(this).next().addClass("error-yes");
-						} 
-					});
-					jQuery("#delivery_company").bind("keypress",function(){
-						if(jQuery(this).length > 0 ){
-							jQuery(this).next().addClass("error-yes");
-						} 
-					});
-					jQuery("#delivery_company").bind("keyup",function(){
-						if(jQuery(this).val() ==  "" ){
-							jQuery(this).next().removeClass("error-yes");
-						}
-					});
-					//Validation for midle name
-					jQuery("#middle_name").bind("keyup click",function(){
-						jQuery(this).next().removeClass("left-this");
-						if (jQuery(this).hasClass("ErrorField") && jQuery(this).val() ==  ""){
-							jQuery(this).next().addClass("left-this");
-						}
-					});
-					jQuery("#delivery_middle_name").bind("keyup click",function(){
-						jQuery(this).next().removeClass("left-this");
-						if (jQuery(this).hasClass("ErrorField") && jQuery(this).val() ==  ""){
-							jQuery(this).next().addClass("left-this");
-						}
-					});
-					jQuery("#middle_name").bind("blur",function(){
-						if (jQuery(this).val() ==  ""){
-							jQuery(this).next().addClass("left-this");
-						}
-						if (jQuery(this).hasClass("ErrorField") && jQuery(this).next().hasClass("error-no")){
-							jQuery(this).next().removeClass("left-this");
-							jQuery(this).next().removeClass("error-no");
-						} else {
-							jQuery(this).next().addClass("left-this");
-							jQuery(this).next().addClass("error-yes");
-							jQuery(this).next().removeClass("error-no");
-						}
-						jQuery(this).next().addClass("error-yes");
-						jQuery(this).next().addClass("left-this");
-					});
-					jQuery("#delivery_middle_name").bind("blur",function(){
-						if (jQuery(this).val() ==  ""){
-							jQuery(this).next().addClass("left-this");
-						}
-						if (jQuery(this).hasClass("ErrorField") && jQuery(this).next().hasClass("error-no")){
-							jQuery(this).next().removeClass("left-this");
-							jQuery(this).next().removeClass("error-no");
-						} else {
-							jQuery(this).next().addClass("left-this");
-							jQuery(this).next().addClass("error-yes");
-							jQuery(this).next().removeClass("error-no");
-						}
-						jQuery(this).next().addClass("error-yes");
-						jQuery(this).next().addClass("left-this");
-					});
-					//validation for mobile
-					jQuery("#mobile").bind("keyup click",function(){
-						jQuery(this).next().removeClass("left-this");
-						if (jQuery(this).hasClass("ErrorField") && jQuery(this).val() ==  ""){
-							jQuery(this).next().addClass("left-this");
-						}
-					});
-					jQuery("#mobile").bind("blur",function(){
-						if (jQuery(this).val() ==  ""){
-							jQuery(this).next().addClass("left-this");
-						}
-						if (jQuery(this).hasClass("ErrorField") && jQuery(this).next().hasClass("error-no")){
-							jQuery(this).next().removeClass("left-this");
-							jQuery(this).next().removeClass("error-no");
-						} else {
-							jQuery(this).next().addClass("left-this");
-							jQuery(this).next().addClass("error-yes");
-							jQuery(this).next().removeClass("error-no");
-						}
-						jQuery(this).next().addClass("error-yes");
-						jQuery(this).next().addClass("left-this");
-					});
-					//validation for delivery mobile
-					jQuery("#delivery_mobile").bind("keyup click",function(){
-						jQuery(this).next().removeClass("left-this");
-						if (jQuery(this).hasClass("ErrorField") && jQuery(this).val() ==  ""){
-							//jQuery(this).next().addClass("left-this");
-						}
-					});
-					jQuery("#delivery_mobile").bind("blur",function(){
-						/**
-						if (jQuery(this).val() ==  ""){
-							jQuery(this).next().addClass("left-this");
-						}
-						if (jQuery(this).hasClass("ErrorField") && jQuery(this).next().hasClass("error-no")){
-							jQuery(this).next().removeClass("left-this");
-							jQuery(this).next().removeClass("error-no");
-						} else {
-							jQuery(this).next().addClass("left-this");
-							jQuery(this).next().addClass("error-yes");
-							jQuery(this).next().removeClass("error-no");
-						}
-						*/
-						//jQuery(this).next().addClass("error-yes");
-						//jQuery(this).next().addClass("left-this");
-					});
-					//Display BOX Message
-					jQuery("#birthday_visitor").datepicker({ 
-													dateFormat: "'.$this->pi_getLL('locale_date_format', 'm/d/Y').'",
-													altField: "#birthday",
-													altFormat: "yy-mm-dd",
-													changeMonth: true,
-													changeYear: true,
-													showOtherMonths: true,  
-													yearRange: "'.(date("Y")-100).':'.date("Y").'" 
-													});
-					jQuery("#delivery_birthday_visitor").datepicker({ 
-						dateFormat: "'.$this->pi_getLL('locale_date_format', 'm/d/Y').'",
-						altField: "#delivery_birthday",
-						altFormat: "yy-mm-dd",
-						changeMonth: true,
-						changeYear: true,
-						showOtherMonths: true,  
-						yearRange: "'.(date("Y")-100).':'.date("Y").'" 
-					});
-				}); //end of first load
-			 </script>';
+<script type="text/javascript">
+	jQuery(document).ready(function () {
+		jQuery(\'#edit_customer\').h5Validate();
+		
+		//Display BOX Message
+		jQuery("#birthday_visitor").datepicker({ 
+										dateFormat: "'.$this->pi_getLL('locale_date_format', 'm/d/Y').'",
+										altField: "#birthday",
+										altFormat: "yy-mm-dd",
+										changeMonth: true,
+										changeYear: true,
+										showOtherMonths: true,  
+										yearRange: "'.(date("Y")-100).':'.date("Y").'" 
+										});
+		jQuery("#delivery_birthday_visitor").datepicker({ 
+			dateFormat: "'.$this->pi_getLL('locale_date_format', 'm/d/Y').'",
+			altField: "#delivery_birthday",
+			altFormat: "yy-mm-dd",
+			changeMonth: true,
+			changeYear: true,
+			showOtherMonths: true,  
+			yearRange: "'.(date("Y")-100).':'.date("Y").'" 
+		});
+	}); //end of first load
+</script>';
 $GLOBALS['TSFE']->additionalHeaderData[] = $head;
 $head='';
 if (is_array($erno) and count($erno) > 0) {
@@ -497,13 +324,69 @@ if (count($enabled_countries) ==1)  {
 	if ($tmpcontent_con) {
 		$countries_input='
 		<label for="country" id="account-country">'.ucfirst($this->pi_getLL('country')).'*</label>
-		<select name="country" id="country" class="country">
+		<select name="country" id="country" class="country" required="required" data-h5-errorid="invalid-country" title="' . $this->pi_getLL('country_is_required') . '">
 		<option value="">'.ucfirst($this->pi_getLL('choose_country')).'</option>
 		'.$tmpcontent_con.'
-		</select><span class="error-space"></span>';
+		</select>
+		<div id="invalid-country" class="error-space" style="display:none"></div>';
 	}			
 }
 // country eof
+
+// fe_user image
+$images_tab_block = '';
+$images_tab_block.='
+<div class="account-field" id="msEditProductInputImage">
+	<label for="products_image">'.$this->pi_getLL('admin_image').'</label>
+	<div id="fe_user_image">
+		<noscript>
+			<input name="fe_user_image" type="file" />
+		</noscript>
+	</div>
+';
+if ($this->post['image']) {
+	$temp_file=$this->DOCUMENT_ROOT.'uploads/pics/'.$this->post['image'];
+	$size=getimagesize($temp_file);
+	if ($size[0]> 150) {
+		$size[0]=150;
+	}
+	$images_tab_block.='
+	<div class="fe_user_image">
+		<img src="uploads/pics/'.$this->post['image'].'" width="'.$size[0].'" />
+	</div>
+	';
+}
+$images_tab_block.='
+	
+	<input name="tx_multishop_pi1[image]" id="ajax_fe_user_image" type="hidden" value="" />';
+if ($_REQUEST['action'] =='edit_product' and $this->post['image']) {
+	$images_tab_block.='<img src="'.mslib_befe::getImagePath($this->post['image'],'products','50').'">';
+	$images_tab_block.=' <a href="'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&cid='.$_REQUEST['cid'].'&pid='.$_REQUEST['pid'].'&action=edit_product&delete_image=products_image').'" onclick="return confirm(\'Are you sure?\')"><img src="'.$this->FULL_HTTP_URL_MS.'templates/images/icons/delete2.png" border="0" alt="'.$this->pi_getLL('admin_delete_image').'"></a>';
+}
+$images_tab_block.='</div>';
+$images_tab_block.='
+<script>
+jQuery(document).ready(function($) {
+	var uploader = new qq.FileUploader({
+		element: document.getElementById(\'fe_user_image'.'\'),
+		action: \''.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax_upload&tx_multishop_pi1[uid]='.$user['uid']).'\',
+		params: {
+			file_type: \'fe_user_image'.'\'
+		},
+		template: \'<div class="qq-uploader">\' +
+				  \'<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>\' +
+				  \'<div class="qq-upload-button">'.addslashes(htmlspecialchars($this->pi_getLL('choose_image'))).'</div>\' +
+				  \'<ul class="qq-upload-list"></ul>\' +
+				  \'</div>\',
+		onComplete: function(id, fileName, responseJSON){
+			var filenameServer = responseJSON[\'filename\'];
+			$("#ajax_fe_user_image").val(filenameServer);
+		},
+		debug: false
+	});
+});
+</script>';
+
 // now lets load the users 
 $groups=mslib_fe::getUserGroups($this->conf['fe_customer_pid']);
 $customer_groups_input = '';
@@ -523,108 +406,230 @@ if ($this->get['tx_multishop_pi1']['cid']) {
 }
 
 $subpartArray = array();
-if ($_REQUEST['action'] == 'edit_customer') {
-	$subpartArray['###LABEL_USERNAME###'] 				= ucfirst($this->pi_getLL('username'));
-	$subpartArray['###USERNAME_READONLY###'] 			= ($this->get['action']=='edit_customer'?'readonly="readonly"':'');
-	$subpartArray['###VALUE_USERNAME###'] 				= htmlspecialchars($this->post['username']);
-	$subpartArray['###LABEL_PASSWORD###'] 				= ucfirst($this->pi_getLL('password'));
-	$subpartArray['###VALUE_PASSWORD###'] 				= '';
-	$subpartArray['###LABEL_GENDER###'] 				= ucfirst($this->pi_getLL('title'));
-	$subpartArray['###GENDER_MR_CHECKED###'] 			= (($this->post['gender']=='0')?'checked="checked"':'');
-	$subpartArray['###LABEL_GENDER_MR###'] 				= ucfirst($this->pi_getLL('mr'));
-	$subpartArray['###GENDER_MRS_CHECKED###'] 			= (($this->post['gender']=='1')?'checked="checked"':'');
-	$subpartArray['###LABEL_GENDER_MRS###'] 			= ucfirst($this->pi_getLL('mrs'));
-	$subpartArray['###LABEL_FIRSTNAME###'] 				= ucfirst($this->pi_getLL('first_name'));
-	$subpartArray['###VALUE_FIRSTNAME###'] 				= htmlspecialchars($this->post['first_name']);
-	$subpartArray['###LABEL_MIDDLENAME###'] 			= ucfirst($this->pi_getLL('middle_name'));
-	$subpartArray['###VALUE_MIDDLENAME###'] 			= htmlspecialchars($this->post['middle_name']);
-	$subpartArray['###LABEL_LASTNAME###'] 				= ucfirst($this->pi_getLL('last_name'));
-	$subpartArray['###VALUE_LASTNAME###'] 				= htmlspecialchars($this->post['last_name']);
-	$subpartArray['###LABEL_COMPANY###'] 				= ucfirst($this->pi_getLL('company'));
-	$subpartArray['###VALUE_COMPANY###'] 				= htmlspecialchars($this->post['company']);
-	$subpartArray['###LABEL_STREET_ADDRESS###'] 		= ucfirst($this->pi_getLL('street_address'));
-	$subpartArray['###VALUE_STREET_ADDRESS###'] 		= htmlspecialchars($this->post['street_name']);
-	$subpartArray['###LABEL_STREET_ADDRESS_NUMBER###'] 	= ucfirst($this->pi_getLL('street_address_number'));
-	$subpartArray['###VALUE_STREET_ADDRESS_NUMBER###'] 	= htmlspecialchars($this->post['address_number']);
-	$subpartArray['###LABEL_ADDRESS_EXTENTION###'] 		= ucfirst($this->pi_getLL('address_extension'));
-	$subpartArray['###VALUE_ADDRESS_EXTENTION###'] 		= htmlspecialchars($this->post['address_ext']);
-	$subpartArray['###LABEL_POSTCODE###'] 				= ucfirst($this->pi_getLL('zip'));
-	$subpartArray['###VALUE_POSTCODE###'] 				= htmlspecialchars($this->post['zip']);
-	$subpartArray['###LABEL_CITY###'] 					= ucfirst($this->pi_getLL('city'));
-	$subpartArray['###VALUE_CITY###'] 					= htmlspecialchars($this->post['city']);
-	$subpartArray['###COUNTRIES_INPUT###'] 				= $countries_input;
-	$subpartArray['###LABEL_EMAIL###'] 					= ucfirst($this->pi_getLL('e-mail_address'));
-	$subpartArray['###VALUE_EMAIL###'] 					= htmlspecialchars($this->post['email']);
-	$subpartArray['###LABEL_TELEPHONE###'] 				= ucfirst($this->pi_getLL('telephone'));
-	$subpartArray['###VALUE_TELEPHONE###'] 				= htmlspecialchars($this->post['telephone']);
-	$subpartArray['###LABEL_MOBILE###'] 				= ucfirst($this->pi_getLL('mobile'));
-	$subpartArray['###VALUE_MOBILE###'] 				= htmlspecialchars($this->post['mobile']);
-	$subpartArray['###LABEL_BIRTHDATE###'] 				= ucfirst($this->pi_getLL('birthday'));
-	$subpartArray['###VALUE_VISIBLE_BIRTHDATE###'] 		= ($this->post['date_of_birth']?htmlspecialchars(strftime("%x",  $this->post['date_of_birth'])):'');
-	$subpartArray['###VALUE_HIDDEN_BIRTHDATE###'] 		= ($this->post['date_of_birth']?htmlspecialchars(strftime("%F",  $this->post['date_of_birth'])):'');
-	$subpartArray['###LABEL_DISCOUNT###'] 				= ucfirst($this->pi_getLL('discount'));
-	$subpartArray['###VALUE_DISCOUNT###'] 				= ($this->post['tx_multishop_discount']>0 ?htmlspecialchars($this->post['tx_multishop_discount']):'');
-	$subpartArray['###CUSTOMER_GROUPS_INPUT###'] 		= $customer_groups_input;
-	$subpartArray['###VALUE_CUSTOMER_ID###'] 			= $this->get['tx_multishop_pi1']['cid'];
-	if ($_GET['action'] == 'edit_customer') {
-		$subpartArray['###LABEL_BUTTON_SAVE###'] 		= ucfirst($this->pi_getLL('update_account'));
-	} else {
-		$subpartArray['###LABEL_BUTTON_SAVE###'] 		= ucfirst($this->pi_getLL('save'));
-	}
-	$subpartArray['###LOGIN_AS_THIS_USER_LINK###'] 		= $login_as_this_user_link;
-} else {
-	if ($this->post['gender']=='1') {
-		$mr_checked 	= '';
-		$mrs_checked 	= 'checked="checked"';
-	} else {
-		$mr_checked 	= 'checked="checked"';
-		$mrs_checked 	= '';
-	}
-	$subpartArray['###LABEL_USERNAME###'] 				= ucfirst($this->pi_getLL('username'));
-	$subpartArray['###USERNAME_READONLY###'] 			= ($this->get['action']=='edit_customer'?'readonly="readonly"':'');
-	$subpartArray['###VALUE_USERNAME###'] 				= htmlspecialchars($this->post['username']);
-	$subpartArray['###VALUE_PASSWORD###'] 				= htmlspecialchars($this->post['password']);
-	$subpartArray['###LABEL_PASSWORD###'] 				= ucfirst($this->pi_getLL('password'));
-	$subpartArray['###LABEL_GENDER###'] 				= ucfirst($this->pi_getLL('title'));
-	$subpartArray['###GENDER_MR_CHECKED###'] 			= $mr_checked;
-	$subpartArray['###LABEL_GENDER_MR###'] 				= ucfirst($this->pi_getLL('mr'));
-	$subpartArray['###GENDER_MRS_CHECKED###'] 			= $mrs_checked;
-	$subpartArray['###LABEL_GENDER_MRS###'] 			= ucfirst($this->pi_getLL('mrs'));
-	$subpartArray['###LABEL_FIRSTNAME###'] 				= ucfirst($this->pi_getLL('first_name'));
-	$subpartArray['###VALUE_FIRSTNAME###'] 				= htmlspecialchars($this->post['first_name']);
-	$subpartArray['###LABEL_MIDDLENAME###'] 			= ucfirst($this->pi_getLL('middle_name'));
-	$subpartArray['###VALUE_MIDDLENAME###'] 			= htmlspecialchars($this->post['middle_name']);
-	$subpartArray['###LABEL_LASTNAME###'] 				= ucfirst($this->pi_getLL('last_name'));
-	$subpartArray['###VALUE_LASTNAME###'] 				= htmlspecialchars($this->post['last_name']);
-	$subpartArray['###LABEL_COMPANY###'] 				= ucfirst($this->pi_getLL('company'));
-	$subpartArray['###VALUE_COMPANY###'] 				= htmlspecialchars($this->post['company']);
-	$subpartArray['###LABEL_STREET_ADDRESS###'] 		= ucfirst($this->pi_getLL('street_address'));
-	$subpartArray['###VALUE_STREET_ADDRESS###'] 		= htmlspecialchars($this->post['street_name']);
-	$subpartArray['###LABEL_STREET_ADDRESS_NUMBER###'] 	= ucfirst($this->pi_getLL('street_address_number'));
-	$subpartArray['###VALUE_STREET_ADDRESS_NUMBER###'] 	= htmlspecialchars($this->post['address_number']);
-	$subpartArray['###LABEL_ADDRESS_EXTENTION###'] 		= ucfirst($this->pi_getLL('address_extension'));
-	$subpartArray['###VALUE_ADDRESS_EXTENTION###'] 		= htmlspecialchars($this->post['address_ext']);
-	$subpartArray['###LABEL_POSTCODE###'] 				= ucfirst($this->pi_getLL('zip'));
-	$subpartArray['###VALUE_POSTCODE###'] 				= htmlspecialchars($this->post['zip']);
-	$subpartArray['###LABEL_CITY###'] 					= ucfirst($this->pi_getLL('city'));
-	$subpartArray['###VALUE_CITY###'] 					= htmlspecialchars($this->post['city']);
-	$subpartArray['###COUNTRIES_INPUT###'] 				= $countries_input;
-	$subpartArray['###LABEL_EMAIL###'] 					= ucfirst($this->pi_getLL('e-mail_address'));
-	$subpartArray['###VALUE_EMAIL###'] 					= htmlspecialchars($this->post['email']);
-	$subpartArray['###LABEL_TELEPHONE###'] 				= ucfirst($this->pi_getLL('telephone'));
-	$subpartArray['###VALUE_TELEPHONE###'] 				= htmlspecialchars($this->post['telephone']);
-	$subpartArray['###LABEL_MOBILE###'] 				= ucfirst($this->pi_getLL('mobile'));
-	$subpartArray['###VALUE_MOBILE###'] 				= htmlspecialchars($this->post['mobile']);
-	$subpartArray['###LABEL_BIRTHDATE###'] 				= ucfirst($this->pi_getLL('birthday'));
-	$subpartArray['###VALUE_VISIBLE_BIRTHDATE###'] 		= ($this->post['date_of_birth']?htmlspecialchars(strftime("%x",  $this->post['date_of_birth'])):'');
-	$subpartArray['###VALUE_HIDDEN_BIRTHDATE###'] 		= ($this->post['date_of_birth']?htmlspecialchars(strftime("%F",  $this->post['date_of_birth'])):'');
-	$subpartArray['###LABEL_DISCOUNT###'] 				= ucfirst($this->pi_getLL('discount'));
-	$subpartArray['###VALUE_DISCOUNT###'] 				= ($this->post['tx_multishop_discount']>0 ?htmlspecialchars($this->post['tx_multishop_discount']):'');
-	$subpartArray['###CUSTOMER_GROUPS_INPUT###'] 		= $customer_groups_input;
-	$subpartArray['###VALUE_CUSTOMER_ID###'] 			= '';
-	$subpartArray['###LABEL_BUTTON_SAVE###'] 			= ucfirst($this->pi_getLL('save'));
-	$subpartArray['###LOGIN_AS_THIS_USER_LINK###'] 		= '';
+// global fields 
+$subpartArray['###LABEL_VAT_ID###'] = ucfirst($this->pi_getLL('vat_id','VAT ID'));
+$subpartArray['###VALUE_VAT_ID###'] = htmlspecialchars($this->post['tx_multishop_vat_id']);
+$subpartArray['###LABEL_IMAGE###'] = ucfirst($this->pi_getLL('image'));
+$subpartArray['###VALUE_IMAGE###'] = $images_tab_block;	
+$subpartArray['###LABEL_BUTTON_ADMIN_CANCEL###'] 				= $this->pi_getLL('admin_cancel');
+$subpartArray['###LABEL_BUTTON_ADMIN_SAVE###'] 					= $this->pi_getLL('admin_save');
+
+$subpartArray['###CUSTOMER_FORM_HEADING###'] 					= 'Edit customer';
+$subpartArray['###MASTER_SHOP###']='';
+
+switch($_REQUEST['action']) {
+	case 'edit_customer':
+		$subpartArray['###LABEL_USERNAME###'] 				= ucfirst($this->pi_getLL('username'));
+		$subpartArray['###USERNAME_READONLY###'] 			= ($this->get['action']=='edit_customer'?'readonly="readonly"':'');
+		$subpartArray['###VALUE_USERNAME###'] 				= htmlspecialchars($this->post['username']);
+		$subpartArray['###LABEL_PASSWORD###'] 				= ucfirst($this->pi_getLL('password'));
+		
+		if ($this->masterShop) {
+			$multishop_content_objects = mslib_fe::getActiveShop();
+			if (count($multishop_content_objects) > 1) {
+				$counter=0;
+				$total=count($multishop_content_objects);	
+				$selectContent.='<select name="page_uid"><option value="">'.ucfirst($this->pi_getLL('choose')).'</option>'."\n";
+				foreach ($multishop_content_objects as $pageinfo) {				
+					$selectContent.='<option value="'.$pageinfo["puid"].'"'.($pageinfo["puid"]==$this->post['page_uid']?' selected':'').'>'.htmlspecialchars(t3lib_div::strtoupper($pageinfo['title'])).'</option>';
+					$counter++;
+				}
+				$selectContent.='</select>'."\n";
+				if ($selectContent) {
+					$subpartArray['###MASTER_SHOP###'] ='
+						<div class="account-field">
+							<label for="store" id="account-store">'.$this->pi_getLL('store').'</label>
+							'.$selectContent.'
+						</div>
+					';
+				}
+			}
+		}
+		$subpartArray['###VALUE_PASSWORD###'] 				= '';
+		$subpartArray['###LABEL_GENDER###'] 				= ucfirst($this->pi_getLL('title'));
+		$subpartArray['###GENDER_MR_CHECKED###'] 			= (($this->post['gender']=='0')?'checked="checked"':'');
+		$subpartArray['###LABEL_GENDER_MR###'] 				= ucfirst($this->pi_getLL('mr'));
+		$subpartArray['###GENDER_MRS_CHECKED###'] 			= (($this->post['gender']=='1')?'checked="checked"':'');
+		$subpartArray['###LABEL_GENDER_MRS###'] 			= ucfirst($this->pi_getLL('mrs'));
+		$subpartArray['###LABEL_FIRSTNAME###'] 				= ucfirst($this->pi_getLL('first_name'));
+		$subpartArray['###VALUE_FIRSTNAME###'] 				= htmlspecialchars($this->post['first_name']);
+		$subpartArray['###LABEL_MIDDLENAME###'] 			= ucfirst($this->pi_getLL('middle_name'));
+		$subpartArray['###VALUE_MIDDLENAME###'] 			= htmlspecialchars($this->post['middle_name']);
+		$subpartArray['###LABEL_LASTNAME###'] 				= ucfirst($this->pi_getLL('last_name'));
+		$subpartArray['###VALUE_LASTNAME###'] 				= htmlspecialchars($this->post['last_name']);
+		$subpartArray['###LABEL_COMPANY###'] 				= ucfirst($this->pi_getLL('company'));
+		$subpartArray['###VALUE_COMPANY###'] 				= htmlspecialchars($this->post['company']);
+		$subpartArray['###LABEL_STREET_ADDRESS###'] 		= ucfirst($this->pi_getLL('street_address'));
+		$subpartArray['###VALUE_STREET_ADDRESS###'] 		= htmlspecialchars($this->post['street_name']);
+		$subpartArray['###LABEL_STREET_ADDRESS_NUMBER###'] 	= ucfirst($this->pi_getLL('street_address_number'));
+		$subpartArray['###VALUE_STREET_ADDRESS_NUMBER###'] 	= htmlspecialchars($this->post['address_number']);
+		$subpartArray['###LABEL_ADDRESS_EXTENTION###'] 		= ucfirst($this->pi_getLL('address_extension'));
+		$subpartArray['###VALUE_ADDRESS_EXTENTION###'] 		= htmlspecialchars($this->post['address_ext']);
+		$subpartArray['###LABEL_POSTCODE###'] 				= ucfirst($this->pi_getLL('zip'));
+		$subpartArray['###VALUE_POSTCODE###'] 				= htmlspecialchars($this->post['zip']);
+		$subpartArray['###LABEL_CITY###'] 					= ucfirst($this->pi_getLL('city'));
+		$subpartArray['###VALUE_CITY###'] 					= htmlspecialchars($this->post['city']);
+		$subpartArray['###COUNTRIES_INPUT###'] 				= $countries_input;
+		$subpartArray['###LABEL_EMAIL###'] 					= ucfirst($this->pi_getLL('e-mail_address'));
+		$subpartArray['###VALUE_EMAIL###'] 					= htmlspecialchars($this->post['email']);
+		$subpartArray['###LABEL_TELEPHONE###'] 				= ucfirst($this->pi_getLL('telephone'));
+		$subpartArray['###VALUE_TELEPHONE###'] 				= htmlspecialchars($this->post['telephone']);
+		$subpartArray['###LABEL_MOBILE###'] 				= ucfirst($this->pi_getLL('mobile'));
+		$subpartArray['###VALUE_MOBILE###'] 				= htmlspecialchars($this->post['mobile']);
+		$subpartArray['###LABEL_BIRTHDATE###'] 				= ucfirst($this->pi_getLL('birthday'));
+		$subpartArray['###VALUE_VISIBLE_BIRTHDATE###'] 		= ($this->post['date_of_birth']?htmlspecialchars(strftime("%x",  $this->post['date_of_birth'])):'');
+		$subpartArray['###VALUE_HIDDEN_BIRTHDATE###'] 		= ($this->post['date_of_birth']?htmlspecialchars(strftime("%F",  $this->post['date_of_birth'])):'');
+		$subpartArray['###LABEL_DISCOUNT###'] 				= ucfirst($this->pi_getLL('discount'));
+		$subpartArray['###VALUE_DISCOUNT###'] 				= ($this->post['tx_multishop_discount']>0 ?htmlspecialchars($this->post['tx_multishop_discount']):'');
+		$subpartArray['###CUSTOMER_GROUPS_INPUT###'] 		= $customer_groups_input;
+		$subpartArray['###VALUE_CUSTOMER_ID###'] 			= $this->get['tx_multishop_pi1']['cid'];
+		if ($_GET['action'] == 'edit_customer') {
+			$subpartArray['###LABEL_BUTTON_SAVE###'] 		= ucfirst($this->pi_getLL('update_account'));
+		} else {
+			$subpartArray['###LABEL_BUTTON_SAVE###'] 		= ucfirst($this->pi_getLL('save'));
+		}
+		$subpartArray['###LOGIN_AS_THIS_USER_LINK###'] 		= $login_as_this_user_link;
+		
+		
+		
+		$customer_details = '';
+		$markerArray=array();
+		if ($this->post['image']) {
+			$markerArray['CUSTOMER_IMAGE'] 					= '<div class="msAdminFeUserImage"><img src="uploads/pics/'.$this->post['image'].'" width="'.$size[0].'" /></div>';
+		} else {
+			$markerArray['CUSTOMER_IMAGE'] 					= '';
+		}
+		
+		$customer_billing_address 	= mslib_fe::getFeUserTTaddressDetails($this->get['tx_multishop_pi1']['cid']);
+		$customer_delivery_address 	= mslib_fe::getFeUserTTaddressDetails($this->get['tx_multishop_pi1']['cid'], 'delivery');
+		
+		if ($customer_billing_address['name'] && $customer_billing_address['phone'] && $customer_billing_address['email']) {
+			$fullname = $customer_billing_address['name'];
+			$telephone = $customer_billing_address['phone'];
+			$email_address = $customer_billing_address['email'];
+		} else {
+			$fullname = $this->post['name'];
+			$telephone = $this->post['telephone'];
+			$email_address = $this->post['email'];
+		}
+
+		$company_name = '';
+		if ($customer_billing_address['address'] && $customer_billing_address['zip'] && $customer_billing_address['city']) {
+			$company_name = $customer_billing_address['company'];
+			$billing_street_address = $customer_billing_address['address'];
+			$billing_postcode = $customer_billing_address['zip'] . ' ' . $customer_billing_address['city'];
+			$billing_country = ucwords(strtolower($customer_billing_address['country']));
+		} else {
+			$company_name = $user['company'];
+			$billing_street_address = $user['address'];
+			$billing_postcode = $user['zip'] . ' ' . $user['city'];
+			$billing_country = ucwords(strtolower($user['country']));
+		}
+		
+		if ($customer_delivery_address['address'] && $customer_delivery_address['zip'] && $customer_delivery_address['city']) {
+			$delivery_street_address = $customer_delivery_address['address'];
+			$delivery_postcode = $customer_delivery_address['zip'] . ' ' . $customer_delivery_address['city'];
+			$delivery_country = ucwords(strtolower($customer_delivery_address['country']));
+		} else {
+			$delivery_street_address = $user['address'];
+			$delivery_postcode = $user['zip'] . ' ' . $user['city'];
+			$delivery_country = ucwords(strtolower($user['country']));
+		}
+		
+		$markerArray['DETAILS_COMPANY_NAME'] 	= $company_name;
+		$markerArray['BILLING_FULLNAME'] 		= $fullname . '<br/>';
+		$markerArray['BILLING_TELEPHONE'] 		= ucfirst($this->pi_getLL('telephone')) . ': ' . $telephone . '<br/>';
+		$markerArray['BILLING_EMAIL'] 			= ucfirst($this->pi_getLL('e-mail_address')) . ': ' . $email_address;
+		
+		$markerArray['BILLING_ADDRESS'] 		= $billing_street_address . '<br/>' . $billing_postcode . '<br/>' . htmlspecialchars(mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$billing_country));
+		$markerArray['DELIVERY_ADDRESS'] 		= $delivery_street_address . '<br/>' . $delivery_postcode . '<br/>' . htmlspecialchars(mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$delivery_country));
+		$markerArray['GOOGLE_MAPS_URL_QUERY'] 	= 'http://maps.google.com/maps?f=q&amp;source=s_q&amp;hl=nl&amp;geocode=&amp;q='.rawurlencode($billing_street_address).','.rawurlencode($billing_postcode).','.rawurlencode($billing_country).'&amp;z=14&amp;iwloc=A&amp;output=embed&amp;iwloc=';
+		$customer_details .= $this->cObj->substituteMarkerArray($subparts['details'], $markerArray,'###|###');
+		
+		$subpartArray['###DETAILS_TAB###']				 	= '<li class="active"><a href="#view_customer">DETAILS</a></li>';
+		$subpartArray['###DETAILS###']				 		= $customer_details;
+		
+	break;
+	default:
+		if ($this->post['gender']=='1') {
+			$mr_checked 	= '';
+			$mrs_checked 	= 'checked="checked"';
+		} else {
+			$mr_checked 	= 'checked="checked"';
+			$mrs_checked 	= '';
+		}
+		$subpartArray['###LABEL_USERNAME###'] 				= ucfirst($this->pi_getLL('username'));
+		$subpartArray['###USERNAME_READONLY###'] 			= ($this->get['action']=='edit_customer'?'readonly="readonly"':'');
+		$subpartArray['###VALUE_USERNAME###'] 				= htmlspecialchars($this->post['username']);
+		$subpartArray['###VALUE_PASSWORD###'] 				= htmlspecialchars($this->post['password']);
+		$subpartArray['###LABEL_PASSWORD###'] 				= ucfirst($this->pi_getLL('password'));
+		$subpartArray['###LABEL_GENDER###'] 				= ucfirst($this->pi_getLL('title'));
+		$subpartArray['###GENDER_MR_CHECKED###'] 			= $mr_checked;
+		$subpartArray['###LABEL_GENDER_MR###'] 				= ucfirst($this->pi_getLL('mr'));
+		$subpartArray['###GENDER_MRS_CHECKED###'] 			= $mrs_checked;
+		$subpartArray['###LABEL_GENDER_MRS###'] 			= ucfirst($this->pi_getLL('mrs'));
+		$subpartArray['###LABEL_FIRSTNAME###'] 				= ucfirst($this->pi_getLL('first_name'));
+		$subpartArray['###VALUE_FIRSTNAME###'] 				= htmlspecialchars($this->post['first_name']);
+		$subpartArray['###LABEL_MIDDLENAME###'] 			= ucfirst($this->pi_getLL('middle_name'));
+		$subpartArray['###VALUE_MIDDLENAME###'] 			= htmlspecialchars($this->post['middle_name']);
+		$subpartArray['###LABEL_LASTNAME###'] 				= ucfirst($this->pi_getLL('last_name'));
+		$subpartArray['###VALUE_LASTNAME###'] 				= htmlspecialchars($this->post['last_name']);
+		$subpartArray['###LABEL_COMPANY###'] 				= ucfirst($this->pi_getLL('company'));
+		$subpartArray['###VALUE_COMPANY###'] 				= htmlspecialchars($this->post['company']);
+		$subpartArray['###LABEL_STREET_ADDRESS###'] 		= ucfirst($this->pi_getLL('street_address'));
+		$subpartArray['###VALUE_STREET_ADDRESS###'] 		= htmlspecialchars($this->post['street_name']);
+		$subpartArray['###LABEL_STREET_ADDRESS_NUMBER###'] 	= ucfirst($this->pi_getLL('street_address_number'));
+		$subpartArray['###VALUE_STREET_ADDRESS_NUMBER###'] 	= htmlspecialchars($this->post['address_number']);
+		$subpartArray['###LABEL_ADDRESS_EXTENTION###'] 		= ucfirst($this->pi_getLL('address_extension'));
+		$subpartArray['###VALUE_ADDRESS_EXTENTION###'] 		= htmlspecialchars($this->post['address_ext']);
+		$subpartArray['###LABEL_POSTCODE###'] 				= ucfirst($this->pi_getLL('zip'));
+		$subpartArray['###VALUE_POSTCODE###'] 				= htmlspecialchars($this->post['zip']);
+		$subpartArray['###LABEL_CITY###'] 					= ucfirst($this->pi_getLL('city'));
+		$subpartArray['###VALUE_CITY###'] 					= htmlspecialchars($this->post['city']);
+		$subpartArray['###COUNTRIES_INPUT###'] 				= $countries_input;
+		$subpartArray['###LABEL_EMAIL###'] 					= ucfirst($this->pi_getLL('e-mail_address'));
+		$subpartArray['###VALUE_EMAIL###'] 					= htmlspecialchars($this->post['email']);
+		$subpartArray['###LABEL_TELEPHONE###'] 				= ucfirst($this->pi_getLL('telephone'));
+		$subpartArray['###VALUE_TELEPHONE###'] 				= htmlspecialchars($this->post['telephone']);
+		$subpartArray['###LABEL_MOBILE###'] 				= ucfirst($this->pi_getLL('mobile'));
+		$subpartArray['###VALUE_MOBILE###'] 				= htmlspecialchars($this->post['mobile']);
+		$subpartArray['###LABEL_BIRTHDATE###'] 				= ucfirst($this->pi_getLL('birthday'));
+		$subpartArray['###VALUE_VISIBLE_BIRTHDATE###'] 		= ($this->post['date_of_birth']?htmlspecialchars(strftime("%x",  $this->post['date_of_birth'])):'');
+		$subpartArray['###VALUE_HIDDEN_BIRTHDATE###'] 		= ($this->post['date_of_birth']?htmlspecialchars(strftime("%F",  $this->post['date_of_birth'])):'');
+		$subpartArray['###LABEL_DISCOUNT###'] 				= ucfirst($this->pi_getLL('discount'));
+		$subpartArray['###VALUE_DISCOUNT###'] 				= ($this->post['tx_multishop_discount']>0 ?htmlspecialchars($this->post['tx_multishop_discount']):'');
+		$subpartArray['###CUSTOMER_GROUPS_INPUT###'] 		= $customer_groups_input;
+		$subpartArray['###VALUE_CUSTOMER_ID###'] 			= '';
+		$subpartArray['###LABEL_BUTTON_SAVE###'] 			= ucfirst($this->pi_getLL('save'));
+		$subpartArray['###LOGIN_AS_THIS_USER_LINK###'] 		= '';
+		$subpartArray['###DETAILS_TAB###']				 	= '';
+		$subpartArray['###DETAILS###']				 		= '';
+	break;
 }
+
+// h5validate message
+$subpartArray['###INVALID_FIRSTNAME_MESSAGE###'] 			= $this->pi_getLL('first_name_required');
+$subpartArray['###INVALID_LASTNAME_MESSAGE###'] 			= $this->pi_getLL('surname_is_required');
+$subpartArray['###INVALID_ADDRESS_MESSAGE###'] 				= $this->pi_getLL('street_address_is_required');
+$subpartArray['###INVALID_ADDRESSNUMBER_MESSAGE###'] 		= $this->pi_getLL('street_number_is_required');
+$subpartArray['###INVALID_ZIP_MESSAGE###'] 					= $this->pi_getLL('zip_is_required');
+$subpartArray['###INVALID_CITY_MESSAGE###'] 				= $this->pi_getLL('city_is_required');
+$subpartArray['###INVALID_EMAIL_MESSAGE###'] 				= $this->pi_getLL('email_is_required');
+$subpartArray['###INVALID_USERNAME_MESSAGE###'] 			= $this->pi_getLL('username_is_required');
+$subpartArray['###INVALID_PASSWORD_MESSAGE###'] 			= $this->pi_getLL('password_is_required');
+
+
+$telephone_validation 	= '';
+if ($this->ms['MODULES']['CHECKOUT_REQUIRED_TELEPHONE']) {
+	if (!$this->ms['MODULES']['CHECKOUT_LENGTH_TELEPHONE_NUMBER']) {
+		$telephone_validation 			= ' required="required" data-h5-errorid="invalid-telephone" title="'.$this->pi_getLL('telephone_is_required').'"';
+	} else {
+		$telephone_validation 			= ' required="required" data-h5-errorid="invalid-telephone" title="'.$this->pi_getLL('telephone_is_required').'" pattern=".{' . $this->ms['MODULES']['CHECKOUT_LENGTH_TELEPHONE_NUMBER'] . '}"';
+	}
+}
+
+$subpartArray['###TELEPHONE_VALIDATION###'] 			= $telephone_validation;
+
 // custom page hook that can be controlled by third-party plugin
 if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_customer.php']['adminEditCustomerTmplPreProc'])) {
 	$params = array (

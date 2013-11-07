@@ -40,7 +40,14 @@ $field_keys=array_flip($fields);
 $filter=array();
 if (!$this->masterShop) {
 	$filter[]='page_uid=\''.$this->shop_pid.'\'';
-}  
+} 
+$limit='';
+if (isset($this->get['tx_multishop_pi1']['limit']) and strstr($this->get['tx_multishop_pi1']['limit'],',')) {
+	$tmpArray=explode(',',$this->get['tx_multishop_pi1']['limit']);
+	if (is_numeric($tmpArray[0]) and is_numeric($tmpArray[1])) {
+		$limit=$tmpArray[0].','.$tmpArray[1];
+	}
+}
 $filter[]='disable=0 and deleted=0';
 $str = $GLOBALS['TYPO3_DB']->SELECTquery(
 	implode(',',$field_keys),         // SELECT ...
@@ -48,7 +55,7 @@ $str = $GLOBALS['TYPO3_DB']->SELECTquery(
 	implode(' AND ',$filter),    // WHERE...
 	'',            // GROUP BY...
 	'',    // ORDER BY...
-	''            // LIMIT ...
+	$limit            // LIMIT ...
 );
 $qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 $rows=array();
@@ -84,11 +91,13 @@ foreach ($rows as $item) {
 		if (strlen($val) + 5 > $colwidth[$col_count]) {
 			$colwidth[$col_count] = strlen($val) + 5;
 		}
+		//$val = iconv('ASCII', 'UTF-8//IGNORE', $val);
 		$cell = $phpexcel->getActiveSheet()->setCellValueByColumnAndRow($col_count, $row_count, $val);
 		$col_count++;
 	}
 	$row_count++;
 }
+
 // set bold to the header title
 $last_col = $phpexcel->getActiveSheet()->getHighestColumn();
 $phpexcel->getActiveSheet()->getStyle('A1:' . $last_col . '1')->applyFromArray($header_style);

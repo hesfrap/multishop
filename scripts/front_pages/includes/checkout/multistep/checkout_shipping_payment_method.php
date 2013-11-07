@@ -137,16 +137,16 @@ if ($erno or $show_shipping_payment_method) {
 		 </div>
 	 	 </div>
 		 ';
-		 if (count($shipping_methods)==1)
+		/*  if (count($shipping_methods)==1)
 		 {
 			$content.='
 			<script>
 			  jQuery(document).ready(function($) {			 
-				 $("#shipping_payment_method").hide();
+				 //$("#shipping_payment_method").hide();
 			  });
 			 </script>
 			 ';
-		 }
+		 } */
 
 	}
 	$content.='
@@ -217,6 +217,7 @@ if ($erno or $show_shipping_payment_method) {
 	<script>
 	jQuery(document).ready(function($) {
 	';
+	
 	$xxi = 0;
 	if (is_array($mappings) and count($mappings))
 	{	

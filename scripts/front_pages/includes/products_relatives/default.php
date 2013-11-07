@@ -112,6 +112,8 @@ if (!defined('TYPO3_MODE')) die ('Access denied.');
 		$markerArray['ITEM_BUY_NOW'] = '<label for="relative_'.$i.'"></label>
 		<input type="checkbox" class="PrettyInput" name="winkelwagen['.$i.']" id="relative_'.$i.'" value="1">'.$rel_rs['hidden_fields'];
 		$markerArray['ITEM_PRODUCTS_STOCK'] = $rel_rs['products_quantity'];
+		$markerArray['ITEM_PRODUCTS_SKU'] = $rel_rs['sku_code'];
+		$markerArray['ITEM_PRODUCTS_EAN'] = $rel_rs['ean_code'];		
 		$i++;
 		// custom hook that can be controlled by third-party plugin
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/front_pages/products_relatives.php']['productsListingRecordHook']))

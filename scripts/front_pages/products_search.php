@@ -1,8 +1,7 @@
 <?php
 if (!defined('TYPO3_MODE')) die ('Access denied.');
 
-if ($_REQUEST['skeyword'])
-{
+if ($_REQUEST['skeyword']) {
 	//  using $_REQUEST cause TYPO3 converts "Command & Conquer" to "Conquer" (the & sign sucks ass)
 	$this->get['skeyword'] = $_REQUEST['skeyword'];	
 	$this->get['skeyword'] = trim($this->get['skeyword']);
@@ -10,10 +9,13 @@ if ($_REQUEST['skeyword'])
 	$this->get['skeyword'] = $GLOBALS['TSFE']->csConvObj->entities_to_utf8($this->get['skeyword'],TRUE);
 	$this->get['skeyword'] = mslib_fe::RemoveXSS($this->get['skeyword']);
 }
-if (is_numeric($this->get['p'])) 	$p=$this->get['p'];
-if ($this->ms['MODULES']['CACHE_FRONT_END'] and !$this->ms['MODULES']['CACHE_TIME_OUT_SEARCH_PAGES']) $this->ms['MODULES']['CACHE_FRONT_END']=0;
-if ($this->ms['MODULES']['CACHE_FRONT_END'])
-{
+if (is_numeric($this->get['p'])) {
+	$p=$this->get['p'];
+}
+if ($this->ms['MODULES']['CACHE_FRONT_END'] and !$this->ms['MODULES']['CACHE_TIME_OUT_SEARCH_PAGES']) {
+	$this->ms['MODULES']['CACHE_FRONT_END']=0;
+}
+if ($this->ms['MODULES']['CACHE_FRONT_END']) {
 	$options = array(
 		'caching' => true,
 		'cacheDir' => $this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/cache/',
@@ -22,40 +24,46 @@ if ($this->ms['MODULES']['CACHE_FRONT_END'])
 	$Cache_Lite = new Cache_Lite($options);
 	$string=md5($this->cObj->data['uid'].'_'.$this->server['REQUEST_URI'].$this->server['QUERY_STRING']);
 }
-if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRONT_END'] and !$content=$Cache_Lite->get($string)))
-{
-	if ($p > 0) 	$extrameta=' (page '.$p.')';
-	else			$extrameta='';
-	if(!$this->conf['disableMetatags'])
-	{		
+if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRONT_END'] and !$content=$Cache_Lite->get($string))) {
+	if ($p > 0) {
+		$extrameta=' (page '.$p.')';
+	} else {
+		$extrameta='';
+	}
+	if(!$this->conf['disableMetatags']) {		
 		$GLOBALS['TSFE']->additionalHeaderData['title'] 		= '<title>'.ucfirst($this->pi_getLL('search_for')).' '.htmlspecialchars($this->get['skeyword']).$this->ms['MODULES']['PAGE_TITLE_DELIMETER'].$this->ms['MODULES']['STORE_NAME'].'</title>';	
 		$GLOBALS['TSFE']->additionalHeaderData['description'] 	= '<meta name="description" content="'.ucfirst($this->pi_getLL('search_for')).' '.htmlspecialchars($this->get['skeyword']).'." />';
 	}
-	if ($p >0) $offset=(((($p)*$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'])));
-	else 
-	{
+	if ($p >0) {
+		$offset=(((($p)*$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'])));
+	} else {
 		$p=0;
 		$offset=0;
 	}
-	if (is_numeric($this->get['categories_id'])) 	$parent_id=$this->get['categories_id'];
-	else									$parent_id=0;
-	if ($this->get['price_filter'])
-	{
-		if (strstr($this->get['price_filter'],">") or strstr($this->get['price_filter'],"<"))
-		{
+	if (is_numeric($this->get['categories_id'])) {
+		$parent_id=$this->get['categories_id'];
+	} else {
+		$parent_id=0;
+	}
+	if ($this->get['price_filter']) {
+		if (strstr($this->get['price_filter'],">") or strstr($this->get['price_filter'],"<")) {
 			$price_filter=$this->get['price_filter'];
-		}
-		elseif (strstr($this->get['price_filter'],"-"))
-		{
+		} elseif (strstr($this->get['price_filter'],"-")) {
 			$array=explode("-",$this->get['price_filter']);
-			if (count($array) ==2) $price_filter=$array;
+			if (count($array) ==2) {
+				$price_filter=$array;
+			}
 		}
 	}
-	if ($this->get['skeyword'] || is_numeric($parent_id) || $price_filter) $do_search=1;	
-	if ($do_search)
-	{
-		if ($this->get['skeyword'])	$title=$this->pi_getLL('search_for').': '.htmlspecialchars($this->get['skeyword']);
-		else					$title=$this->pi_getLL('search');
+	if ($this->get['skeyword'] || is_numeric($parent_id) || $price_filter) {
+		$do_search=1;	
+	}
+	if ($do_search) {
+		if ($this->get['skeyword']) {
+			$title=$this->pi_getLL('search_for').': '.htmlspecialchars($this->get['skeyword']);
+		} else {
+			$title=$this->pi_getLL('search');
+		}
 		$content.='<div class="main-heading"><h2>'.$title.'</h2></div>';
 		// product search
 		$filter		=array();
@@ -65,43 +73,62 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 		$orderby	=array();
 		$select		=array();	
 		$extra_filter=array();
-		if (is_numeric($this->get['manufacturers_id']))
-		{
-			if ($this->ms['MODULES']['FLAT_DATABASE']) 	$tbl='pf.';
-			else									$tbl='p.';
+		if (is_numeric($this->get['manufacturers_id'])) {
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$tbl='pf.';
+			} else {
+				$tbl='p.';
+			}
 			$filter[]="(".$tbl."manufacturers_id='".addslashes($this->get['manufacturers_id'])."')";					
 		}
-		if (strlen($this->get['skeyword']) >2)
-		{
+		if (strlen($this->get['skeyword']) >2) {
 			if ((!is_array($this->get['tx_multishop_pi1']['search_by']) and $this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_ID']) or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('products_id',$this->get['tx_multishop_pi1']['search_by'])))	{
-				if ($this->ms['MODULES']['FLAT_DATABASE']) $tbl='pf.';
-				else $tbl='p.';			
+				if ($this->ms['MODULES']['FLAT_DATABASE']) {
+					$tbl='pf.';
+				} else {
+					$tbl='p.';			
+				}
 				$extra_filter[]=$tbl."products_id ='".addslashes($this->get['skeyword'])."'";
 			}	
 			if ((!is_array($this->get['tx_multishop_pi1']['search_by']) and $this->ms['MODULES']['SEARCH_ALSO_IN_VENDOR_CODE']) or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('vendor_code',$this->get['tx_multishop_pi1']['search_by']))) {
-				if ($this->ms['MODULES']['FLAT_DATABASE']) $tbl='pf.';
-				else $tbl='p.';			
+				if ($this->ms['MODULES']['FLAT_DATABASE']) {
+					$tbl='pf.';
+				} else {
+					$tbl='p.';			
+				}
 				$extra_filter[]=$tbl."vendor_code like '%".addslashes($this->get['skeyword'])."%'";
 			}
 			if ((!is_array($this->get['tx_multishop_pi1']['search_by']) and $this->ms['MODULES']['SEARCH_ALSO_IN_EAN_CODE']) or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('ean_code',$this->get['tx_multishop_pi1']['search_by']))) {
-				if ($this->ms['MODULES']['FLAT_DATABASE']) $tbl='pf.';
-				else $tbl='p.';			
+				if ($this->ms['MODULES']['FLAT_DATABASE']) {
+					$tbl='pf.';
+				} else {
+					$tbl='p.';			
+				}
 				$extra_filter[]=$tbl."ean_code like '%".addslashes($this->get['skeyword'])."%'";
 			}
 			if ((!is_array($this->get['tx_multishop_pi1']['search_by']) and $this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_MODEL']) or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('products_model',$this->get['tx_multishop_pi1']['search_by']))) {
-				if ($this->ms['MODULES']['FLAT_DATABASE']) $tbl='pf.';
-				else $tbl='p.';			
+				if ($this->ms['MODULES']['FLAT_DATABASE']) {
+					$tbl='pf.';
+				} else {
+					$tbl='p.';			
+				}
 				$extra_filter[]=$tbl."products_model like '%".addslashes($this->get['skeyword'])."%'";
 			}	
 			if ((!is_array($this->get['tx_multishop_pi1']['search_by']) and $this->ms['MODULES']['SEARCH_ALSO_IN_MANUFACTURERS_NAME']) or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('manufacturers_name',$this->get['tx_multishop_pi1']['search_by']))) {
-				if ($this->ms['MODULES']['FLAT_DATABASE']) $tbl='pf.';
-				else $tbl='m.';			
+				if ($this->ms['MODULES']['FLAT_DATABASE']) {
+					$tbl='pf.';
+				} else {
+					$tbl='m.';			
+				}
 				$extra_filter[]=$tbl."manufacturers_name like '%".addslashes($this->get['skeyword'])."%'";
 			}	
 			
 			if ((!is_array($this->get['tx_multishop_pi1']['search_by']) and $this->ms['MODULES']['SEARCH_ALSO_IN_SKU_CODE']) or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('sku_code',$this->get['tx_multishop_pi1']['search_by']))) {
-				if ($this->ms['MODULES']['FLAT_DATABASE']) $tbl='pf.';
-				else $tbl='p.';			
+				if ($this->ms['MODULES']['FLAT_DATABASE']) {
+					$tbl='pf.';
+				} else {
+					$tbl='p.';			
+				}
 				$extra_filter[]=$tbl."sku_code like '%".addslashes($this->get['skeyword'])."%'";
 			}			
 			if ((!is_array($this->get['tx_multishop_pi1']['search_by']) and $this->ms['MODULES']['SEARCH_ALSO_IN_CATEGORIES_NAME']) or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('categories_name',$this->get['tx_multishop_pi1']['search_by']))) {
@@ -115,14 +142,16 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 					$extra_filter[]=$tbl."categories_name like '%".addslashes($this->get['skeyword'])."%'";
 				}
 			}	
-
 			// attribute values
 			$search_in_option_ids=array();
 			if ((!is_array($this->get['tx_multishop_pi1']['search_by']) and $this->ms['MODULES']['SEARCH_ALSO_IN_ATTRIBUTE_OPTION_IDS'])) {
 				$optionIds=explode(',',$this->ms['MODULES']['SEARCH_ALSO_IN_ATTRIBUTE_OPTION_IDS']);
 				if (is_array($optionIds) and count($optionIds)) {
-					if ($this->ms['MODULES']['FLAT_DATABASE']) 	$tbl='pf.';
-					else $tbl='p.';					
+					if ($this->ms['MODULES']['FLAT_DATABASE']) {
+						$tbl='pf.';
+					} else {
+						$tbl='p.';					
+					}
 					foreach ($optionIds as $optionId) {
 						if (is_numeric($optionId)) {
 							$search_in_option_ids[]=$optionId;
@@ -131,8 +160,11 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 				}
 			} else {											
 				if (is_array($this->get['tx_multishop_pi1']['search_by'])) {
-					if ($this->ms['MODULES']['FLAT_DATABASE']) 	$tbl='pf.';
-					else $tbl='p.';					
+					if ($this->ms['MODULES']['FLAT_DATABASE']) {
+						$tbl='pf.';
+					} else {
+						$tbl='p.';					
+					}
 					foreach ($this->get['tx_multishop_pi1']['search_by'] as $search_by) {
 						if (strstr($search_by,'attributes_options_id_')) {
 							$options_id=str_replace('attributes_options_id_','',$search_by);
@@ -151,28 +183,26 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 				}
 			}
 			if (!is_array($this->get['tx_multishop_pi1']['search_by']) or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('products_name',$this->get['tx_multishop_pi1']['search_by']))) {
-			
 				// only search in products name / description if the search_by parameter is empty or products_name is specified	
 				$array=explode(" ",$this->get['skeyword']);
 				$total=count($array);
 				$oldsearch=0;	
-				if (!$this->ms['MODULES']['ENABLE_FULLTEXT_SEARCH_IN_PRODUCTS_SEARCH'])
-				{
+				if (!$this->ms['MODULES']['ENABLE_FULLTEXT_SEARCH_IN_PRODUCTS_SEARCH']) {
 					$oldsearch=1;
 				} else {
-					foreach ($array as $item)
-					{
-						if (strlen($item) < $this->ms['MODULES']['FULLTEXT_SEARCH_MIN_CHARS'])
-						{
+					foreach ($array as $item) {
+						if (strlen($item) < $this->ms['MODULES']['FULLTEXT_SEARCH_MIN_CHARS']) {
 							$oldsearch=1;
 							break;
 						}
 					}
 				}
-				if ($this->ms['MODULES']['FLAT_DATABASE']) 	$tbl='pf.';
-				else									$tbl='pd.';
-				if ($oldsearch)
-				{
+				if ($this->ms['MODULES']['FLAT_DATABASE']) {
+					$tbl='pf.';
+				} else {
+					$tbl='pd.';
+				}
+				if ($oldsearch) {
 					if ($this->ms['MODULES']['REGULAR_SEARCH_MODE'] == '%keyword') {
 						// do normal indexed search
 						if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_DESCRIPTION']) {
@@ -197,57 +227,54 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 							$filter[]="(".$tbl."products_name like '%".addslashes($this->get['skeyword'])."%' ".(count($extra_filter)?' OR '.implode(' OR ',$extra_filter):'').")";				
 						}
 					}
-				}
-				else
-				{
+				} else 	{
 					// do fulltext search
 					$tmpstr=addslashes(mslib_befe::ms_implode(', ', $array,'"','+',true));				
 					$fields=$tbl."products_name";
-					if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_DESCRIPTION'])
-					{
+					if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_DESCRIPTION']) {
 						$fields.=",".$tbl."products_description";
 					}
-					if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_ID'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('products_id',$this->get['tx_multishop_pi1']['search_by'])))
-					{
+					if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_ID'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('products_id',$this->get['tx_multishop_pi1']['search_by']))) {
 						if ($this->ms['MODULES']['FLAT_DATABASE']) 	$tbl='pf.';
 						else									$tbl='p.';						
 						$fields.=",".$tbl."products_id";
 					}	
-					if ($this->ms['MODULES']['SEARCH_ALSO_IN_VENDOR_CODE'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('vendor_code',$this->get['tx_multishop_pi1']['search_by'])))
-					{
-						if ($this->ms['MODULES']['FLAT_DATABASE']) 	$tbl='pf.';
-						else									$tbl='p.';						
+					if ($this->ms['MODULES']['SEARCH_ALSO_IN_VENDOR_CODE'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('vendor_code',$this->get['tx_multishop_pi1']['search_by']))) {
+						if ($this->ms['MODULES']['FLAT_DATABASE']) {
+							$tbl='pf.';
+						} else {
+							$tbl='p.';						
+						}
 						$fields.=",".$tbl."vendor_code";
 					}
-					if ($this->ms['MODULES']['SEARCH_ALSO_IN_EAN_CODE'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('ean_code',$this->get['tx_multishop_pi1']['search_by'])))
-					{
-						if ($this->ms['MODULES']['FLAT_DATABASE']) $tbl='pf.';
-						else $tbl='p.';						
+					if ($this->ms['MODULES']['SEARCH_ALSO_IN_EAN_CODE'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('ean_code',$this->get['tx_multishop_pi1']['search_by']))) {
+						if ($this->ms['MODULES']['FLAT_DATABASE']) {
+							$tbl='pf.';
+						} else {
+							$tbl='p.';						
+						}
 						$fields.=",".$tbl."ean_code";
 					}	
-					if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_MODEL'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('products_model',$this->get['tx_multishop_pi1']['search_by'])))
-					{
-						if ($this->ms['MODULES']['FLAT_DATABASE']) $tbl='pf.';
-						else $tbl='p.';						
+					if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_MODEL'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('products_model',$this->get['tx_multishop_pi1']['search_by']))) {
+						if ($this->ms['MODULES']['FLAT_DATABASE']) {
+							$tbl='pf.';
+						} else {
+							$tbl='p.';						
+						}
 						$fields.=",".$tbl."products_model";
 					}					
-					if ($this->ms['MODULES']['SEARCH_ALSO_IN_SKU_CODE'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('sku_code',$this->get['tx_multishop_pi1']['search_by'])))
-					{
-						if ($this->ms['MODULES']['FLAT_DATABASE']) $tbl='pf.';
-						else $tbl='p.';						
+					if ($this->ms['MODULES']['SEARCH_ALSO_IN_SKU_CODE'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('sku_code',$this->get['tx_multishop_pi1']['search_by']))) {
+						if ($this->ms['MODULES']['FLAT_DATABASE']) {
+							$tbl='pf.';
+						} else {
+							$tbl='p.';						
+						}
 						$fields.=",".$tbl."sku_code";
 					}								
-					if ($this->ms['MODULES']['SEARCH_ALSO_IN_CATEGORIES_NAME'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('categories_name',$this->get['tx_multishop_pi1']['search_by'])))
-					{
-/*						
-						if ($this->ms['MODULES']['FLAT_DATABASE']) 	$tbl='pf.';
-						else									$tbl='cd.';
-						$fields.=",".$tbl."categories_name";
-*/
+					if ($this->ms['MODULES']['SEARCH_ALSO_IN_CATEGORIES_NAME'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('categories_name',$this->get['tx_multishop_pi1']['search_by']))) {
 						if ($this->ms['MODULES']['FLAT_DATABASE']) {
 							$tbl='pf.';
 							for ($i=0;$i<6;$i++) {
-								//$extra_filter[]=$tbl."categories_id_".$i." like '%".addslashes($this->get['skeyword'])."%'";
 								$tbl='pf.';
 								$fields.=",".$tbl."categories_name_".$i;
 							}
@@ -273,7 +300,9 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 					$string.="categories_id_".$i." = '".$parent_id."'";
 				}
 				$string.=')';
-				if ($string) $filter[]=$string;
+				if ($string) {
+					$filter[]=$string;
+				}
 				// 
 			} else {
 				$cats=mslib_fe::get_subcategory_ids($parent_id);
@@ -309,51 +338,60 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 		$pageset=mslib_fe::getProductsPageSet($filter,$offset,0,$orderby,$having,$select,$where,0,array(),array(),'products_search');		
 		$products=$pageset['products'];		
 		if ($pageset['total_rows'] > 0) {
-			if ($this->get['skeyword'])
-			{
+			if ($this->get['skeyword']) {
 				// send notification message to admin
-				if ($GLOBALS['TSFE']->fe_user->user['username']) 	$customer_name=$GLOBALS['TSFE']->fe_user->user['username'];
-				else 												$customer_name=$this->pi_getLL('customer');				
+				if ($GLOBALS['TSFE']->fe_user->user['username']) {
+					$customer_name=$GLOBALS['TSFE']->fe_user->user['username'];
+				} else {
+					$customer_name=$this->pi_getLL('customer');				
+				}
 				mslib_befe::storeNotificationMessage($this->pi_getLL('customer_action'),sprintf($this->pi_getLL('customer_searched_for_keywordx'),$customer_name,$this->get['skeyword']));
 				// store keyword with positive results			
 				mslib_befe::storeProductsKeywordSearch($this->get['skeyword']);
 			}
-			if (!$p and $this->ms['MODULES']['DISPLAY_SPECIALS_ABOVE_PRODUCTS_LISTING'])
-			{
+			if (!$p and $this->ms['MODULES']['DISPLAY_SPECIALS_ABOVE_PRODUCTS_LISTING']) {
 				$content.=mslib_fe::SpecialsBox($this->ms['page']);	// specials module			
 			}
-			if (strstr($this->ms['MODULES']['PRODUCTS_LISTING_TYPE'],"..")) die('error in PRODUCTS_LISTING_TYPE value');
-			else 
-			{
-				if (strstr($this->ms['MODULES']['PRODUCTS_LISTING_TYPE'],"/"))	require($this->DOCUMENT_ROOT.$this->ms['MODULES']['PRODUCTS_LISTING_TYPE'].'.php');	
-				else	require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing/'.$this->ms['MODULES']['PRODUCTS_LISTING_TYPE'].'.php');	
+			if (strstr($this->ms['MODULES']['PRODUCTS_LISTING_TYPE'],"..")) {
+				die('error in PRODUCTS_LISTING_TYPE value');
+			} else {
+				if (strstr($this->ms['MODULES']['PRODUCTS_LISTING_TYPE'],"/")) {
+					require($this->DOCUMENT_ROOT.$this->ms['MODULES']['PRODUCTS_LISTING_TYPE'].'.php');	
+				} else {
+					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing/'.$this->ms['MODULES']['PRODUCTS_LISTING_TYPE'].'.php');	
+				}
 			}	
 			// pagination
-			if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'])
-			{
-				require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination.php');	
-//				require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination_google.php');	
-
+			if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']) {
+				if (!isset($this->ms['MODULES']['PRODUCTS_LISTING_PAGINATION_TYPE']) || $this->ms['MODULES']['PRODUCTS_LISTING_PAGINATION_TYPE'] == 'default') {
+					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination.php');
+				} else {
+					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination_with_number.php');
+				}
 			}
 			// pagination eof
-		}
-		else
-		{
+		} else {
 			// add PRODUCTS_SEARCH_FALLBACK_SEARCH module code here			
-			if (!$p and $this->get['skeyword'])
-			{
+			if (!$p and $this->get['skeyword']) {
 				// send notification message to admin
-				if ($GLOBALS['TSFE']->fe_user->user['username']) 	$customer_name=$GLOBALS['TSFE']->fe_user->user['username'];
-				else 												$customer_name='Customer';
+				if ($GLOBALS['TSFE']->fe_user->user['username']) {
+					$customer_name=$GLOBALS['TSFE']->fe_user->user['username'];
+				} else {
+					$customer_name='Customer';
+				}
 				$message=$customer_name.' searched for: '.$this->get['skeyword'];
 				mslib_befe::storeNotificationMessage('Customer action',$message);
 			}
 			// store keyword with negative results
-			if ($this->get['skeyword']) mslib_befe::storeProductsKeywordSearch($this->get['skeyword'],1);			
+			if ($this->get['skeyword']) {
+				mslib_befe::storeProductsKeywordSearch($this->get['skeyword'],1);			
+			}
 			$content.='<div class="main-heading"><h2>'.$this->pi_getLL('no_products_found_heading').'</h2></div>'."\n";
 			$content.='<p>'.$this->pi_getLL('no_products_found_description').'</p>'."\n";			
 		}
 	}
-	if ($this->ms['MODULES']['CACHE_FRONT_END'])	$Cache_Lite->save($content);	
+	if ($this->ms['MODULES']['CACHE_FRONT_END']) {
+		$Cache_Lite->save($content);	
+	}
 }
 ?>

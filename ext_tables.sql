@@ -167,7 +167,7 @@ CREATE TABLE `tx_multishop_categories` (
 
 CREATE TABLE `tx_multishop_categories_description` (
   `categories_id` int(5) NOT NULL DEFAULT '0',
-  `language_id` int(5) NOT NULL DEFAULT '1',
+  `language_id` int(5) NOT NULL DEFAULT '0',
   `categories_name` varchar(150) DEFAULT '',
   `shortdescription` text,
   `keywords` varchar(250) DEFAULT '',
@@ -513,6 +513,7 @@ CREATE TABLE `tx_multishop_orders` (
   `delivery_street_name` varchar(75) NOT NULL DEFAULT '',
   `ip_address` varchar(100) NOT NULL DEFAULT '',
   `http_referer` text NOT NULL,
+  `user_agent` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`orders_id`),
   KEY `klanten_id` (`customer_id`),
   KEY `bu` (`page_uid`),
@@ -546,7 +547,8 @@ CREATE TABLE `tx_multishop_orders` (
   KEY `payment_method` (`payment_method`),
   KEY `status_last_modified` (`status_last_modified`),
   KEY `email_sent` (`reminder_sent`),
-  KEY `ip_address` (`ip_address`)
+  KEY `ip_address` (`ip_address`),
+  KEY `user_agent` (`user_agent`)
 ) ENGINE=InnoDB  COMMENT='Ordersysteem';
 
 CREATE TABLE `tx_multishop_orders_products` (
@@ -646,7 +648,7 @@ CREATE TABLE `tx_multishop_orders_status` (
 CREATE TABLE `tx_multishop_orders_status_description` (
   `id` int(11) NOT NULL auto_increment,
   `orders_status_id` int(11) NOT NULL DEFAULT '0',
-  `language_id` int(5) NOT NULL DEFAULT '1',
+  `language_id` int(5) NOT NULL DEFAULT '0',
   `name` varchar(50) DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `orders_status_id` (`orders_status_id`),
@@ -681,7 +683,7 @@ CREATE TABLE `tx_multishop_order_units` (
 CREATE TABLE `tx_multishop_order_units_description` (
   `id` int(11) NOT NULL auto_increment,
   `order_unit_id` int(11) NOT NULL DEFAULT '0',
-  `language_id` int(5) NOT NULL DEFAULT '1',
+  `language_id` int(5) NOT NULL DEFAULT '0',
   `name` varchar(50) DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `order_unit_id` (`order_unit_id`),
@@ -747,7 +749,7 @@ CREATE TABLE `tx_multishop_payment_methods` (
 
 CREATE TABLE `tx_multishop_payment_methods_description` (
   `id` int(4) NOT NULL DEFAULT '0',
-  `language_id` int(5) NOT NULL DEFAULT '1',
+  `language_id` int(5) NOT NULL DEFAULT '0',
   `name` varchar(255) DEFAULT '',
   `description` text,
   PRIMARY KEY (`id`,`language_id`),
@@ -825,6 +827,8 @@ CREATE TABLE `tx_multishop_products` (
   `import_job_id` int(11) NOT NULL DEFAULT '0',
   `alert_quantity_threshold` int(11) NOT NULL DEFAULT '0',
   `cruser_id` int(11) NOT NULL default '0',  
+  `starttime` int(11) NOT NULL default '0',
+  `endtime` int(11) NOT NULL default '0',  
   PRIMARY KEY (`products_id`),
   KEY `products_price` (`products_price`),
   KEY `products_model` (`products_model`),
@@ -845,7 +849,9 @@ CREATE TABLE `tx_multishop_products` (
   KEY `google_taxonomy_id` (`google_taxonomy_id`),
   KEY `import_job_id` (`import_job_id`),
   KEY `alert_quantity_threshold` (`alert_quantity_threshold`),
-  KEY `cruser_id` (`cruser_id`)
+  KEY `cruser_id` (`cruser_id`),
+  KEY `starttime` (`starttime`),
+  KEY `endtime` (`endtime`)  
 ) ENGINE=MyISAM ;
 
 CREATE TABLE `tx_multishop_products_attributes` (
@@ -876,7 +882,7 @@ CREATE TABLE `tx_multishop_products_attributes_download` (
 
 CREATE TABLE `tx_multishop_products_description` (
   `products_id` int(11) NOT NULL DEFAULT '0',
-  `language_id` int(5) NOT NULL DEFAULT '1',
+  `language_id` int(5) NOT NULL DEFAULT '0',
   `products_name` varchar(255) DEFAULT '',
   `products_description` text,
   `products_url` text,
@@ -941,7 +947,7 @@ CREATE TABLE `tx_multishop_products_method_mappings` (
 
 CREATE TABLE `tx_multishop_products_options` (
   `products_options_id` int(11) NOT NULL auto_increment,
-  `language_id` int(5) NOT NULL DEFAULT '1',
+  `language_id` int(5) NOT NULL DEFAULT '0',
   `products_options_name` varchar(64) DEFAULT '',
   `listtype` varchar(15) DEFAULT 'pulldownmenu',
   `description` text,
@@ -961,7 +967,7 @@ CREATE TABLE `tx_multishop_products_options` (
 
 CREATE TABLE `tx_multishop_products_options_values` (
   `products_options_values_id` int(11) NOT NULL auto_increment,
-  `language_id` int(5) NOT NULL DEFAULT '1',
+  `language_id` int(5) NOT NULL DEFAULT '0',
   `products_options_values_name` varchar(64) DEFAULT '',
   `hide` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`products_options_values_id`,`language_id`),
@@ -972,7 +978,7 @@ CREATE TABLE `tx_multishop_products_options_values` (
 
 CREATE TABLE `tx_multishop_products_options_values_extra` (
   `products_options_values_extra_id` int(11) NOT NULL DEFAULT '0',
-  `language_id` int(5) NOT NULL DEFAULT '1',
+  `language_id` int(5) NOT NULL DEFAULT '0',
   `products_options_values_extra_name` varchar(64) NOT NULL DEFAULT '',
   `hide` tinyint(1) DEFAULT '0',
   `sort_orders` int(11) DEFAULT '0',
@@ -1126,7 +1132,7 @@ CREATE TABLE `tx_multishop_shipping_methods_costs` (
 
 CREATE TABLE `tx_multishop_shipping_methods_description` (
   `id` int(4) NOT NULL DEFAULT '0',
-  `language_id` int(5) NOT NULL DEFAULT '1',
+  `language_id` int(5) NOT NULL DEFAULT '0',
   `name` varchar(255) DEFAULT '',
   `description` text,
   PRIMARY KEY (`id`,`language_id`),
@@ -1327,6 +1333,8 @@ CREATE TABLE tt_address (
   tx_multishop_default tinyint(1) NOT NULL default '0',
   address_ext varchar(10) NOT NULL default '',  
   page_uid int(11) NOT NULL default '0',
+  street_name varchar(75) NOT NULL DEFAULT '',  
+  tx_multishop_address_type varchar(9) NOT NULL DEFAULT 'billing',
   PRIMARY KEY (uid),
   KEY parent (pid),
   KEY pid (pid,email),

@@ -141,6 +141,9 @@
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field { clear:both; overflow:hidden; width:100%; padding:7px 0 0; }
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field div { float:left; overflow:hidden; width:310px; }
 
+#msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field .error-space { position:absolute; float:none; overflow:visible; background:#d5201e; width:auto; height:auto; font:11px Arial, Helvetica, sans-serif; color:#fff; margin-top:-24px; margin-left:140px; padding:5px 10px; text-transform:lowercase; border-radius:6px; } 
+#msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field .error-space em { position:absolute; bottom:-5px; border-top:5px solid #d5201e; border-left:5px solid transparent; border-right:5px solid transparent; }
+
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field label { clear:none; display:block; float:left; width:130px; height:27px; font:12px Arial, Helvetica, sans-serif; color:#000; text-transform:uppercase; padding:3px 10px 0 0; }
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field label.account-lastname,
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field label#account-country { clear:left; }
@@ -375,9 +378,11 @@ ul#ui-autocomplete-admin li.ui-menu-item .ui-edit-item a.ui-edit-view { backgrou
 #tx_multishop_pi1_core form#products_feed_form .account-field { overflow:hidden; width:100%; background:#fff; font:12px Arial, Helvetica, sans-serif; color:#333; padding:0 0 7px; }
 #tx_multishop_pi1_core form#products_feed_form .account-field label { float:left; display:block; width:180px; text-align:right; padding:3px 20px 0 0; }
 #tx_multishop_pi1_core form#products_feed_form .account-field input { margin-bottom:0; }
-#tx_multishop_pi1_core form#products_feed_form .account-field input[type="text"] { border:1px solid #999; background:#fff5f5; font:12px Arial, Helvetica, sans-serif; padding:3px 4px; }
+#tx_multishop_pi1_core form#products_feed_form .account-field input[type="text"] { float:left; border:1px solid #999; background:#fff5f5; font:12px Arial, Helvetica, sans-serif; padding:3px 4px; }
 #tx_multishop_pi1_core form#products_feed_form .account-field select { border:1px solid #999; background:#fff5f5; font:12px Arial, Helvetica, sans-serif; margin:0 7px 0 0; padding:2px; }
 #tx_multishop_pi1_core form#products_feed_form .account-field option { padding:0 10px 0 0; }
+#tx_multishop_pi1_core form#products_feed_form .account-field span.key,
+#tx_multishop_pi1_core form#products_feed_form .account-field span.value { float:left; display:block; padding:4px 5px 0 0; }
 .ui-datepicker { display:none; }
 
 .form-field { display:inline-block; }
@@ -452,7 +457,7 @@ ul#ui-autocomplete-admin li.ui-menu-item .ui-edit-item a.ui-edit-view { backgrou
 #msadmin_section #msadmin_content #tx_multishop_pi1_core input.msProductsPriceExcludingVat,
 #msadmin_section #msadmin_content #tx_multishop_pi1_core input.msProductsPriceIncludingVat,
 #msadmin_section #msadmin_content #tx_multishop_pi1_core input.msSpecialsPriceExcludingVat,
-#msadmin_section #msadmin_content #tx_multishop_pi1_core input.msSpecialsPriceIncludingVat { width:64px; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core input.msSpecialsPriceIncludingVat { width:64px; text-align:right; }
 
 #msadmin_section #msadmin_content #tx_multishop_pi1_core td.msAdminProductsSearchCellProductsPrice { width:145px; padding-bottom:2px; white-space:nowrap; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core td.msAdminProductsSearchCellProductsPrice .msAttributesField { padding:0 0 5px; }

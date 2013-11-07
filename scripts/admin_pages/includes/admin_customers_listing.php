@@ -18,6 +18,9 @@ foreach ($customers as $customer) {
 	} else {
 		$tr_type='even';
 	}
+	if ($this->masterShop) {
+		$master_shop_col ='<td align="left" nowrap>'.mslib_fe::getShopNameByPageUid($customer['page_uid']).'</td>';
+	}	
 	if (!$customer['name']) {
 		$customer['name']=$customer['last_name'];
 	}
@@ -64,22 +67,23 @@ foreach ($customers as $customer) {
 		$status_html.='<a href="'.$link.'"><span class="admin_status_green_disable" alt="'.htmlspecialchars($this->pi_getLL('enabled')).'"></span></a>';			
 	}
 	$markerArray=array();
-	$markerArray['ROW_TYPE'] 							= $tr_type;
-	$markerArray['CUSTOMERS_UID'] 						= $customer['uid'];
-	$markerArray['CUSTOMERS_EDIT_LINK'] 				= $customer_edit_link;
-	$markerArray['CUSTOMERS_USERNAME']					= $customer['username'];
-	$markerArray['CUSTOMERS_COMPANY'] 					= $customer['company'];
-	$markerArray['CUSTOMERS_NAME'] 						= $name;
-	$markerArray['CUSTOMERS_CREATED'] 					= $customer['crdate'];
-	$markerArray['CUSTOMERS_LATEST_LOGIN'] 				= $customer['lastlogin'];
-	$markerArray['CUSTOMERS_LATEST_ORDER'] 				= $latest_order;
-	$markerArray['CUSTOMERS_TURN_OVER'] 				= mslib_fe::amount2Cents($customer['grand_total'],0);
-	$markerArray['CUSTOMERS_TURN_OVER_THIS_YEAR'] 		= mslib_fe::amount2Cents($customer['grand_total_this_year'],0);
-	$markerArray['CUSTOMERS_LOGINAS_LINK'] 				= mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_customers&login_as_customer=1&customer_id='.$customer['uid']);
-	$markerArray['CUSTOMERS_LOGINAS'] 					= htmlspecialchars($this->pi_getLL('login'));
-	$markerArray['CUSTOMERS_STATUS'] 					= $status_html;
-	$markerArray['CUSTOMERS_DELETE_LINK'] 				= mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]='.$this->ms['page'].'&customer_id='.$customer['uid'].'&delete=1&'.mslib_fe::tep_get_all_get_params(array('customer_id','delete','disable','clearcache')));
+	$markerArray['ROW_TYPE'] = $tr_type;
+	$markerArray['CUSTOMERS_UID'] = $customer['uid'];
+	$markerArray['CUSTOMERS_EDIT_LINK'] = $customer_edit_link;
+	$markerArray['CUSTOMERS_USERNAME'] = $customer['username'];
+	$markerArray['CUSTOMERS_COMPANY'] = $customer['company'];
+	$markerArray['CUSTOMERS_NAME'] = $name;
+	$markerArray['CUSTOMERS_CREATED'] = $customer['crdate'];
+	$markerArray['CUSTOMERS_LATEST_LOGIN'] = $customer['lastlogin'];
+	$markerArray['CUSTOMERS_LATEST_ORDER'] = $latest_order;
+	$markerArray['CUSTOMERS_TURN_OVER'] = mslib_fe::amount2Cents($customer['grand_total'],0);
+	$markerArray['CUSTOMERS_TURN_OVER_THIS_YEAR'] = mslib_fe::amount2Cents($customer['grand_total_this_year'],0);
+	$markerArray['CUSTOMERS_LOGINAS_LINK'] = mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_customers&login_as_customer=1&customer_id='.$customer['uid']);
+	$markerArray['CUSTOMERS_LOGINAS'] = htmlspecialchars($this->pi_getLL('login'));
+	$markerArray['CUSTOMERS_STATUS'] = $status_html;
+	$markerArray['CUSTOMERS_DELETE_LINK'] = mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]='.$this->ms['page'].'&customer_id='.$customer['uid'].'&delete=1&'.mslib_fe::tep_get_all_get_params(array('customer_id','delete','disable','clearcache')));
 	$markerArray['CUSTOMERS_ONCLICK_DELETE_CONFIRM_JS'] = 'return confirm(\''.htmlspecialchars($this->pi_getLL('are_you_sure')).'?\')';
+	$markerArray['MASTER_SHOP'] = $master_shop_col;
 	// custom page hook that can be controlled by third-party plugin
 	if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_customers_listing.php']['adminCustomersListingTmplIteratorPreProc'])) {
 		$params = array (
@@ -161,23 +165,32 @@ if ($this->get['tx_multishop_pi1']['order_by']==$key) {
 }
 $subpartArray['###LABEL_CUSTOMER_TURN_OVER_THIS_YEAR###'] 	= '<a href="'.mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_customers&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string).'">'.ucfirst($this->pi_getLL('turn_over_this_year','Turn over (this year)')).'</a>';
 
-$subpartArray['###LABEL_CUSTOMER_NAME###'] 							= ucfirst($this->pi_getLL('name'));
-$subpartArray['###LABEL_CUSTOMER_LATEST_ORDER###'] 					= ucfirst($this->pi_getLL('latest_order'));
-$subpartArray['###LABEL_CUSTOMER_LOGIN_AS_USER###'] 				= ucfirst($this->pi_getLL('login_as_user'));
-$subpartArray['###LABEL_CUSTOMER_DELETE###'] 						= ucfirst($this->pi_getLL('delete'));
-$subpartArray['###LABEL_FOOTER_CUSTOMER_ID###'] 					= ucfirst($this->pi_getLL('admin_customer_id'));
-$subpartArray['###LABEL_FOOTER_CUSTOMER_USERNAME###'] 				= ucfirst($this->pi_getLL('username'));
-$subpartArray['###LABEL_FOOTER_CUSTOMER_COMPANY###'] 				= ucfirst($this->pi_getLL('company'));
-$subpartArray['###LABEL_FOOTER_CUSTOMER_NAME###'] 					= ucfirst($this->pi_getLL('name'));
-$subpartArray['###LABEL_FOOTER_CUSTOMER_CREATED###'] 				= ucfirst($this->pi_getLL('created'));
-$subpartArray['###LABEL_FOOTER_CUSTOMER_LATEST_LOGIN###'] 			= ucfirst($this->pi_getLL('latest_login'));
-$subpartArray['###LABEL_FOOTER_CUSTOMER_LATEST_ORDER###'] 			= ucfirst($this->pi_getLL('latest_order'));
-$subpartArray['###LABEL_FOOTER_CUSTOMER_TURN_OVER###'] 				= ucfirst($this->pi_getLL('turn_over','Turn over'));
-$subpartArray['###LABEL_FOOTER_CUSTOMER_TURN_OVER_THIS_YEAR###'] 	= ucfirst($this->pi_getLL('turn_over_this_year','Turn over (this year)'));
-$subpartArray['###LABEL_FOOTER_CUSTOMER_LOGIN_AS_USER###'] 			= ucfirst($this->pi_getLL('login_as_user'));
-$subpartArray['###LABEL_FOOTER_CUSTOMER_STATUS###'] 				= ucfirst($this->pi_getLL('status'));
-$subpartArray['###LABEL_FOOTER_CUSTOMER_DELETE###'] 				= ucfirst($this->pi_getLL('delete'));
-$subpartArray['###CUSTOMERS###'] 							= $contentItem;
+$subpartArray['###LABEL_CUSTOMER_NAME###'] = ucfirst($this->pi_getLL('name'));
+$subpartArray['###LABEL_CUSTOMER_LATEST_ORDER###'] = ucfirst($this->pi_getLL('latest_order'));
+$subpartArray['###LABEL_CUSTOMER_LOGIN_AS_USER###'] = ucfirst($this->pi_getLL('login_as_user'));
+$subpartArray['###LABEL_CUSTOMER_DELETE###'] = ucfirst($this->pi_getLL('delete'));
+$subpartArray['###LABEL_FOOTER_CUSTOMER_ID###'] = ucfirst($this->pi_getLL('admin_customer_id'));
+$subpartArray['###LABEL_FOOTER_CUSTOMER_USERNAME###'] = ucfirst($this->pi_getLL('username'));
+$subpartArray['###LABEL_FOOTER_CUSTOMER_COMPANY###'] = ucfirst($this->pi_getLL('company'));
+$subpartArray['###LABEL_FOOTER_CUSTOMER_NAME###'] = ucfirst($this->pi_getLL('name'));
+$subpartArray['###LABEL_FOOTER_CUSTOMER_CREATED###'] = ucfirst($this->pi_getLL('created'));
+$subpartArray['###LABEL_FOOTER_CUSTOMER_LATEST_LOGIN###'] = ucfirst($this->pi_getLL('latest_login'));
+$subpartArray['###LABEL_FOOTER_CUSTOMER_LATEST_ORDER###'] = ucfirst($this->pi_getLL('latest_order'));
+$subpartArray['###LABEL_FOOTER_CUSTOMER_TURN_OVER###'] = ucfirst($this->pi_getLL('turn_over','Turn over'));
+$subpartArray['###LABEL_FOOTER_CUSTOMER_TURN_OVER_THIS_YEAR###'] = ucfirst($this->pi_getLL('turn_over_this_year','Turn over (this year)'));
+$subpartArray['###LABEL_FOOTER_CUSTOMER_LOGIN_AS_USER###'] = ucfirst($this->pi_getLL('login_as_user'));
+$subpartArray['###LABEL_FOOTER_CUSTOMER_STATUS###'] = ucfirst($this->pi_getLL('status'));
+$subpartArray['###LABEL_FOOTER_CUSTOMER_DELETE###'] = ucfirst($this->pi_getLL('delete'));
+$subpartArray['###CUSTOMERS###'] = $contentItem;
+
+$master_shop_header = '';
+if ($this->masterShop) {
+	$master_shop_header = '<th width="75" class="cell_store">'.$this->pi_getLL('store').'</th>';
+}
+$subpartArray['###HEADER_MASTER_SHOP###'] = $master_shop_header;
+$subpartArray['###FOOTER_MASTER_SHOP###'] = $master_shop_header;
+
+
 // custom page hook that can be controlled by third-party plugin
 if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/customers/customers_listing.php']['adminCustomersListingTmplPreProc'])) {
 	$params = array (

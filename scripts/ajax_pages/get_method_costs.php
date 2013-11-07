@@ -59,9 +59,11 @@ while($row_s2p = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_s2p)) {
 }
 
 if (count($available_sid) > 0) {
-	if (!$this->post['tx_multishop_pi1']['sid'] or !in_array($this->post['tx_multishop_pi1']['sid'],$available_sid)) {
-		// if the posted shipping id is not in the available shipping method array then select the first valid shipping method
-		$this->post['tx_multishop_pi1']['sid'] = $available_sid[0];
+	if (!$this->ms['MODULES']['PRODUCT_EDIT_METHOD_FILTER']) {
+		if (!$this->post['tx_multishop_pi1']['sid'] or !in_array($this->post['tx_multishop_pi1']['sid'],$available_sid)) {
+			// if the posted shipping id is not in the available shipping method array then select the first valid shipping method
+			$this->post['tx_multishop_pi1']['sid'] = $available_sid[0];
+		}
 	}
 	
 	$shipping_method		= mslib_fe::getShippingMethod($this->post['tx_multishop_pi1']['sid'], 's.id', $countries_id);
@@ -114,6 +116,10 @@ foreach ($available_sid as $sids) {
 }
 
 // we display the shipping costs and payment costs including vat
+if ($this->ms['MODULES']['PRODUCT_EDIT_METHOD_FILTER'] && !$this->post['tx_multishop_pi1']['sid']) {
+	// set to unreachable number for shipping method id so the session for shipping method are cleared
+	$this->post['tx_multishop_pi1']['sid'] = 999999;
+}
 $mslib_cart->setShippingMethod($this->post['tx_multishop_pi1']['sid']);
 $mslib_cart->setPaymentMethod($this->post['tx_multishop_pi1']['pid']);
 $cart = $mslib_cart->getCart();

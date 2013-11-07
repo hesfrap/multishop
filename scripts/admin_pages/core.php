@@ -141,6 +141,9 @@ switch ($this->ms['page']) {
 	case 'admin_stats_orders':
 		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_stats_orders.php');
     break;
+    case 'admin_stats_user_agent':
+    	if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_stats_user_agent.php');
+    break;
 	case 'admin_stats_products':
 		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_stats_products.php');
     break;	
@@ -190,6 +193,9 @@ switch ($this->ms['page']) {
 	break;
 	case 'admin_customer_export':
 		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_customer_export.php');		
+	break;
+	case 'admin_useragent_export':
+		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_useragent_export.php');
 	break;
 	case 'admin_customer_import':
 		if ($this->ADMIN_USER) {
@@ -259,7 +265,6 @@ switch ($this->ms['page']) {
 	break;
 	case 'admin_system_sort_catalog':
 		if ($this->ADMIN_USER and $this->get['tx_multishop_pi1']['sortItem']) {
-			require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.tx_mslib_catalog.php');							
 			switch ($this->get['tx_multishop_pi1']['sortItem']) {
 				case 'manufacturers':
 					switch ($this->get['tx_multishop_pi1']['sortByField']) {

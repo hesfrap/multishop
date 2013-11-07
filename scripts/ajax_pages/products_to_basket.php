@@ -1,15 +1,12 @@
 <?php
 if (!defined('TYPO3_MODE')) die ('Access denied.');
-
 require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.tx_mslib_cart.php');
 $mslib_cart=t3lib_div::makeInstance('tx_mslib_cart');
 $mslib_cart->init($this);
 $data=array();
-if ($this->post['products_id'])
-{
+if ($this->post['products_id']) {
 	$product=mslib_fe::getProduct($this->post['products_id']);
-	if ($product['products_id'])
-	{
+	if ($product['products_id']) {
 		$mslib_cart->updateCart();
 		$data['added_product']['products_name']=$product['products_name'];
 		$data['added_product']['products_model']=$product['products_model'];
@@ -18,23 +15,19 @@ if ($this->post['products_id'])
 //$cart = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->cart_page_uid);
 $cart = $mslib_cart->getCart();
 $totalitems=0;
-if (count($cart['products']) >0)
-{
-	foreach ($cart['products'] as $product)
-	{
+if (count($cart['products']) >0) {
+	foreach ($cart['products'] as $product) {
 		if ($product['qty'] > 0) $totalitems=$totalitems+$product['qty'];
 	}
 }
 $totalitems=ceil($totalitems);
 // hook
-if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/products_to_basket.php']['CartItemsCountLabelPostHook']))
-{
+if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/products_to_basket.php']['CartItemsCountLabelPostHook'])) {
 	$params = array (
 		'cart' => &$cart,
 		'totalitems' => &$totalitems
 	); 
-	foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/products_to_basket.php']['CartItemsCountLabelPostHook'] as $funcRef)
-	{
+	foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/products_to_basket.php']['CartItemsCountLabelPostHook'] as $funcRef) {
 		t3lib_div::callUserFunction($funcRef, $params, $this);
 	}
 }

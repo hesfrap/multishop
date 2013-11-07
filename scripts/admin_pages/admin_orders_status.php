@@ -44,7 +44,7 @@ if ($this->post) {
 			if (count($this->post['tx_multishop_pi1']['order_status_name'])) {
 				if ($this->post['tx_multishop_pi1']['order_status_name'][0]) {
 					$insertArray=array();
-					$insertArray['page_uid']=$this->shop_pid;
+					$insertArray['page_uid']=$this->showCatalogFromPage;
 					$insertArray['deleted']=0;
 					$insertArray['crdate']=time();
 					$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_orders_status', $insertArray);
@@ -119,7 +119,7 @@ if ($this->get['tx_multishop_pi1']['action'] == 'edit') {
 
 $content .= '</form>';
 
-$str="SELECT o.id, o.default_status, od.name from tx_multishop_orders_status o, tx_multishop_orders_status_description od where (o.page_uid='0' or o.page_uid='".$this->shop_pid."') and o.deleted=0 and o.id=od.orders_status_id and od.language_id='0' order by o.id desc";
+$str="SELECT o.id, o.default_status, od.name from tx_multishop_orders_status o, tx_multishop_orders_status_description od where (o.page_uid='0' or o.page_uid='".$this->showCatalogFromPage."') and o.deleted=0 and o.id=od.orders_status_id and od.language_id='0' order by o.id desc";
 $qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 $zones=array();	
 while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {

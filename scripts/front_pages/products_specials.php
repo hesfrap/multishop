@@ -3,6 +3,8 @@ if (!defined('TYPO3_MODE')) die ('Access denied.');
 
 if (!is_numeric($this->limit)) {
 	$this->limit=$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'];
+} else {
+	$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']=$this->limit;
 }
 $filter		=array();
 $having		=array();
@@ -120,7 +122,11 @@ if ($contentType=='specials_listing_page') {
 			}		
 			// pagination
 			if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->limit) {
-				require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination.php');	
+				if (!isset($this->ms['MODULES']['PRODUCTS_LISTING_PAGINATION_TYPE']) || $this->ms['MODULES']['PRODUCTS_LISTING_PAGINATION_TYPE'] == 'default') {
+					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination.php');
+				} else {
+					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination_with_number.php');
+				}
 			}
 			// pagination eof
 		} else {
@@ -173,7 +179,7 @@ if ($contentType=='specials_listing_page') {
 				$filter[]='s.status=1';
 			}
 			//$orderby='rand()';
-			
+
 			// the mslib_fe::Crumbar cannot be used to determine the categories status since that method doesnt return any category status
 			/* $str="SELECT p2c.categories_id, p.products_id FROM tx_multishop_products p, tx_multishop_specials s, tx_multishop_products_to_categories p2c where p.products_status=1 and p.products_id=s.products_id and p.products_id=p2c.products_id order by rand() limit ".$limit;
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
@@ -193,7 +199,8 @@ if ($contentType=='specials_listing_page') {
 				}
 			} */
 			
-			$str="SELECT p2c.categories_id, p.products_id, c.status as cat_status FROM tx_multishop_products p, tx_multishop_specials s, tx_multishop_products_to_categories p2c, tx_multishop_categories c where p.products_status=1 and p.products_id=s.products_id and p.products_id=p2c.products_id and p2c.categories_id = c.categories_id and c.status = 1 order by rand() limit ".$this->limit;
+			//$str="SELECT p2c.categories_id, p.products_id, c.status as cat_status FROM tx_multishop_products p, tx_multishop_specials s, tx_multishop_products_to_categories p2c, tx_multishop_categories c where p.products_status=1 and p.products_id=s.products_id and p.products_id=p2c.products_id and p2c.categories_id = c.categories_id and c.status = 1 order by rand() limit ".$this->limit;
+			$str="SELECT p2c.categories_id, p.products_id, c.status as cat_status FROM tx_multishop_products p, tx_multishop_specials s, tx_multishop_products_to_categories p2c, tx_multishop_categories c where p.products_status=1 and p.products_id=s.products_id and p.products_id=p2c.products_id and p2c.categories_id = c.categories_id and c.status = 1 order by rand()";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			$product_ids=array();
 			while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {

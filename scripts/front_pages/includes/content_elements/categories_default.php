@@ -77,7 +77,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 					if ($cat['categories_url']) {
 						$parsed_url = @parse_url($cat['categories_url']);
 						if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
-							$target="target=\"_blank\"";
+							$target=" target=\"_blank\"";
 						} else {
 							$target='';
 						}
@@ -112,16 +112,17 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 					}
 					$categories_name=htmlspecialchars($cat['categories_name']);	
 					$meta_description=htmlspecialchars($cat['meta_description']);
-					$content.='<li ';
-					
-					if ($this->ADMIN_USER) $content.='id="sortable_maincat_'.$cat['categories_id'].'" ';
+					$content.='<li';					
+					if ($this->ADMIN_USER) {
+						$content.=' id="sortable_maincat_'.$cat['categories_id'].'"';
+					}
 					$this->class='';
 					if ($actifsub) {
 						$this->class='activeHasSubs';
 					} elseif ($act) {
 						$this->class='active';
 					}
-					$content.='class="'.$this->class.'"><a href="'.$link.'" class="ajax_link" title="'.htmlspecialchars($meta_description).'" '.$target.'><span>'.$categories_name.'</span></a>';
+					$content.=' class="'.$this->class.'"><a href="'.$link.'" class="ajax_link" title="'.htmlspecialchars($meta_description).'"'.$target.'><span>'.$categories_name.'</span></a>';
 					// level 0 eof
 					if ($this->maxDEPTH > $nested_level or ($actifsub or $act)) {							
 						$catlist2=mslib_fe::getSubcatsOnly($cat['categories_id']);
@@ -133,7 +134,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 								if ($cat['categories_url']) {
 									$parsed_url = @parse_url($cat['categories_url']);
 									if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
-										$target="target=\"_blank\"";	
+										$target=" target=\"_blank\"";	
 									} else {
 										$target='';
 									}
@@ -187,7 +188,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 								} elseif ($act) {
 									$this->class='active';
 								}								
-								$content.='<li class="'.$this->class.'"><a href="'.$link.'" class="ajax_link" title="'.htmlspecialchars($meta_description).'" '.$target.'><span>'.$categories_name.'</span></a>';
+								$content.='<li class="'.$this->class.'"><a href="'.$link.'" class="ajax_link" title="'.htmlspecialchars($meta_description).'"'.$target.'><span>'.$categories_name.'</span></a>';
 								$content.='</li>';
 							}
 							$content.='</ul>';		
@@ -197,10 +198,9 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 					$content.='</li>';
 				}
 				$content.='</ul></div>';
-				if ($this->ADMIN_USER)
-				{
+				if ($this->ADMIN_USER) {
 					$content.='					
-					<script>
+					<script type="text/javascript">
 					  jQuery(document).ready(function($) {
 						var result = jQuery("#catalog_sortable_'.$this->cObj->data['uid'].'").sortable({
 						 cursor:     "move", 
@@ -260,7 +260,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 						{
 							$parsed_url = @parse_url($cat['categories_url']);
 							if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
-								$target="target=\"_blank\"";	
+								$target=" target=\"_blank\"";	
 							} else {
 								$target='';
 							}
@@ -300,7 +300,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 						}
 						$categories_name=htmlspecialchars($cat['categories_name']);					
 						$meta_description=htmlspecialchars($cat['meta_description']);
-						$tmpcontent.='<li ';
+						$tmpcontent.='<li';
 						$class='';
 						$class_h2 ='';
 						$catlist2=mslib_fe::getSubcatsOnly($cat['categories_id']);
@@ -312,7 +312,9 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 							$class_h2 = "main";
 						}
 						
-						if ($this->ADMIN_USER)  $tmpcontent.='id="sortable_maincat_'.$cat['categories_id'].'" ';
+						if ($this->ADMIN_USER) {
+							$tmpcontent.=' id="sortable_maincat_'.$cat['categories_id'].'"';
+						}
 						$class.='item_'.$item_counter.' ';
 						if ($actifsub or $act)  {
 							$class.='active ';
@@ -321,7 +323,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 							}				
 						} 
 						$label='';
-						$tmpcontent.=(($class)?' class="'.trim($class).'"':'').'><a href="'.$link.'" class="ajax_link" title="'.htmlspecialchars($meta_description).'" '.$target.'><span>'.$label.''.$categories_name.'</span></a>';
+						$tmpcontent.=(($class)?' class="'.trim($class).'"':'').'><a href="'.$link.'" class="ajax_link" title="'.htmlspecialchars($meta_description).'"'.$target.'><span>'.$label.''.$categories_name.'</span></a>';
 						// level 0 eof
 						$tmpcontent.='</li>';
 						$items[]=$tmpcontent;
@@ -383,7 +385,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 					{
 						$parsed_url = @parse_url($cat['categories_url']);
 						if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
-							$target="target=\"_blank\"";	
+							$target=" target=\"_blank\"";	
 						} else {
 							$target='';
 						}
@@ -446,14 +448,13 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 							$active_accordion = 'bottomAccordion.activate($$("#vertical_container .accordion_toggle")['.$num.']);';
 						}				
 					} 
-					$content.=(($class)?'class="'.trim($class).'"':'').'><a href="'.$link.'" class="ajax_link" title="'.htmlspecialchars($meta_description).'" '.$target.'><span>'.$categories_name.'</span></a>';
+					$content.=(($class)?'class="'.trim($class).'"':'').'><a href="'.$link.'" class="ajax_link" title="'.htmlspecialchars($meta_description).'"'.$target.'><span>'.$categories_name.'</span></a>';
 					// level 0 eof
 					if ($this->maxDEPTH > $nested_level)
 					{				
 						if (count($catlist2) > 0)
 						{
-							// level 1
-							
+							// level 1							
 							$content.='<ul class="sublevel">';
 							foreach ($catlist2 as $cat) {					
 								$nested_level=1;
@@ -462,7 +463,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 								if ($cat['categories_url']) {
 									$parsed_url = @parse_url($cat['categories_url']);
 									if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
-										$target="target=\"_blank\"";	
+										$target=" target=\"_blank\"";	
 									} else {
 										$target='';
 									}
@@ -488,7 +489,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 								if ($cat['categories_url']) {
 									$parsed_url = @parse_url($cat['categories_url']);
 									if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
-										$target="target=\"_blank\"";
+										$target=" target=\"_blank\"";
 									} else {
 										$target='';
 									}									
@@ -496,41 +497,33 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 								}
 								$actifsub=0;
 								$act=0;
-								if ($user_crumbar[$nested_level]['id'] == $cat['categories_id'])
-								{
-									if ($user_crumbar[($nested_level+1)])
-									{
+								if ($user_crumbar[$nested_level]['id'] == $cat['categories_id']) {
+									if ($user_crumbar[($nested_level+1)]) {
 										$categories_name=htmlspecialchars($cat['categories_name']);					
 										$meta_description=htmlspecialchars($cat['meta_description']);					
 										$actifsub=1;
-									}
-									else
-									{
+									} else {
 										$categories_name=htmlspecialchars($cat['categories_name']);										
 										$meta_description=htmlspecialchars($cat['meta_description']);					
 										$act=1;
 									}
-								}
-								else
-								{
+								} else {
 									$categories_name=htmlspecialchars($cat['categories_name']);					
 									$meta_description=htmlspecialchars($cat['meta_description']);					
 								}
 								$catlist3=mslib_fe::getSubcatsOnly($cat['categories_id']);
 								//level submenu 2 start
-								if (count($catlist3) > 0 and $this->maxDEPTH > 2){
-									$content .= '<li class="sub_active"><a href="'.$link.'" title="'.htmlspecialchars($meta_description).'" '.$target.'><span>'.$categories_name.'</span></a>
-													<ul>';
+								if (count($catlist3) > 0 and $this->maxDEPTH > 2) {
+									$content .= '<li class="sub_active"><a href="'.$link.'" title="'.htmlspecialchars($meta_description).'"'.$target.'><span>'.$categories_name.'</span></a><ul class="sublevel">';
 									$cat_level_3 = "";
-									foreach ($catlist3 as $cat)
-									{
-										$nested_level=1;
+									foreach ($catlist3 as $cat) {
+										$nested_level=2;
 										// get all cats to generate multilevel fake url
 										$level=0;
 										if ($cat['categories_url']) {
 											$parsed_url = @parse_url($cat['categories_url']);
 											if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
-												$target="target=\"_blank\"";	
+												$target=" target=\"_blank\"";	
 											} else {
 												$target='';
 											}
@@ -540,10 +533,8 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 											$cats=mslib_fe::Crumbar($cat['categories_id']);				
 											$cats=array_reverse($cats);
 											$where='';
-											if (count($cats) > 0)
-											{
-												foreach ($cats as $item)
-												{
+											if (count($cats) > 0) {
+												foreach ($cats as $item) {
 													$where.="categories_id[".$level."]=".$item['id']."&";
 													$level++;
 												}
@@ -556,7 +547,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 										if ($cat['categories_url']) {
 											$parsed_url = @parse_url($cat['categories_url']);
 											if ($parsed_url['host'] and ($parsed_url['host'] <> $this->server['HTTP_HOST'])) {
-												$target="target=\"_blank\"";
+												$target=" target=\"_blank\"";
 											} else {
 												$target='';
 											}											
@@ -564,30 +555,29 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 										}
 										$actifsub=0;
 										$act=0;
-										if ($user_crumbar[$nested_level]['id'] == $cat['categories_id'])
-										{
-											if ($user_crumbar[($nested_level+1)])
-											{
+										if ($user_crumbar[$nested_level]['id'] == $cat['categories_id']) {
+											if ($user_crumbar[($nested_level+1)]) {
 												$categories_name=htmlspecialchars($cat['categories_name']);
 												$meta_description=htmlspecialchars($cat['meta_description']);												
 												$actifsub=1;
-											}
-											else
-											{
+											} else {
 												$categories_name=htmlspecialchars($cat['categories_name']);
 												$meta_description=htmlspecialchars($cat['meta_description']);												
 												$act=1;
 											}
-										}
-										else
-										{
+										} else {
 											$categories_name=htmlspecialchars($cat['categories_name']);
 											$meta_description=htmlspecialchars($cat['meta_description']);											
 										}
-										$cat_level_3 .= '<li><a href="'.$link.'" title="'.htmlspecialchars($meta_description).'" '.$target.'><span>'.$categories_name.'</span></a></li>';
+										$this->class='';
+										if ($actifsub) {
+											$this->class='activeHasSubs';
+										} elseif ($act) {
+											$this->class='active';
+										}											
+										$cat_level_3 .= '<li class="'.$this->class.'"><a href="'.$link.'" title="'.htmlspecialchars($meta_description).'"'.$target.'><span>'.$categories_name.'</span></a></li>';
 									}
 									$content .= $cat_level_3 .'</ul>';
-									
 								} else {
 									$this->class='';
 									if ($actifsub) {
@@ -595,7 +585,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 									} elseif ($act) {
 										$this->class='active';
 									}									
-									$content.='<li class="'.$this->class.'"><a href="'.$link.'" title="'.htmlspecialchars($meta_description).'" '.$target.'><span>'.$categories_name.'</span></a>';
+									$content.='<li class="'.$this->class.'"><a href="'.$link.'" title="'.htmlspecialchars($meta_description).'"'.$target.'><span>'.$categories_name.'</span></a>';
 								}
 								//level submenu 2 eof
 								$content.='</li>';
@@ -609,10 +599,9 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 				$content.='</ul></div>     
 					   
 				';
-				if ($this->ADMIN_USER)
-				{
+				if ($this->ADMIN_USER) {
 					$content.='					
-					<script>
+					<script type="text/javascript">
 					  jQuery(document).ready(function($) {
 						var result = jQuery("#vertical_container").sortable({
 						 cursor:     "move", 

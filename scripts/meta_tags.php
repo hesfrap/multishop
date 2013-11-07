@@ -30,13 +30,15 @@ if ($this->runUpdate) {
 // temporary we compare the database for reach request, so the developer doesnt need to press manual button Compare database within the admin panel.
 //mslib_befe::RunMultishopUpdate();
 // application top things that are only runned the first time when the plugin is initiated
-if ($this->get['categories_id'] or $this->get['products_id'])
-{
-	if (strstr($this->ms['MODULES']['CRUMBAR_TYPE'],"/"))	require($this->DOCUMENT_ROOT.$this->ms['MODULES']['CRUMBAR_TYPE'].'.php');	
-	elseif($this->ms['MODULES']['CRUMBAR_TYPE'])	require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/crumbar/'.$this->ms['MODULES']['CRUMBAR_TYPE'].'.php');		
-	else require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/crumbar/default.php');
-	if ($crum)
-	{
+if ($this->get['categories_id'] or $this->get['products_id']) {
+	if (strstr($this->ms['MODULES']['CRUMBAR_TYPE'],"/")) {
+		require($this->DOCUMENT_ROOT.$this->ms['MODULES']['CRUMBAR_TYPE'].'.php');	
+	} elseif($this->ms['MODULES']['CRUMBAR_TYPE']) {
+		require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/crumbar/'.$this->ms['MODULES']['CRUMBAR_TYPE'].'.php');
+	} else {
+		require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/crumbar/default.php');
+	}
+	if ($crum) {
 		$GLOBALS["TYPO3_CONF_VARS"]["tx_multishop"]['crumbar_html']=$crum;
 	}			
 }
@@ -130,29 +132,31 @@ $meta_tags=array();
 			}
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
-			if ($row['total'] > 0)
-			{
-				if ($row['total']==1)	$string=sprintf($this->pi_getLL('there_is_one_customer_registered'),'<strong>'.$row['total'].'</strong>');
-				else					$string=sprintf($this->pi_getLL('there_are_s_customers_registered'),'<strong>'.$row['total'].'</strong>');
-				$messages[]='"<a href=\"'.mslib_fe::typolink($this->shop_pid,'tx_multishop_pi1[page_section]=admin_customers').'\">'.$string.'</a>"';
+			if ($row['total'] > 0) {
+				if ($row['total']==1) {
+					$string=sprintf($this->pi_getLL('there_is_one_customer_registered'),'<strong>'.$row['total'].'</strong>');
+				} else {
+					$string=sprintf($this->pi_getLL('there_are_s_customers_registered'),'<strong>'.$row['total'].'</strong>');
+				}
+				$messages[]='"<a href=\"'.mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_customers').'\">'.$string.'</a>"';
 			}
 			// total customers eof
 			// orders today
 			$from=strtotime(date("Y-m-d").' 00:00:00');
 			$till=time();
 			$str="SELECT count(1) as total from tx_multishop_orders where deleted=0 and crdate BETWEEN ".$from." and ".$till;
-			if (!$this->masterShop)
-			{
+			if (!$this->masterShop) {
 				$str.=" and page_uid='".$this->shop_pid."'";
-			}
-		
+			}		
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
-			if ($row['total'] > 0)
-			{
-				if ($row['total']==1)	$string=sprintf($this->pi_getLL('today_there_is_one_order_created'),'<strong>'.$row['total'].'</strong>');
-				else					$string=sprintf($this->pi_getLL('today_there_are_s_orders_created'),'<strong>'.$row['total'].'</strong>');
-				$messages[]='"<a href=\"'.mslib_fe::typolink($this->shop_pid,'tx_multishop_pi1[page_section]=admin_orders').'\">'.$string.'</a>"';
+			if ($row['total'] > 0) {
+				if ($row['total']==1) {
+					$string=sprintf($this->pi_getLL('today_there_is_one_order_created'),'<strong>'.$row['total'].'</strong>');
+				} else {
+					$string=sprintf($this->pi_getLL('today_there_are_s_orders_created'),'<strong>'.$row['total'].'</strong>');
+				}
+				$messages[]='"<a href=\"'.mslib_fe::typolink($this->shop_pid . ',2003','tx_multishop_pi1[page_section]=admin_orders').'\">'.$string.'</a>"';
 			}
 			// orders today eof
 			// orders this week
@@ -160,57 +164,54 @@ $meta_tags=array();
 			$from=$days[0];
 			$till=$days[5];
 			$str="SELECT count(1) as total from tx_multishop_orders where deleted=0 and crdate BETWEEN ".$from." and ".$till;
-			if (!$this->masterShop)
-			{
+			if (!$this->masterShop) {
 				$str.=" and page_uid='".$this->shop_pid."'";
 			}
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
-			if ($row['total'] > 0)
-			{
-				if ($row['total']==1)	$string=sprintf($this->pi_getLL('this_s_there_is_one_order_created'),t3lib_div::strtoupper($this->pi_getLL('week')),'<strong>'.$row['total'].'</strong>');
-				else					$string=sprintf($this->pi_getLL('this_s_there_are_s_orders_created'),t3lib_div::strtoupper($this->pi_getLL('week')),'<strong>'.$row['total'].'</strong>');
-				$messages[]='"<a href=\"'.mslib_fe::typolink($this->shop_pid,'tx_multishop_pi1[page_section]=admin_orders').'\">'.$string.'</a>"';
+			if ($row['total'] > 0) {
+				if ($row['total']==1) {
+					$string=sprintf($this->pi_getLL('this_s_there_is_one_order_created'),t3lib_div::strtoupper($this->pi_getLL('week')),'<strong>'.$row['total'].'</strong>');
+				} else {
+					$string=sprintf($this->pi_getLL('this_s_there_are_s_orders_created'),t3lib_div::strtoupper($this->pi_getLL('week')),'<strong>'.$row['total'].'</strong>');
+				}
+				$messages[]='"<a href=\"'.mslib_fe::typolink($this->shop_pid . ',2003','tx_multishop_pi1[page_section]=admin_orders').'\">'.$string.'</a>"';
 			}
 			// orders this week eof
 			// orders this month
 			$from=strtotime(date("Y-m-1 00:00:00"));
 			$till=strtotime(date("Y-m-31 23:59:59"));
 			$str="SELECT count(1) as total from tx_multishop_orders where deleted=0 and crdate BETWEEN ".$from." and ".$till;
-			if (!$this->masterShop)
-			{
+			if (!$this->masterShop) {
 				$str.=" and page_uid='".$this->shop_pid."'";
 			}
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
-			if ($row['total'] > 0)
-			{
-				if ($row['total']==1)	$string=sprintf($this->pi_getLL('this_s_there_is_one_order_created'),t3lib_div::strtoupper($this->pi_getLL('month')),'<strong>'.$row['total'].'</strong>');
-				else					$string=sprintf($this->pi_getLL('this_s_there_are_s_orders_created'),t3lib_div::strtoupper($this->pi_getLL('month')),'<strong>'.$row['total'].'</strong>');
-				$messages[]='"<a href=\"'.mslib_fe::typolink($this->shop_pid,'tx_multishop_pi1[page_section]=admin_orders').'\">'.$string.'</a>"';
+			if ($row['total'] > 0) {
+				if ($row['total']==1) {
+					$string=sprintf($this->pi_getLL('this_s_there_is_one_order_created'),t3lib_div::strtoupper($this->pi_getLL('month')),'<strong>'.$row['total'].'</strong>');
+				} else {
+					$string=sprintf($this->pi_getLL('this_s_there_are_s_orders_created'),t3lib_div::strtoupper($this->pi_getLL('month')),'<strong>'.$row['total'].'</strong>');
+				}
+				$messages[]='"<a href=\"'.mslib_fe::typolink($this->shop_pid . ',2003','tx_multishop_pi1[page_section]=admin_orders').'\">'.$string.'</a>"';
 			}
-			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/front_pages/meta_tags.php']['adminPanelMessages']))
-			{
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/front_pages/meta_tags.php']['adminPanelMessages'])) {
 					$params = array ('messages'=>&$messages);
-					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/front_pages/meta_tags.php']['adminPanelMessages'] as $funcRef)
-					{
+					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/front_pages/meta_tags.php']['adminPanelMessages'] as $funcRef) {
 							t3lib_div::callUserFunction($funcRef, $params, $this);
 					}
 			}  			
 			// orders this month eof
-			if (count($messages))
-			{
+			if (count($messages)) {
 				shuffle($messages);
 				$html.='
 					var messages=['.implode(", ",$messages).'];
 					var countMessage = messages.length * 4;
 					var secondInterval = countMessage + 1 + "000";
-					function changeText()
-					{
+					function changeText() {
 					  intervalID = setInterval(multishop_admin_scroller, secondInterval);
 					}
-					function multishop_admin_scroller()
-					{
+					function multishop_admin_scroller() {
 						jQuery.each(messages, function(index, value) {
 							setTimeout(function() {
 								jQuery("#tx_multishop_admin_footer .ms_admin_scroller").hide().html(value).fadeIn(600);
@@ -219,17 +220,18 @@ $meta_tags=array();
 					}
 					';
 				$html.='
-		
-						//scroll messages
-						multishop_admin_scroller();
-						changeText();
+					//scroll messages
+					multishop_admin_scroller();
+					changeText();
 			';
 			}
 			$html.='
 		});
 		</script>
 		';
-			if ($this->ms['MODULES']['GLOBAL_MODULES']['CACHE_FRONT_END']) $Cache_Lite->save($html);
+			if ($this->ms['MODULES']['GLOBAL_MODULES']['CACHE_FRONT_END']) {
+				$Cache_Lite->save($html);
+			}
 		}
 		if ($this->get['tx_multishop_pi1']['page_section']=='admin_home') {
 			$this->ms['MODULES']['DISABLE_ADMIN_PANEL']=1;
@@ -259,7 +261,7 @@ $meta_tags=array();
 				});							
 				
 				jQuery.ajax({
-					url: \''.mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=admin_panel&tx_multishop_pi1[categories_id]='.$this->get['categories_id']).'\',
+					url: \''.mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=admin_panel&tx_multishop_pi1[categories_id]='.$this->get['categories_id'].'&tx_multishop_pi1[products_id]='.$this->get['products_id']).'\',
 					data: \'\',
 					type: \'post\',
 					dataType: \'json\',

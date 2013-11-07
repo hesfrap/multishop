@@ -42,6 +42,7 @@ $coltypes=array();
 $coltypes['products_name']='Products name';		 
 $coltypes['products_model']='Products model';
 $coltypes['products_description']='Products description';		 
+$coltypes['products_description_encoded']='Products description (encoded)';
 $coltypes['products_price']='Products price (normal price, excluding VAT)';
 $coltypes['products_price_including_vat']='Products price (normal price, including VAT)';
 $coltypes['products_deeplink']='Products deeplink';		 
@@ -77,7 +78,9 @@ $coltypes['products_order_unit_name']='Products order unit name';
 $coltypes['products_order_unit_id']='Products order unit id';
 for ($x=0;$x<$this->ms['MODULES']['NUMBER_OF_PRODUCT_IMAGES'];$x++) {
 	$x2=$x;
-	if ($x2==0) $x2='';	
+	if ($x2==0) {
+		$x2='';	
+	}
 	$coltypes['products_image'.$x2]='Products image '.($x+1);
 }
 for ($x=1;$x<=$max_category_level;$x++) {
@@ -630,6 +633,7 @@ elseif ($this->post['action'] == 'product-import-preview' or (is_numeric($_REQUE
 		$locked_fields['products_vat_rate']='Products VAT rate';
 		$locked_fields['products_name']='Products name';
 		$locked_fields['products_quantity']='Products quantity';
+		$locked_fields['products_description']='Products description';
 		foreach ($locked_fields as $key => $val) {
 			if (is_array($this->post['tx_multishop_pi1']['locked_fields'])) {			
 				$combinedContent.='<option value="'.$key.'"'.(in_array($key,$this->post['tx_multishop_pi1']['locked_fields'])?' selected':'').'>'.htmlspecialchars($val).'</option>'."\n";
@@ -914,7 +918,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 									else				$rows[]=$data;												
 								}
 								else
-								{
+								{									
 									$rows[]=$data;	
 								}			
 								$counter++;
@@ -1002,6 +1006,11 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 							case 'products_description':
 								$char="<BR />";
 								$item[$this->post['select'][$i]] .=$char.$tmpitem[$i];
+								$item[$this->post['select'][$i]]=preg_replace("/^<BR \/>|<BR \/>$/is",'',$item[$this->post['select'][$i]]);
+							break;
+							case 'products_description_encoded':
+								$char="<BR />";
+								$item[$this->post['select'][$i]] .=$char.htmlspecialchars_decode($tmpitem[$i]);
 								$item[$this->post['select'][$i]]=preg_replace("/^<BR \/>|<BR \/>$/is",'',$item[$this->post['select'][$i]]);
 							break;
 							case 'products_deeplink':
@@ -1133,9 +1142,20 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 						}
 						if ($char and $item[$this->post['select'][$i]] == $char) $item[$this->post['select'][$i]]='';
 					}
+/*
+					// trick to quickly debug 1 item
+					if ($item['products_ean']=='7610663702857') {
+						print_r($item);
+						die();
+						//mslib_fe::file_get_contents($item['products_image']);
+					} else {
+						continue;
+					}
+*/					
 					// unique products id. this field will be used for incremental updates
 					if ($this->post['fetch_existing_product_by_direct_field']) {
 						$fields=array();
+						$fields['products_id']='products_id';
 						$fields['sku_code']='products_sku';
 						$fields['products_ean']='products_ean';
 						foreach ($fields as $dbField => $itemField) {
@@ -1506,13 +1526,13 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 							}							
 							// convert including vat price to excluding vat
 							if ($item['products_old_price_including_vat'] and $item['products_vat_rate']) {
-								$item['products_old_price'] = number_format(($item['products_old_price_including_vat']/(100+$item['products_vat_rate'])*100),14);
+								$item['products_old_price'] = number_format(($item['products_old_price_including_vat']/(100+$item['products_vat_rate'])*100),14,'.','');
 							}
 							if ($item['products_price_including_vat'] and $item['products_vat_rate']) {
-								$item['products_price']	= number_format(($item['products_price_including_vat']/(100+$item['products_vat_rate'])*100),14);
+								$item['products_price']	= number_format(($item['products_price_including_vat']/(100+$item['products_vat_rate'])*100),14,'.','');
 							}
 							if ($item['products_specials_price_including_vat'] and $item['products_vat_rate']) {
-								$item['products_specials_price'] = number_format(($item['products_specials_price_including_vat']/(100+$item['products_vat_rate'])*100),14);
+								$item['products_specials_price'] = number_format(($item['products_specials_price_including_vat']/(100+$item['products_vat_rate'])*100),14,'.','');
 							}
 							if ($item['products_old_price']) {
 								if ($item['products_price'] < $item['products_old_price']) $item['products_specials_price']=$item['products_price'];
@@ -1659,8 +1679,16 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								}
 								if (isset($item['products_name']) and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_name',$this->post['tx_multishop_pi1']['locked_fields'])))) {
 									$updateArray['products_name'] = $item['products_name'];
-								}																		
-								if ($item['products_description']) {
+								}
+								
+								/* if ($item['products_description_encoded']) {
+									$updateArray['products_description'] = $item['products_description_encoded'];
+								} elseif ($item['products_description']) {
+									$updateArray['products_description'] = $item['products_description'];
+								} */
+								if ($item['products_description_encoded'] and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_description',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+									$updateArray['products_description'] = $item['products_description_encoded'];
+								} elseif ($item['products_description'] and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_description',$this->post['tx_multishop_pi1']['locked_fields'])))) {
 									$updateArray['products_description'] = $item['products_description'];
 								}
 								if ($item['products_short_description']) {
@@ -1885,7 +1913,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 									$message='ERROR QUERY FAILED: '.$query."\n";
 									if ($log_file) {
 										file_put_contents($log_file, $message, FILE_APPEND);										
-									}									
+									}								
 								}								
 								// lets add the new product to the products description table
 								$updateArray=array();
@@ -2126,33 +2154,41 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 									if ($start_time) {
 										$end_time	= microtime(TRUE);
 										$message.= "----------------------------------\n";
-										$ms_string=number_format(($end_time - $start_time), 3);											
+										$ms_string=number_format(($end_time - $start_time), 3,'.','');
 										// calculate progress in percentage
 										$completed_percentage=($item_counter/$total_datarows*100);
 										// time approximately left
-										$global_ms_string=number_format(($end_time-$global_start_time), 3);											
+										$global_ms_string=number_format(($end_time-$global_start_time), 3,'.','');
 										$running_seconds=round($global_ms_string);
 										if ($running_seconds > 60) {
 											$running_minutes=($running_seconds/60);
 											if ($running_minutes > 60) {
-												$time_running=number_format(($running_minutes/60),0,'','.').' hour(s)';
+												$time_running=number_format(($running_minutes/60),0,'.','').' hour(s)';
 											} else {
-												$time_running=number_format($running_minutes,0,'','.').' minute(s)';
+												$time_running=number_format($running_minutes,0,'.','').' minute(s)';
 											}											
 										} else {
-											$time_running=number_format($running_seconds,0,'','.').' seconds';
+											$time_running=number_format($running_seconds,0,'.','').' seconds';
 										}
-										$estimated_seconds=round(((($global_ms_string/$completed_percentage)*(100-$completed_percentage))));
+										$estimated_seconds=round(((($global_ms_string/100)*(100-$completed_percentage))));
+										
+										/*
+										$message.="\n";
+										$message.='global_ms_string: '.$global_ms_string.', ';
+										$message.='completed_percentage: '.$completed_percentage.', ';
+										$message.='estimated: '.((($global_ms_string/100)*(100-$completed_percentage))).'.'."\n";
+										*/
+										//$estimated_seconds=round(((($global_ms_string/$completed_percentage)*(100-$completed_percentage))));
 										if ($estimated_seconds > 60) {
 											// ETR in hours or minutes
 											$estimated_minutes=($estimated_seconds/60);
 											if ($estimated_minutes > 60) {
-												$estimated_time_remaining=number_format(($estimated_minutes/60),0,'','.').' hour(s)';
+												$estimated_time_remaining=number_format(($estimated_minutes/60),0,'.','').' hour(s)';
 											} else {
-												$estimated_time_remaining=number_format($estimated_minutes,0,'','.').' minute(s)';
+												$estimated_time_remaining=number_format($estimated_minutes,0,'.','').' minute(s)';
 											}
 										} else {
-											$estimated_time_remaining=number_format($estimated_seconds,0,'','.').' second(s)';
+											$estimated_time_remaining=number_format($estimated_seconds,0,'.','').' second(s)';
 										}										
 										$message.= '50 products processed in: '.$ms_string.'ms. '.number_format(($total_datarows-$item_counter),0,'','.').' of '.number_format($total_datarows,0,'','.').' product(s) waiting for import ('.round($completed_percentage).'% completed).'."\n".'Job is running: '.($time_running).' and the estimated time remaining is: '.$estimated_time_remaining.'.'."\n";
 										$message.= "----------------------------------\n";
@@ -2196,12 +2232,12 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 		// custom hook that can be controlled by third-party plugin eof				
 		if ($log_file) {
 			$end_time	= microtime(TRUE);
-			$global_ms_string=number_format(($end_time - $global_start_time), 3);
+			$global_ms_string=number_format(($end_time - $global_start_time), 3,'.','');
 			$running_seconds=round($global_ms_string);
 			if ($running_seconds > 60) {
-				$time_running=number_format(($running_seconds/60),0,'','.').' minute(s)';
+				$time_running=number_format(($running_seconds/60),0,'.','').' minute(s)';
 			} else {
-				$time_running=number_format(($running_seconds),0,'','.').' seconds';				
+				$time_running=number_format(($running_seconds),0,'.','').' seconds';				
 			}
 			file_put_contents($log_file, 'Import task completed on: '.date("Y-m-d G:i:s",time()).' and took: '.$time_running.".\n", FILE_APPEND);
 		}			
@@ -2256,7 +2292,7 @@ if ($this->post['action'] != 'product-import-preview')
 				</td>
 				';
 				$schedule_content.='<td nowrap align="right">'.date("Y-m-d",$job['last_run']).'<br />'.date("G:i:s",$job['last_run']).'</td>';
-				if (!$job['period']) 	$schedule_content.='<td>manual<br /><a href="'.mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]='.$this->ms['page'].'&job_id='.$job['id'].'&action=run_job&limit=99999999').'" class="msadmin_button" onClick="return CONFIRM(\''.addslashes($this->pi_getLL('are_you_sure_you_want_to_run_the_import_job')).': '.htmlspecialchars(addslashes($job['name'])).'?\')"><i>'.$this->pi_getLL('run_now').'</i></a><br /><a href="" class="copy_to_clipboard" rel="'.htmlentities('/usr/bin/wget -O /dev/null --tries=1 --timeout=30 -q "'.$this->FULL_HTTP_URL.mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]='.$this->ms['page'].'&job_id='.$job['id'].'&code='.$job['code'].'&action=run_job&run_as_cron=1&limit=99999999',1).'" >/dev/null 2>&1').'" ><i>'.$this->pi_getLL('run_by_crontab').'</i></a></td>';
+				if (!$job['period']) 	$schedule_content.='<td>manual<br /><a href="'.mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]='.$this->ms['page'].'&job_id='.$job['id'].'&action=run_job&limit=99999999').'" class="msadmin_button" onClick="return CONFIRM(\''.addslashes($this->pi_getLL('are_you_sure_you_want_to_run_the_import_job')).': '.htmlspecialchars(addslashes($job['name'])).'?\')"><i>'.$this->pi_getLL('run_now').'</i></a><br /><a href="" class="copy_to_clipboard" rel="'.htmlentities('/usr/bin/wget -O /dev/null --tries=1 --timeout=86400 -q "'.$this->FULL_HTTP_URL.mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]='.$this->ms['page'].'&job_id='.$job['id'].'&code='.$job['code'].'&action=run_job&run_as_cron=1&limit=99999999',1).'" >/dev/null 2>&1').'" ><i>'.$this->pi_getLL('run_by_crontab').'</i></a></td>';
 				else					$schedule_content.='<td>'.date("Y-m-d G:i:s",$job['last_run']+$job['period']).'</td>';
 				$schedule_content.='<td class="status_field" align="center">';
 				if (!$job['status']) {

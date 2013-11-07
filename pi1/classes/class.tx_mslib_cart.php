@@ -1,5 +1,7 @@
 <?php
-if (!defined('TYPO3_MODE')) die ('Access denied.');
+if (!defined('TYPO3_MODE')) {
+	die('Access denied.');
+}
 
 /***************************************************************
 *  Copyright notice
@@ -42,7 +44,7 @@ class tx_mslib_cart extends tslib_pibase {
 		mslib_fe::init($ref);
 	}
 	function getCart () {
-		$this->cart = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->cart_page_uid);
+		$this->cart = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->cart_page_uid);	
 		if ($this->cart['user']['country']) {
 			$this->tta_user_info['default']['country']=$this->cart['user']['country'];
 			$this->tta_user_info['default']['region']=$this->cart['user']['state'];
@@ -60,13 +62,27 @@ class tx_mslib_cart extends tslib_pibase {
 		$this->cart['user']['countries_id']=$iso_customer['cn_iso_nr'];
 		if (is_array($this->cart['products'])){
 			if ($iso_customer['cn_iso_nr']) {
-				// products
+				// if store country is different from customer country and user provided valid VAT id, change VAT rate to zero
+				if ($this->ms['MODULES']['DISABLE_VAT_RATE_WHEN_CROSS_BORDERS'] and $this->cart['user']['tx_multishop_vat_id']) {	
+					if ($iso_customer['country'] != $this->tta_shop_info['country']) {
+						$this->ms['MODULES']['DISABLE_VAT_RATE']=1;
+					}
+				}				
+				// products				
 				if (is_array($this->cart['products'])) {
-					foreach ($this->cart['products'] as $key => &$product) {
-						$tax_rate=mslib_fe::taxRuleSet($product['tax_id'], 0, $iso_customer['cn_iso_nr'],0);
-						if (!$tax_rate['total_tax_rate']) $tax_rate['total_tax_rate']=0;
-						$product['tax']=mslib_fe::taxDecimalCrop($product['final_price'] / 100 * $tax_rate['total_tax_rate']);
-						$product['tax_rate']=($tax_rate['total_tax_rate']/100);
+					foreach ($this->cart['products'] as $key => &$product) {						
+						if ($this->ms['MODULES']['DISABLE_VAT_RATE']) {
+							$product['tax']=0;
+							$product['tax_rate']=0;							
+						} else {
+							$tax_rate=mslib_fe::taxRuleSet($product['tax_id'], 0, $iso_customer['cn_iso_nr'],0);							
+							if (!$tax_rate['total_tax_rate']) {
+								$tax_rate['total_tax_rate']=0;
+							}
+							$product['tax']=mslib_fe::taxDecimalCrop($product['final_price'] / 100 * $tax_rate['total_tax_rate']);
+							$product['tax_rate']=($tax_rate['total_tax_rate']/100);							
+						}
+						//error_log(print_r($product,1));
 						$total_attributes_tax=0;
 						$total_attributes_price=0;
 						if (is_array($product['attributes'])) {
@@ -76,20 +92,26 @@ class tx_mslib_cart extends tslib_pibase {
 								$total_attributes_tax+=$attributes['price_prefix'].$attributes['tax'];
 							}
 						}
-						$product['final_price_including_vat']=($product['final_price']*(1+$product['tax_rate']));
+						$product['final_price_including_vat']=mslib_fe::taxDecimalCrop(($product['final_price']*(1+$product['tax_rate'])));
 						$product['total_price']=(($product['final_price']+$total_attributes_price)*$product['qty']);
-						$product['total_price_including_vat']=(($product['final_price']+$total_attributes_price)*$product['qty'])*(1+$product['tax_rate']);
+						$product['total_price_including_vat']=mslib_fe::taxDecimalCrop((($product['final_price']+$total_attributes_price)*$product['qty'])*(1+$product['tax_rate']));
 						$this->cart['summarize']['sub_total']+=$product['total_price'];
 						$this->cart['summarize']['sub_total_including_vat']+=$product['total_price_including_vat'];
 					}
 				}
 				// get shipping tax rate	
-				$shipping_method=mslib_fe::getShippingMethod($this->cart['user']['shipping_method'],'s.code',$iso_customer['cn_iso_nr']);	
+				$shipping_method=mslib_fe::getShippingMethod($this->cart['user']['shipping_method'],'s.code',$iso_customer['cn_iso_nr']);
 				$tax_rate=mslib_fe::taxRuleSet($shipping_method['tax_id'], 0, $iso_customer['cn_iso_nr'],0);
+				if ($this->ms['MODULES']['DISABLE_VAT_RATE']) {				
+					$tax_rate['total_tax_rate']=0;
+				}
 				$shipping_tax_rate=($tax_rate['total_tax_rate']/100);
 				// get payment tax rate	
 				$payment_method=mslib_fe::getPaymentMethod($this->cart['user']['payment_method'],'p.code',$iso_customer['cn_iso_nr']);	
 				$tax_rate=mslib_fe::taxRuleSet($payment_method['tax_id'], 0, $iso_customer['cn_iso_nr'],0);
+				if ($this->ms['MODULES']['DISABLE_VAT_RATE']) {				
+					$tax_rate['total_tax_rate']=0;
+				}				
 				$payment_tax_rate=($tax_rate['total_tax_rate']/100);
 				
 				if ($shipping_tax_rate > 0 or $payment_tax_rate > 0) {
@@ -180,14 +202,12 @@ class tx_mslib_cart extends tslib_pibase {
 	function updateCart() {
 		if (!$this->ms['MODULES']['ALLOW_ORDER_OUT_OF_STOCK_PRODUCT']) {
 			$product_id = $this->post['products_id'];
-			
 			if (is_numeric($this->get['products_id']) and $this->get['tx_multishop_pi1']['action']=='add_to_cart') {
 				$product_id = $this->get['products_id'];
 			}
-			
 			if (is_numeric($product_id)) {
 				$product=mslib_fe::getProduct($product_id);
-				if ($product['products_quantity'] < 1) {
+				if ($product['products_quantity'] < 1 && !$this->ms['MODULES']['ALLOW_ORDER_OUT_OF_STOCK_PRODUCT']) {
 					if ($product['categories_id']) {
 						// get all cats to generate multilevel fake url
 						$level=0;
@@ -208,7 +228,6 @@ class tx_mslib_cart extends tslib_pibase {
 				}
 			}
 		}
-		
 		// error_log("bastest");
 		// hook
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['updateCart'])) {
@@ -237,7 +256,7 @@ class tx_mslib_cart extends tslib_pibase {
 				$shopping_cart_item=$this->post['products_id'];
 				if ($this->post['tx_multishop_pi1']['cart_item']) {
 					$shopping_cart_item=$this->post['tx_multishop_pi1']['cart_item'];
-				} else if (is_array($this->post['attributes'])) {
+				} elseif (is_array($this->post['attributes'])) {
 					$shopping_cart_item=md5($this->post['products_id'].serialize($this->post['attributes']));
 				}
 				if (is_numeric($cart['products'][$shopping_cart_item]['products_id'])) {
@@ -272,32 +291,25 @@ class tx_mslib_cart extends tslib_pibase {
 						header("Location: ".$this->FULL_HTTP_URL.$link);
 						exit;
 					}
-					
 					if ($this->post['quantity'] and strstr($this->post['quantity'],",")) {
 						$this->post['quantity'] = str_replace(",",".",$this->post['quantity']);
 					}
-					
 					if (!$this->post['quantity'] or ($this->post['quantity'] and !is_numeric($this->post['quantity'])))  {
 						$this->post['quantity'] = 1;
 					}
-					
 					if ($this->post['quantity'] < 0) {
 						$this->post['quantity'] = 0;
 					}
-					
 					$current_quantity=$cart['products'][$shopping_cart_item]['qty'];			
 					if (!$this->post['tx_multishop_pi1']['cart_item']) {
 						$this->post['quantity'] = $current_quantity+$this->post['quantity'];
 					}
-					
 					if ($product['maximum_quantity'] > 0 and $product['maximum_quantity'] < $this->post['quantity']) {
 						$this->post['quantity'] = $product['maximum_quantity'];
 					}
-					
 					if ($product['minimum_quantity'] and ($product['minimum_quantity'] > ($this->post['quantity']))) {
 						$this->post['quantity'] = $product['minimum_quantity'];
 					}
-					
 					$product['qty']	= ($this->post['quantity']);
 					// chk if the product has staffel price
 					if ($product['staffel_price'] && $this->ms['MODULES']['STAFFEL_PRICE_MODULE']) {
@@ -306,7 +318,6 @@ class tx_mslib_cart extends tslib_pibase {
 						} else {
 							$quantity = $cart['products'][$shopping_cart_item]['qty'];
 						}
-						
 						$product['final_price'] = (mslib_fe::calculateStaffelPrice($product['staffel_price'],$quantity)/$quantity);
 					}
 					// custom hook that can be controlled by third-party plugin
@@ -343,52 +354,63 @@ class tx_mslib_cart extends tslib_pibase {
 						$cart['products'][$shopping_cart_item]['file_remote_location']		= $row['file_remote_location'];
 						$cart['products'][$shopping_cart_item]['file_number_of_downloads']	= $row['file_number_of_downloads'];
 					}
-					// add possible micro download eof
-					
+					// add possible micro download eof					
 					$attributes_tax = 0;
 					if (is_array($this->post['attributes'])) {
 						foreach ($this->post['attributes'] as $key => $value) {
 							if (is_numeric($key)) {
-								$str="SELECT products_options_name,listtype from tx_multishop_products_options o where o.products_options_id='".$key."' and language_id='".$this->sys_language_uid."'";
+								$str="SELECT * from tx_multishop_products_options o where o.products_options_id='".$key."' and language_id='".$this->sys_language_uid."'";
 								$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 								$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
-							}
-							
+								
 							$continue=0;
 							switch ($row['listtype']) {
 								case 'checkbox':
 									$multiple=1;
 									$continue=1;
 								break;
-								
+								case 'hidden_field':
+								case 'textarea':
 								case 'input':
-									$cart['products'][$shopping_cart_item]['attributes'][$key]['products_options_name'] = $row['products_options_name'];
+									$cart['products'][$shopping_cart_item]['attributes'][$key] = $row;
+									$cart['products'][$shopping_cart_item]['attributes'][$key]['options_id'] = $key;
 									$cart['products'][$shopping_cart_item]['attributes'][$key]['products_options_values_name'] = $value;
 									$continue = 0;
 									$multiple = 0;
 								break;
-								
 								default:
 									$continue=1;
 									$multiple=0;
 								break;
 							}
-							
 							if ($continue) {
 								if (is_array($value)) {
 									$array=$value;
 								} else if($value) {
 									$array=array($value);
 								}
-								
 								if (count($array)) {
 									if ($multiple) {
 										// reset first
 										unset($cart['products'][$shopping_cart_item]['attributes'][$key]);
 									}
+									$products_id=$this->post['products_id'];
 									
+									$getAtributesFromProductsId=$products_id;
+									// hook to let other plugins further manipulate the option values display
+									if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['updateCartAttributesPreProc'])) {
+										$params = array (
+												'products_id' => &$products_id,												
+												'getAtributesFromProductsId' => &$getAtributesFromProductsId
+										);
+											
+										foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['updateCartAttributesPreProc'] as $funcRef) {
+											t3lib_div::callUserFunction($funcRef, $params, $this);
+										}
+									}
+									// hook									
 									foreach ($array as $item) {
-										$str="SELECT * from tx_multishop_products_attributes a, tx_multishop_products_options o, tx_multishop_products_options_values ov where a.products_id='".$this->post['products_id']."' and a.options_id='".$key."' and a.options_values_id='".$item."' and o.hide_in_cart=0 and a.options_id=o.products_options_id and o.language_id='".$this->sys_language_uid."' and ov.language_id='".$this->sys_language_uid."' and a.options_values_id=ov.products_options_values_id";
+										$str="SELECT * from tx_multishop_products_attributes a, tx_multishop_products_options o, tx_multishop_products_options_values ov where a.products_id='".$getAtributesFromProductsId."' and a.options_id='".$key."' and a.options_values_id='".$item."' and o.hide_in_cart=0 and a.options_id=o.products_options_id and o.language_id='".$this->sys_language_uid."' and ov.language_id='".$this->sys_language_uid."' and a.options_values_id=ov.products_options_values_id";
 										$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 										
 										if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0) {
@@ -424,49 +446,38 @@ class tx_mslib_cart extends tslib_pibase {
 									}						
 								}
 							}
+						
+							} // end if $key						
 						}
 					}
-					
-					
 					if (count($_FILES['attributes']['name'])) {
 						foreach ($_FILES['attributes'] as $file_key => $file_data) {
 							foreach ($file_data as $optid => $val) {
-								if ($_FILES['attributes']['error'][$optid] == 0 && $file_key == 'name') {
-									
-									if (strpos($_FILES['attributes']['name'][$optid], '.php') !== false || 
-										strpos($_FILES['attributes']['name'][$optid], '.php3') !== false || 
-										strpos($_FILES['attributes']['name'][$optid], '.php4') !== false || 
-										strpos($_FILES['attributes']['name'][$optid], '.php5') !== false) {
-										
-										$_FILES['attributes']['name'][$optid] .= '.err';
-										
-									} else {
-										$file_content = file_get_contents($_FILES['attributes']['tmp_name'][$optid]);
-										if (strpos($file_content, '<?') !== false || 	// php shorthand
-											strpos($file_content, '<?php') !== false || // standard php opening tag
-											strpos($file_content, '<?=') !== false || 	// php shorthand for echo
-											strpos($file_content, '<%') !== false || 	// asp style
-											strpos($file_content, '#!/') !== false) { 	// shebang line
-											
-											$_FILES['attributes']['name'][$optid] .= '.err';
+								if (is_numeric($optid) && $_FILES['attributes']['error'][$optid] == 0 && $file_key == 'name') {									
+									$str="SELECT products_options_name,listtype from tx_multishop_products_options o where o.products_options_id='".$optid."' and language_id='".$this->sys_language_uid."'";
+									$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+									$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);									
+									if ($row['products_options_name']) {								
+										if (strpos($_FILES['attributes']['name'][$optid], '.php') !== false || 
+											strpos($_FILES['attributes']['name'][$optid], '.php3') !== false ||
+											strpos($_FILES['attributes']['name'][$optid], '.php4') !== false || 
+											strpos($_FILES['attributes']['name'][$optid], '.py') !== false || 
+											strpos($_FILES['attributes']['name'][$optid], '.php5') !== false) {
+											$_FILES['attributes']['name'][$optid] .= '.protected';
 										}
-										$file_content = null;
+										$target = $this->DOCUMENT_ROOT.'uploads/tx_multishop/order_resources/' . $_FILES['attributes']['name'][$optid];
+										move_uploaded_file($_FILES['attributes']['tmp_name'][$optid],$target);
+										
+										$cart['products'][$shopping_cart_item]['attributes'][$optid]['products_options_name'] = $row['products_options_name'];
+										$cart['products'][$shopping_cart_item]['attributes'][$optid]['products_options_values_name'] = $_FILES['attributes']['name'][$optid];
+										$cart['products'][$shopping_cart_item]['attributes'][$optid]['options_id'] = $optid;
+										$continue = 0;
+										$multiple = 0;
 									}
-									
-									
-									$target = $this->DOCUMENT_ROOT.'uploads/tx_multishop/order_resources/' . $_FILES['attributes']['name'][$optid];
-									move_uploaded_file($_FILES['attributes']['tmp_name'][$optid],$target);
-									
-									$cart['products'][$shopping_cart_item]['attributes'][$optid]['products_options_name'] = $row['products_options_name'];
-									$cart['products'][$shopping_cart_item]['attributes'][$optid]['products_options_values_name'] = $_FILES['attributes']['name'][$optid];
-									$cart['products'][$shopping_cart_item]['attributes'][$optid]['options_id'] = $optid;
-									$continue = 0;
-									$multiple = 0;
 								}
 							}
 						}
 					}
-					
 					if ($product['categories_id']) {
 						// get all cats to generate multilevel fake url
 						$level=0;
@@ -490,8 +501,9 @@ class tx_mslib_cart extends tslib_pibase {
 					// custom hook that can be controlled by third-party plugin
 					if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['updateCartProductPreHook'])) {
 						$params = array (
-							'shopping_cart_item'			=> $shopping_cart_item,
-							'array' 						=> &$cart['products'][$shopping_cart_item]
+							'shopping_cart_item' => $shopping_cart_item,
+							'array' => &$cart['products'][$shopping_cart_item],
+							'cart' => &$cart
 						);
 						foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['updateCartProductPreHook'] as $funcRef) {
 							t3lib_div::callUserFunction($funcRef, $params, $this);
@@ -521,7 +533,6 @@ class tx_mslib_cart extends tslib_pibase {
 							$cart = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->cart_page_uid);
 							if (preg_match("/^[0-9]+$/", $rel_products_id)) {
 								$product=mslib_fe::getProduct($rel_products_id);
-								
 								if ($product['products_id']) {
 									if ($product['products_image']) {
 										$product['products_image']=mslib_befe::getImagePath($product['products_image'],'products','50');
@@ -537,13 +548,11 @@ class tx_mslib_cart extends tslib_pibase {
 												$where.="categories_id[".$level."]=".$cat['id']."&";
 												$level++;
 											}
-									
 											$where=substr($where,0,(strlen($where)-1));
 											$where.='&';
 										}
 										// get all cats to generate multilevel fake url eof
 									}
-									
 									$link=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
 									
 									if (mslib_fe::ProductHasAttributes($product['products_id'])) {
@@ -597,14 +606,12 @@ class tx_mslib_cart extends tslib_pibase {
 						}
 						// get all cats to generate multilevel fake url eof
 					}
-					
 					$link=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');		
 					if ($GLOBALS['TSFE']->fe_user->user['username']) {
 						$customer_name=$GLOBALS['TSFE']->fe_user->user['username'];
 					} else {
 						$customer_name=$this->pi_getLL('customer');
 					}
-					
 					$message=sprintf($this->pi_getLL('customer_added_productx_to_the_shopping_cart'),'<a href="'.mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_shoppping_cart_stats').'">'.$customer_name.'</a>','<a href="'.$link.'">'.$product['products_name'].'</a>').'.';
 					if (count($cart['products']) >0) {
 						if (!$sub_tr_type or $sub_tr_type=='even') {
@@ -622,8 +629,7 @@ class tx_mslib_cart extends tslib_pibase {
 					mslib_befe::storeNotificationMessage($this->pi_getLL('customer_action'),$message);
 				}
 				// end of notification
-								
-			} else if ($this->get['delete_products_id']) {
+			} elseif ($this->get['delete_products_id']) {
 				$shopping_cart_item=$this->get['delete_products_id'];		
 				if (is_array($cart['products'][$shopping_cart_item])) {
 					// remove the cart item
@@ -631,18 +637,15 @@ class tx_mslib_cart extends tslib_pibase {
 					$GLOBALS['TSFE']->fe_user->setKey('ses',$this->cart_page_uid, $cart);
 					$GLOBALS['TSFE']->storeSessionData();
 				}
-				
-			} else if (is_array($this->post['qty'])) {
+			} elseif (is_array($this->post['qty'])) {
 				// add/update products in cart (from shopping cart page)
 				foreach ($this->post['qty'] as $shopping_cart_item => $qty) {	
 					if ($qty and strstr($qty,",")) {
 						$qty=str_replace(",",".",$qty);				
 					}
-					
 					if (($qty and !is_numeric($qty)))  {
 						$qty=1;					
 					}
-					
 					if (!$qty or $qty <0) {
 						unset($cart['products'][$shopping_cart_item]);				
 					} else {
@@ -652,18 +655,15 @@ class tx_mslib_cart extends tslib_pibase {
 						if ($product['staffel_price'] && $this->ms['MODULES']['STAFFEL_PRICE_MODULE']) {
 							$cart['products'][$shopping_cart_item]['final_price']=(mslib_fe::calculateStaffelPrice($product['staffel_price'],$qty)/$qty);
 						}
-						
 						$cart['products'][$shopping_cart_item]['qty']=$qty;
 						if ($product['minimum_quantity'] > $cart['products'][$shopping_cart_item]['qty']) {
 							$cart['products'][$shopping_cart_item]['qty']=$product['minimum_quantity'];
 						}
 					}
 				}
-				
 				$GLOBALS['TSFE']->fe_user->setKey('ses',$this->cart_page_uid, $cart);
 				$GLOBALS['TSFE']->storeSessionData();
 			}
-			
 			// group discount
 			if ($GLOBALS['TSFE']->fe_user->user['uid']) {
 				$discount=mslib_fe::getUserGroupDiscount($GLOBALS['TSFE']->fe_user->user['uid']);
@@ -673,13 +673,14 @@ class tx_mslib_cart extends tslib_pibase {
 					$GLOBALS['TSFE']->storeSessionData();					
 				}
 			}
-			
 			// store cart contents for later analyses
 			$cart_store_content = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->cart_page_uid);
 			mslib_befe::storeCustomerCartContent($cart_store_content);
 			// custom hook that can be controlled by third-party plugin
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['updateCartPostHook'])) {
-				$params = array('cart',&$cart);
+				$params = array(
+				'cart' => &$cart				
+				);
 				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['updateCartPostHook'] as $funcRef) {
 					t3lib_div::callUserFunction($funcRef, $params, $this);
 				}
@@ -703,7 +704,6 @@ class tx_mslib_cart extends tslib_pibase {
 					}
 					// get all cats to generate multilevel fake url eof
 				}
-				
 				$link=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$product['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
 				if ($link) {
 					header("Location: ".$this->FULL_HTTP_URL.$link);
@@ -726,7 +726,7 @@ class tx_mslib_cart extends tslib_pibase {
 	function countCartTotalPrice($subtract_discount=1, $include_vat=0, $country_id = 0) {
 		$order=array();
 		$cart = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->cart_page_uid);
-		$address		= $cart['user'];
+		$address = $cart['user'];
 		foreach ($cart['products'] as $shopping_cart_item => $value) {
 			if ($country_id > 0) {
 				$tax_rate = mslib_fe::taxRuleSet($value['tax_id'], 0, $country_id, 0);
@@ -767,7 +767,7 @@ class tx_mslib_cart extends tslib_pibase {
 		$total_product_tax = 0;
 		$products_tax = array();
 		$cart = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->cart_page_uid);
-		$address		= $cart['user'];
+		$address = $cart['user'];
 		foreach ($cart['products'] as $shopping_cart_item => $value) {		
 			if ($country_id > 0) {
 				$tax_rate = mslib_fe::taxRuleSet($value['tax_id'], 0, $country_id, 0);
@@ -793,7 +793,6 @@ class tx_mslib_cart extends tslib_pibase {
 		return $products_tax;
 	}	
 	function convertCartToOrder($cart) {
-		//
 		// var for total amount
 		$total_price	= 0;	
 		$order			= array();	
@@ -838,18 +837,15 @@ class tx_mslib_cart extends tslib_pibase {
 			$grand_total['payment_cost'] = $address['payment_method_costs'];
 			$total_price = $total_price + $address['payment_method_costs'];
 		}
-		
 		// first the account	
 		if ($GLOBALS['TSFE']->fe_user->user['uid']) {
 			$customer_id = $GLOBALS['TSFE']->fe_user->user['uid'];
-			
 		} else {
 			$tmp_user = mslib_fe::getUser($address['email'],'email');
 			if ($tmp_user['uid']) {
 				$customer_id = $tmp_user['uid'];
 			}
 		}
-		
 		if (!$customer_id) {
 			// add new account
 			$insertArray=array();				
@@ -881,7 +877,7 @@ class tx_mslib_cart extends tslib_pibase {
 			$insertArray['tx_multishop_code']	=	md5(uniqid('',TRUE));
 			$insertArray['tstamp']				=	time();
 			$insertArray['crdate']				=	time(); 		
-			$insertArray['tx_multishop_newsletter']			=	$address['tx_multishop_newsletter'];
+			$insertArray['tx_multishop_newsletter'] = $address['tx_multishop_newsletter'];
 			$insertArray['page_uid']			=	$this->shop_pid;			
 			$insertArray['password'] 			=	mslib_befe::getHashedPassword(mslib_befe::generateRandomPassword(10));				
 			$insertArray['usergroup']			=	$this->conf['fe_customer_usergroup'];
@@ -1043,7 +1039,153 @@ class tx_mslib_cart extends tslib_pibase {
 					}
 				}
 			}
-		}			
+		} else {
+			// insert tt_address for existing customer if no record found
+			if (!mslib_fe::getFeUserTTaddressDetails($customer_id,'billing')) {
+				// ADD TT_ADDRESS RECORD
+				$insertArray=array();
+				$insertArray['tstamp']						= time();
+				$insertArray['company']						= $address['company'];
+				$insertArray['name']						= $address['first_name'].' '.$address['middle_name'].' '.$address['last_name'];
+				$insertArray['name']						= preg_replace('/\s+/', ' ', $insertArray['name']);
+				$insertArray['first_name']					= $address['first_name'];
+				$insertArray['middle_name']					= $address['middle_name'];
+				$insertArray['last_name']					= $address['last_name'];
+				$insertArray['email']						= $address['email'];
+				if (!$address['street_name']) {
+					// fallback for old custom checkouts
+					$insertArray['street_name']		=	$address['address'];
+					$insertArray['address_number']		=	$address['address_number'];
+					$insertArray['address_ext']			=	$address['address_ext'];
+					$insertArray['address']				=	$insertArray['street_name'].' '.$insertArray['address_number'].($insertArray['address_ext']?'-'.$insertArray['address_ext']:'');
+					$insertArray['address']				= preg_replace('/\s+/', ' ', $insertArray['address']);
+						
+				} else {
+					$insertArray['street_name']			=	$address['street_name'];
+					$insertArray['address_number']		=	$address['address_number'];
+					$insertArray['address_ext']			=	$address['address_ext'];
+					$insertArray['address']				=	$address['address'];
+				}
+				
+				$insertArray['zip']							= $address['zip'];
+				$insertArray['phone']						= $address['telephone'];
+				$insertArray['mobile']						= $address['mobile'];
+				$insertArray['city']						= $address['city'];
+				$insertArray['country']						= $address['country'];
+				$insertArray['gender'] 						= $address['gender'];
+				$insertArray['birthday'] 					= strtotime($address['birthday']);
+					
+				if ($address['gender'] == 'm') {
+					$insertArray['title'] 					= 'Mr.';
+				
+				} else if ($address['gender'] == 'f') {
+					$insertArray['title'] 					= 'Mrs.';
+				}
+				$insertArray['region']						= $address['state'];
+				
+				$insertArray['pid']							= $this->conf['fe_customer_pid'];
+				$insertArray['page_uid']					= $this->shop_pid;
+				$insertArray['tstamp']						= time();
+				$insertArray['tx_multishop_address_type'] 	= 'billing';
+				$insertArray['tx_multishop_default'] 		= 1;
+				$insertArray['tx_multishop_customer_id'] 	= $customer_id;
+				
+				$query = $GLOBALS['TYPO3_DB']->INSERTquery('tt_address', $insertArray);
+				$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+			}
+			
+			if (!mslib_fe::getFeUserTTaddressDetails($customer_id,'delivery')) {
+				// insert delivery into tt_address
+				if (!$address['different_delivery_address']) {
+					$insertArray=array();
+					$insertArray['tstamp']						= time();
+					$insertArray['company']						= $address['company'];
+					$insertArray['name']						= $address['first_name'].' '.$address['middle_name'].' '.$address['last_name'];
+					$insertArray['name']						= preg_replace('/\s+/', ' ', $insertArray['name']);
+					$insertArray['first_name']					= $address['first_name'];
+					$insertArray['middle_name']					= $address['middle_name'];
+					$insertArray['last_name']					= $address['last_name'];
+					$insertArray['email']						= $address['email'];
+					if (!$address['street_name']) {
+						// fallback for old custom checkouts
+						$insertArray['street_name']		=	$address['address'];
+						$insertArray['address_number']		=	$address['address_number'];
+						$insertArray['address_ext']			=	$address['address_ext'];
+						$insertArray['address']				=	$insertArray['street_name'].' '.$insertArray['address_number'].($insertArray['address_ext']?'-'.$insertArray['address_ext']:'');
+						$insertArray['address']				= preg_replace('/\s+/', ' ', $insertArray['address']);
+				
+					} else {
+						$insertArray['street_name']			=	$address['street_name'];
+						$insertArray['address_number']		=	$address['address_number'];
+						$insertArray['address_ext']			=	$address['address_ext'];
+						$insertArray['address']				=	$address['address'];
+					}
+					$insertArray['zip']							= $address['zip'];
+					$insertArray['phone']						= $address['telephone'];
+					$insertArray['mobile']						= $address['mobile'];
+					$insertArray['city']						= $address['city'];
+					$insertArray['country']						= $address['country'];
+					$insertArray['gender'] 						= $address['gender'];
+					$insertArray['birthday'] 					= strtotime($address['birthday']);
+				
+					if ($address['gender'] == 'm') {
+						$insertArray['title'] 					= 'Mr.';
+				
+					} else if ($address['gender'] == 'f') {
+						$insertArray['title'] 					= 'Mrs.';
+					}
+					$insertArray['region']						= $address['state'];
+				
+				} else {
+					$insertArray=array();
+					$insertArray['tx_multishop_customer_id'] 	= $customer_id;
+					$insertArray['tstamp']						= time();
+					$insertArray['company']						= $address['delivery_company'];
+					$insertArray['name']						= $address['delivery_first_name'].' '.$address['delivery_middle_name'].' '.$address['delivery_last_name'];
+					$insertArray['name']						= preg_replace('/\s+/', ' ', $insertArray['name']);
+					$insertArray['first_name']					= $address['delivery_first_name'];
+					$insertArray['middle_name']					= $address['delivery_middle_name'];
+					$insertArray['last_name']					= $address['delivery_last_name'];
+					$insertArray['email']						= $address['delivery_email'];
+					if (!$address['delivery_street_name']) {
+						// fallback for old custom checkouts
+						$insertArray['street_name']			=	$address['delivery_address'];
+						$insertArray['address_number']		=	$address['delivery_address_number'];
+						$insertArray['address_ext']			=	$address['delivery_address_ext'];
+						$insertArray['address']				=	$insertArray['street_name'].' '.$insertArray['address_number'].($insertArray['address_ext']?'-'.$insertArray['address_ext']:'');
+						$insertArray['address']				= preg_replace('/\s+/', ' ', $insertArray['address']);
+				
+					} else {
+						$insertArray['street_name']					= $address['delivery_street_name'];
+						$insertArray['address_number']				= $address['delivery_address_number'];
+						$insertArray['address_ext']					= $address['delivery_address_ext'];
+						$insertArray['address']						= $address['delivery_address'];
+					}
+					$insertArray['zip']							= $address['delivery_zip'];
+					$insertArray['phone']						= $address['delivery_telephone'];
+					$insertArray['mobile']						= $address['delivery_mobile'];
+					$insertArray['city']						= $address['delivery_city'];
+					$insertArray['country']						= $address['delivery_country'];
+					$insertArray['gender'] 						= $address['delivery_gender'];
+					$insertArray['birthday'] 					= strtotime($address['delivery_birthday']);
+					if ($address['delivery_gender'] == 'm') {
+						$insertArray['title'] 					= 'Mr.';
+					} else if ($address['delivery_gender'] == 'f') {
+						$insertArray['title'] 					= 'Mrs.';
+					}
+					$insertArray['region']						= $address['delivery_state'];
+				}
+				$insertArray['pid']							= $this->conf['fe_customer_pid'];
+				$insertArray['page_uid']					= $this->shop_pid;
+				$insertArray['tstamp']						= time();
+				$insertArray['tx_multishop_customer_id'] 	= $customer_id;
+				$insertArray['tx_multishop_address_type'] 	= 'delivery';
+				$insertArray['tx_multishop_default'] 		= 0;
+				
+				$query = $GLOBALS['TYPO3_DB']->INSERTquery('tt_address', $insertArray);
+				$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+			}
+		}
 		if ($customer_id) {
 			// now add the order
 			$insertArray=array();	
@@ -1167,6 +1309,7 @@ class tx_mslib_cart extends tslib_pibase {
 			$insertArray['status']						=	$status['id'];
 			$insertArray['http_referer']				=	$this->cookie['HTTP_REFERER'];
 			$insertArray['ip_address']					=	$this->server['REMOTE_ADDR'];
+			$insertArray['user_agent']					=	$this->server['HTTP_USER_AGENT'];
 			//$insertArray['orders_tax_data']			=	serialize($orders_tax);			
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/class.tx_multishop_pi1.php']['insertOrderPreProc'])) {
 				// hook
@@ -1179,7 +1322,7 @@ class tx_mslib_cart extends tslib_pibase {
 				}
 				// hook oef
 			}				
-			$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_orders', $insertArray);
+			$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_orders', $insertArray);		
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 			// now add the order eof		
 			$orders_id=$GLOBALS['TYPO3_DB']->sql_insert_id();	
@@ -1223,8 +1366,7 @@ class tx_mslib_cart extends tslib_pibase {
 						$insertArray['order_unit_id']			=	$value['order_unit_id'];						
 						$insertArray['order_unit_name']			=	$value['order_unit_name'];						
 						$insertArray['order_unit_code']			=	$value['order_unit_code'];	
-			
-						
+
 						$insertArray['qty']						=	$value['qty'];
 						$insertArray['products_tax']			=	($value['tax_rate']*100);
 						$insertArray['products_name']			=	$value['products_name'];				
@@ -1239,6 +1381,9 @@ class tx_mslib_cart extends tslib_pibase {
 						$insertArray['products_price']		=	$value['products_price'];
 						$insertArray['final_price']			=	$value['final_price'];						
 						$insertArray['type']				=	'P'; // P for Product, S for Subscription (returning-costs)
+						$insertArray['ean_code'] = $value['ean_code'];
+						$insertArray['sku_code'] = $value['sku_code'];
+						$insertArray['vendor_code'] = $value['vendor_code'];
 						
 						// micro download
 						if ($value['file_location'] || $value['file_remote_location']) {
@@ -1249,25 +1394,21 @@ class tx_mslib_cart extends tslib_pibase {
 							$insertArray['file_number_of_downloads']	= 	$value['file_number_of_downloads'];
 							$insertArray['file_download_code']			= 	md5(uniqid(rand()).uniqid(rand()));
 						}
-						// micro download eof
-						
+						// micro download eof						
 						/*
 						 * always use total_tax and total_tax_rate, unless need different calc for country/region
 						 * WARNING: country_* and region_* not always have value, depends on the tax ruleset
 						 * -----------------------------------------------------------------------------------------
 						 */
-						
 						$product_tax['country_tax_rate'] 		= (string) $value['country_tax_rate'];
 						$product_tax['region_tax_rate'] 		= (string) $value['region_tax_rate'];
 						$product_tax['total_tax_rate'] 			= (string) $value['tax_rate'];
 						
 						// -----------------------------------------------------------------------------------------
-						
 						$product_tax['country_tax'] 			= (string) $value['country_tax'];
 						$product_tax['region_tax'] 				= (string) $value['region_tax'];
 						$product_tax['total_tax'] 				= (string) $value['tax'];
 						$product_tax['total_attributes_tax'] 	= (string) $value['total_attributes_tax'];
-						
 						$product_tax['total_tax']=$product_tax['total_tax'];
 		
 						// -----------------------------------------------------------------------------------------
@@ -1320,17 +1461,14 @@ class tx_mslib_cart extends tslib_pibase {
 											break;
 										}
 									}
-							
 								} else {
 									$rs_as = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 									$used_group = $rs_as['group_id'];
 								}
-									
 								if ($used_group > 0) {
 									$str="update tx_multishop_products_attributes_stock_group set attributes_stock=(attributes_stock-".$value['qty'].") where group_id='".$used_group."'";
 									$res=$GLOBALS['TYPO3_DB']->sql_query($str);
 								}
-									
 								$str="update tx_multishop_products set products_quantity=(products_quantity-".$value['qty'].") where products_id='".$value['products_id']."'";
 								$res=$GLOBALS['TYPO3_DB']->sql_query($str);
 								$str="select products_quantity, alert_quantity_threshold from tx_multishop_products where products_id='".$value['products_id']."'";
@@ -1354,7 +1492,7 @@ class tx_mslib_cart extends tslib_pibase {
 										$array1[]='###PRODUCT_NAME###';
 										$array2[]=$value['products_name'];
 										
-										$link_edit_prod		= $this->FULL_HTTP_URL . mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=admin_ajax&pid='.$value['products_id'].'&cid='.$value['categories_id'].'&action=edit_product');
+										$link_edit_prod = $this->FULL_HTTP_URL . mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=admin_ajax&pid='.$value['products_id'].'&cid='.$value['categories_id'].'&action=edit_product');
 										$array1[]='###DIRECT_EDIT_PRODUCT_LINK###';
 										$array2[]='<a href="'.$link_edit_prod.'" target="_blank">edit product stock</a>';
 										
@@ -1390,13 +1528,11 @@ class tx_mslib_cart extends tslib_pibase {
 										}
 									}
 								}
-								
 								if ($row['products_quantity'] < 1) {
 									// stock is negative or zero. lets turn of the product
 									$str="update tx_multishop_products set products_status=0 where products_id='".$value['products_id']."'";
 									$res=$GLOBALS['TYPO3_DB']->sql_query($str);
 								}
-									
 							} else {
 								// now decrease the stocklevel
 								$str="update tx_multishop_products set products_quantity=(products_quantity-".$value['qty'].") where products_id='".$value['products_id']."'";
@@ -1620,11 +1756,15 @@ class tx_mslib_cart extends tslib_pibase {
 					} else {
 						require($this->DOCUMENT_ROOT.$this->ms['MODULES']['ORDERS_CUSTOM_EXPORT_SCRIPT'].'.php');							
 					}						
-				}			
+				}
+				// if grand total is zero we have to activate directly
+				$order=mslib_fe::getOrder($orders_id);
+				if ($order['orders_id'] and $order['grand_total'] < 0.001) {
+					mslib_fe::updateOrderStatusToPaid($order['orders_id']);
+				}
 				return $orders_id;
 			}	
 		}
-		// 
 	}	
 	function setShippingMethod($shipping_method) {
 		if (!$shipping_method) {
@@ -1815,6 +1955,17 @@ class tx_mslib_cart extends tslib_pibase {
 			if ($product['products_model'])	{
 				$item['ITEM_NAME'] .= ' ('.$product['products_model'].') ';
 			}
+			
+			/*
+			if (!empty($product['ean_code'])) {
+				$item['ITEM_NAME'] .= '<br/>EAN: '.$product['ean_code'];
+			}
+			if (!empty($product['sku_code'])) {
+				$item['ITEM_NAME'] .= '<br/>SKU: '.$product['sku_code'];
+			}
+			if (!empty($product['vendor_code'])) {
+				$item['ITEM_NAME'] .= '<br/>Vendor: '.$product['vendor_code'];
+			}*/
 			if (is_array($product['attributes'])) {
 				foreach ($product['attributes'] as $attributeKey => $attributeItem) {
 					$item['ITEM_NAME'] .='<br />'.$attributeItem['products_options_name'].': '.$attributeItem['products_options_values_name'];							
@@ -2009,7 +2160,12 @@ class tx_mslib_cart extends tslib_pibase {
 			$markerArray=array();
 			$markerArray['DISCOUNT_LABEL'] = $this->pi_getLL('discount').':';
 			$markerArray['DISCOUNT'] = mslib_fe::amount2Cents($this->cart['discount_amount']);
-			$subpartArray['###'.$key.'###'] = $this->cObj->substituteMarkerArray($subparts[$key], $markerArray,'###|###');		
+			$subpartArray['###'.$key.'###'] = $this->cObj->substituteMarkerArray($subparts[$key], $markerArray,'###|###');
+			
+			// trick to reduce TAX costs
+			if ($this->ms['MODULES']['SHOW_PRICES_INCLUDING_VAT']) {
+				$this->cart['summarize']['grand_total_vat']=(1-($this->cart['discount_amount']/$this->cart['summarize']['sub_total_including_vat']))*$this->cart['summarize']['grand_total_vat'];
+			}
 		} else {
 			$subpartArray['###'.$key.'###']='';
 		}		

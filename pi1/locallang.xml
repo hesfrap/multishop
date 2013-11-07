@@ -95,9 +95,17 @@
       <label index="street_number_is_required">Number is a required field.</label>
       <label index="city_is_required">City is required.</label>
       <label index="country_is_required">Country is a required field.</label>
+      <label index="delivery_first_name_required">Delivery first name is a required field. Only characters are allowed.</label>
+      <label index="delivery_surname_is_required">Delivery surname is a required field. Only characters are allowed.</label>
+      <label index="delivery_zip_is_required">Delivery zip is a required field.</label>
+      <label index="delivery_street_address_is_required">Delivery street address is a required field.</label>
+      <label index="delivery_street_number_is_required">Delivery street number is a required field.</label>
+      <label index="delivery_city_is_required">Delivery city is required.</label>
+      <label index="delivery_country_is_required">Delivery country is a required field.</label>
       <label index="telephone_is_required">Telephone is a required field and must be 10 digits long</label>
       <label index="mobile_must_be_x_digits_long">Must be 10 digits long.</label>
       <label index="email_is_required">E-mail is a required field. The format of the e-mail is not valid</label>
+      <label index="verification_email_not_match">E-mail verification not match</label>
       <label index="details">details</label>
       <label index="quantity">Quantity</label>
       <label index="product_options">Product Options</label>
@@ -303,6 +311,8 @@
       <label index="admin_edit_category_description">Edit current category</label>
       <label index="admin_customer_id">Customer ID</label>
       <label index="show_paid_orders_only">Show paid orders only</label>
+      <label index="show_unpaid_orders_only">Show unpaid orders only</label>
+      <label index="select_orders_payment_status">filter by orders payment status</label>
       <label index="admin_manufacturers_products_id">EXT. PRODUCTS ID</label>
       <label index="admin_product_attributes">PRODUCT ATTRIBUTES</label>
       <label index="admin_maintain_product_attributes">Maintain product attributes</label>
@@ -554,6 +564,8 @@
       <label index="locale_date_format">m/d/yy</label>
       <label index="locale_time_format">H:i:s</label>
       <label index="locale_datetime_format">m/d/Y H:i:s</label>
+      <label index="locale_date_format_js">yy-mm-dd</label>	  
+      <label index="locale_datetime_format_js">yy-mm-dd HH:mm:ss</label>	  
       <label index="click_to_pay">Click to Pay</label>
       <label index="admin_new_order">New order</label>
       <label index="admin_orders_overview">Orders overview</label>
@@ -671,7 +683,12 @@
 	  <label index="go_directly_to_checkout">Go directly to checkout</label>
 	  <label index="admin_alert_quantity_threshold">Alert quantity threshold</label>
 	  <label index="email_alert_quantity_threshold_letter">Alert quantity threshold e-mail content</label>	  
-	  <label index="ordered_by">Ordered by</label>	  
+	  <label index="ordered_by">Ordered by</label>
+	  <label index="admin_user_agent_statistics">User-agent</label>
+	  <label index="admin_user_agent_statistics_description">Show device/browser visitor used to access the shop</label>
+	  <label index="gender_is_required">Title is required</label>
+	  <label index="special_price_start">start date</label>
+	  <label index="special_price_expired">expire date</label>
     </languageKey>
     <languageKey index="nl" type="array">
       <label index="list_mode_1">Mode 1</label>
@@ -691,7 +708,7 @@
       <label index="manufacturers">Fabrikanten</label>
       <label index="go_to_checkout">Afrekenen</label>
       <label index="go_to_catalog">Verder winkelen</label>
-      <label index="proceed_to_checkout">Ga naar Afrekenen</label>
+      <label index="proceed_to_checkout">Ga naar afrekenen</label>
       <label index="qty">Aantal</label>
       <label index="product">product</label>
       <label index="subtotal">Subtotaal</label>
@@ -701,7 +718,7 @@
       <label index="first_name">voornaam</label>
       <label index="middle_name">tussenvoegsel</label>
       <label index="last_name">achternaam</label>
-      <label index="street_address">straat</label>
+      <label index="street_address">straatnaam</label>
       <label index="street_address_number">huisnummer</label>
       <label index="zip">postcode</label>
       <label index="city">woonplaats</label>
@@ -766,6 +783,14 @@
       <label index="telephone_is_required">Telefoon is verplicht en moet 10 cijfers bevatten</label>
       <label index="mobile_must_be_x_digits_long">Moet 10 cijfers bevatten.</label>
       <label index="email_is_required">E-mail is verplicht. Het opgegeven e-mailadres is niet geldig</label>
+      <label index="verification_email_not_match">Het opgegeven e-mailadres en herhaalde e-mailadres komen niet overeen.</label>
+      <label index="delivery_first_name_required">Levering voornaam is verplicht. Deze mag enkel uit normale karakters bestaan</label>
+      <label index="delivery_surname_is_required">Levering achternaam is verplicht. Deze mag enkel uit normale karakters bestaan</label>
+      <label index="delivery_zip_is_required">Levering postcode is verplicht</label>
+      <label index="delivery_street_address_is_required">Levering straatnaam is verplicht</label>
+      <label index="delivery_street_number_is_required">Levering huisnummer is verplicht</label>
+      <label index="delivery_city_is_required">Levering woonplaats is verplicht</label>
+      <label index="delivery_country_is_required">Levering land is verplicht</label>
       <label index="quantity">Aantal</label>
       <label index="product_options">Product Opties</label>
       <label index="coupon_code">Kortingscode</label>
@@ -972,8 +997,10 @@
       <label index="admin_edit_category_description">Bewerk huidige categorie</label>
       <label index="admin_customer_id">Klantnr</label>
       <label index="show_paid_orders_only">Toon alleen betaalde bestellingen</label>
+      <label index="show_unpaid_orders_only">Toon alleen onbetaalde bestellingen</label>
+      <label index="select_orders_payment_status">filteren op bestellingen betaalstatus</label>
       <label index="admin_manufacturers_products_id">EXTERN ARTIKELNUMMER</label>
-      <label index="click_here_if_you_agree_the_general_conditions">Klik hier om akkoord te gaan met de algemene voorwaarden</label>
+      <label index="click_here_if_you_agree_the_general_conditions">Ik ga akkoord met de algemene voorwaarden</label>
       <label index="you_havent_accepted_the_general_conditions">Acceptatie van de algemene voorwaarden is verplicht om te kunnen bestellen</label>
       <label index="price_including_vat">Prijs incl. BTW</label>
       <label index="your_payment_has_been_completed">Uw betaling is geaccepteerd</label>
@@ -1148,7 +1175,7 @@
       <label index="date">Datum</label>
       <label index="update_processed">Aanpassing doorgevoerd</label>
       <label index="address_details">Adresgegevens</label>
-      <label index="subscribe_to_our_newsletter">Meld mij aan op de nieuwsbrief</label>
+      <label index="subscribe_to_our_newsletter">Ik meld mij aan voor de nieuwsbrief</label>
       <label index="shipping_to_payment_mapping">Verzend- en betaalmethode koppelingen</label>
       <label index="paid">Betaald</label>
       <label index="admin_delete_category">Verwijder categorie</label>
@@ -1215,6 +1242,8 @@
       <label index="locale_date_format">d-m-yy</label>
       <label index="locale_time_format">H:i:s</label>
       <label index="locale_datetime_format">d-m-Y H:i:s</label>
+      <label index="locale_date_format_js">dd-mm-yy</label>	  
+      <label index="locale_datetime_format_js">dd-mm-yy HH:mm:ss</label>	  
       <label index="click_to_pay">Klik om te betalen</label>
       <label index="admin_new_order">Bestelling toevoegen</label>
       <label index="admin_orders_overview">Overzicht bestellingen</label>
@@ -1331,7 +1360,12 @@
 	  <label index="go_directly_to_checkout">Ga direct naar afrekenen</label>
 	  <label index="admin_alert_quantity_threshold">Alert hoeveelheid drempel</label>
 	  <label index="email_alert_quantity_threshold_letter">Alert hoeveelheid drempel e-mail content</label>
-	  <label index="ordered_by">Besteld door</label>	  	  
+	  <label index="ordered_by">Besteld door</label>
+	  <label index="admin_user_agent_statistics">User-agent</label>
+	  <label index="admin_user_agent_statistics_description">Tonen apparaat / browser bezoeker gebruikt om toegang te krijgen tot de winkel</label>
+	  <label index="gender_is_required">Titel nodig</label>
+	  <label index="special_price_start">startdatum</label>
+	  <label index="special_price_expired">vervaldatum</label>	  	  
     </languageKey>
     <languageKey index="fi" type="array">
       <label index="list_mode_1">Malli 1</label>

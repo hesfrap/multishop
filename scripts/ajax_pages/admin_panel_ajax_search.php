@@ -404,6 +404,7 @@ if ($this->ADMIN_USER) {
 			$orderby	=array();
 			$select		=array();			
 			if (strlen($this->get['q']) >1) {
+				$items = array();
 				$array=explode(" ",$this->get['q']);
 				$total=count($array);
 				$oldsearch=0;			

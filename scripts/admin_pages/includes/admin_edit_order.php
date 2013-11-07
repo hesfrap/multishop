@@ -1107,13 +1107,13 @@ $tmpcontent.='
 					$row[1]=number_format($order['qty'],2);
 					if ($this->ms['MODULES']['DISPLAY_PRODUCT_IMAGE_IN_ADMIN_ORDER_DETAILS'] and $product['products_image']) {
 						$row[2]='<img src="'.mslib_befe::getImagePath($product['products_image'],'products','50').'">';
-						$row[2].='<a href="'.mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$order['products_id'].'&tx_multishop_pi1[page_section]=products_detail').'" target="_blank">'.$order['products_name'].'</a>'.($order['products_model']?' ('.$order['products_model'].')':'').($product['vendor_code']?'<br />Vendor code: '.$product['vendor_code'].'':'');
+						$row[2].='<a href="'.mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$order['products_id'].'&tx_multishop_pi1[page_section]=products_detail').'" target="_blank">'.$order['products_name'].'</a>'.($order['products_model']?' ('.$order['products_model'].')':'').($product['ean_code']?'<br />EAN: '.$product['ean_code'].'':'').($product['sku_code']?'<br />SKU: '.$product['sku_code'].'':'').($product['vendor_code']?'<br />Vendor code: '.$product['vendor_code'].'':'');
 					} else {
-						$row[2]='<a href="'.mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$order['products_id'].'&tx_multishop_pi1[page_section]=products_detail').'" target="_blank">'.$order['products_name'].'</a>'.($order['products_model']?' ('.$order['products_model'].')':'').($product['vendor_code']?'<br />Vendor code: '.$product['vendor_code'].'':'');
+						$row[2]='<a href="'.mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$order['products_id'].'&tx_multishop_pi1[page_section]=products_detail').'" target="_blank">'.$order['products_name'].'</a>'.($order['products_model']?' ('.$order['products_model'].')':'').($product['ean_code']?'<br />EAN: '.$product['ean_code'].'':'').($product['sku_code']?'<br />SKU: '.$product['sku_code'].'':'').($product['vendor_code']?'<br />Vendor code: '.$product['vendor_code'].'':'');
 					}
-					
 					$row[3]=mslib_fe::amount2Cents($order['final_price'],0);
-					$row[4]=number_format($order['products_tax']).'%';
+					$row[4]=number_format($order['products_tax'], 2);
+					$row[4]=str_replace('.00', '', $order['products_tax']).'%';
 					$row[5]=mslib_fe::amount2Cents($order['qty']*$order['final_price'],0);
 					// custom hook that can be controlled by third-party plugin
 					if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_edit_order.php']['editOrderListItemPreHook'])) {
@@ -1253,15 +1253,38 @@ $tmpcontent.='
 							if (is_numeric($options['products_options_id'])) {
 								$str="SELECT listtype from tx_multishop_products_options o where o.products_options_id='".$options['products_options_id']."' and language_id='".$this->sys_language_uid."'";
 								$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-								$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
-							}
-							
-							$attributes_tax_data = unserialize($options['attributes_tax_data']);
-							
+								$rowCheck=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
+							}							
+							$attributes_tax_data = unserialize($options['attributes_tax_data']);							
 							$tmpcontent .= '<tr class="'.$tr_type.'"><td>&nbsp;</td><td>&nbsp;</td>';
-							
-							if ($row['listtype'] == 'file') {
-								$tmpcontent .= '<td align="left">'.$options['products_options'].': '.$options['products_options_values'].' <a href="'.$this->FULL_HTTP_URL.'uploads/tx_multishop/order_resources/'.rawurlencode($options['products_options_values']).'" class="msAdminDownloadIcon">[save file]</a></td>';
+							if ($rowCheck['listtype'] == 'file') {
+								if ($options['products_options_values']) {
+									$filePath=$this->DOCUMENT_ROOT.'uploads/tx_multishop/order_resources/'.rawurlencode($options['products_options_values']);
+									if (file_exists($filePath)) {
+										$displayImage=0;	
+										$imgtype = mslib_befe::exif_imagetype($filePath);
+										if ($imgtype) {							
+											// valid image
+											$ext = image_type_to_extension($imgtype, false);
+											if ($ext) {
+												$displayImage=1;
+											}
+										}
+										if ($displayImage) {
+											$size=getimagesize($filePath);
+											$width='';											
+											if ($size[0] > 350) {
+												$width='150';
+											}
+											// display image with link
+											$htmlContent='<br /><a href="'.$this->FULL_HTTP_URL.'uploads/tx_multishop/order_resources/'.rawurlencode($options['products_options_values']).'" class="msAdminDownloadIcon" target="_blank"><img src="'.$this->FULL_HTTP_URL.'uploads/tx_multishop/order_resources/'.rawurlencode($options['products_options_values']).'" width="'.$width.'" /></a>';
+										} else {
+											// display text with link
+											$htmlContent='<a href="'.$this->FULL_HTTP_URL.'uploads/tx_multishop/order_resources/'.rawurlencode($options['products_options_values']).'" class="msAdminDownloadIcon" target="_blank"><span>[save file]</span></a>';
+										}
+									}
+								}	
+								$tmpcontent .= '<td align="left"><a href="'.$this->FULL_HTTP_URL.'uploads/tx_multishop/order_resources/'.rawurlencode($options['products_options_values']).'" class="msAdminDownloadIcon" target="_blank">'.$options['products_options'].': '.$options['products_options_values'].$htmlContent.'</a></td>';
 							} else {
 								$tmpcontent .= '<td align="left">'.$options['products_options'].': '.$options['products_options_values'].'</td>';
 							}

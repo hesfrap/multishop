@@ -303,6 +303,8 @@ else
 	$markerArray['###QUANTITY###'] 					= $output['quantity']; 
 	$markerArray['###BACK_BUTTON###'] 				= $output['back_button']; 
 	$markerArray['###ADD_TO_CART_BUTTON###'] 		= $output['add_to_cart_button'];
+	$markerArray['###PRODUCTS_SKU###'] 				= $product['sku_code']; 
+	$markerArray['###PRODUCTS_EAN###'] 				= $product['ean_code']; 	
 	
 	// custom hook that can be controlled by third-party plugin
 	if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/front_pages/products_detail.php']['productsDetailsPagePostHook']))

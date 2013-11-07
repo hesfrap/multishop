@@ -87,23 +87,30 @@ if ($this->post['submit']) {
 		if (strstr($price,",")) {
 			$price = str_replace(",",".",$price);
 		}
-		
-		$sql_check = "select products_id from tx_multishop_specials where products_id = ".$pid;
-		$qry_check = $GLOBALS['TYPO3_DB']->sql_query($sql_check);
-		if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry_check) > 0 && $price > 0) {
-			$sql_upd = "update tx_multishop_specials set specials_new_products_price = '".$price."', status = 1 where products_id = ".$pid;
-			$GLOBALS['TYPO3_DB']->sql_query($sql_upd);
-			if ($this->ms['MODULES']['FLAT_DATABASE']) {
-				$updateFlatProductIds[]=$pid;
-			}			
-		} else {
-			if ($price > 0) {
-				$sql_ins = "insert into tx_multishop_specials (products_id, status, specials_new_products_price, specials_date_added, news_item, home_item, scroll_item) values (".$pid.", 1, '".$price."', NOW(), 1, 1, 1)";
-				$GLOBALS['TYPO3_DB']->sql_query($sql_ins);
+		if ($price > 0) {		
+			$sql_check = "select products_id from tx_multishop_specials where products_id = ".$pid;
+			$qry_check = $GLOBALS['TYPO3_DB']->sql_query($sql_check);
+			if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry_check) > 0 && $price > 0) {
+				$sql_upd = "update tx_multishop_specials set specials_new_products_price = '".$price."', status = 1 where products_id = ".$pid;
+				$GLOBALS['TYPO3_DB']->sql_query($sql_upd);
 				if ($this->ms['MODULES']['FLAT_DATABASE']) {
 					$updateFlatProductIds[]=$pid;
-				}				
+				}			
+			} else {
+				if ($price > 0) {
+					$sql_ins = "insert into tx_multishop_specials (products_id, status, specials_new_products_price, specials_date_added, news_item, home_item, scroll_item) values (".$pid.", 1, '".$price."', NOW(), 1, 1, 1)";
+					$GLOBALS['TYPO3_DB']->sql_query($sql_ins);
+					if ($this->ms['MODULES']['FLAT_DATABASE']) {
+						$updateFlatProductIds[]=$pid;
+					}				
+				}
 			}
+		} else {
+			$query = $GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_specials', 'products_id=\''.addslashes($pid).'\'');
+			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$updateFlatProductIds[]=$pid;
+			}				
 		}
 	}
 	if ($this->ms['MODULES']['FLAT_DATABASE']) {
@@ -169,6 +176,9 @@ $limits[]='40';
 $limits[]='50';
 $limits[]='100';
 $limits[]='150';
+$limits[]='300';
+$limits[]='500';
+$limits[]='750';
 foreach ($limits as $limit) {
 	$search_limit .='<option value="'.$limit.'"'.($limit==$this->get['tx_multishop_pi1']['limit']?' selected':'').'>'.$limit.'</option>';
 }
@@ -595,6 +605,7 @@ if ($pageset['total_rows'] > 0) {
 	$subpartArray['###DOWNLOAD_AS_EXCEL_URL###'] 			= $dlink;
 	$subpartArray['###LABEL_UPDATE_MODIFIED_PRODUCTS###'] 	= t3lib_div::strtoupper($this->pi_getLL('update_modified_products'));
 	$subpartArray['###FORM_UPLOAD_ACTION_URL###'] 			= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_price_update_up_xls');
+	$subpartArray['###CATEGORY_ID2###'] 					= $this->get['cid'];
 	$subpartArray['###PRODUCTS_PAGINATION###'] 				= $pagination;
 	$subpartArray['###LABEL_UPLOAD_EXCEL_FILE###'] 			= $this->pi_getLL('admin_upload_excel_file');
 	$subpartArray['###LABEL_ADMIN_UPLOAD###'] 				= t3lib_div::strtoupper($this->pi_getLL('admin_upload'));

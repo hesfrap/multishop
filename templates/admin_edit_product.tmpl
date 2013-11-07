@@ -5,15 +5,19 @@ function populateRelatedProduct(data) {
 	jQuery.each(data.related_product, function(categories_id, related_data) {
 		var html_elem = '';
 		if (categories_id > 0) {
-		var existing_fieldset_id = "#category" + categories_id;
+			var existing_fieldset_id = "#category" + categories_id;
 			var last_row_existing_fieldset = "#checkAllC" + categories_id;
+			
 			if (jQuery(existing_fieldset_id).length > 0) {
 				jQuery.each(related_data.products, function(i, products_data) {
-					if (products_data.checked == 1) {
-						html_elem += '<li><input class="cekbox shiftCheckbox category' + categories_id + '" checked="true" type="checkbox" name="category' + categories_id + '" value="' + products_data.id + '"/>' + products_data.name + '</li>';
-
-					} else {
-						html_elem += '<li><input class="cekbox shiftCheckbox category' + categories_id + '" type="checkbox" name="category' + categories_id + '" value="' + products_data.id + '"/>' + products_data.name + '</li>';
+					var existing_cb = '#cb_' + categories_id + '_' + products_data.id;
+					if (jQuery(existing_cb).length == 0) {
+						if (products_data.checked == 1) {
+							html_elem += '<li><input class="cekbox shiftCheckbox category' + categories_id + '" checked="true" type="checkbox" name="category' + categories_id + '" id="cb_' + categories_id + '_' + products_data.id + '" value="' + products_data.id + '" />' + products_data.name + '</li>';
+	
+						} else {
+							html_elem += '<li><input class="cekbox shiftCheckbox category' + categories_id + '" type="checkbox" name="category' + categories_id + '" id="cb_' + categories_id + '_' + products_data.id + '" value="' + products_data.id + '"/>' + products_data.name + '</li>';
+						}
 					}
 				});
 				jQuery(last_row_existing_fieldset).before(html_elem);
@@ -23,11 +27,11 @@ function populateRelatedProduct(data) {
 				var checked_rp = 0;
 				jQuery.each(related_data.products, function(i, products_data) {
 					if (products_data.checked == 1) {
-						html_elem += '<li><input class="cekbox shiftCheckbox category' + categories_id + '" checked="true" type="checkbox" name="category' + categories_id + '" value="' + products_data.id + '"/>' + products_data.name + '</li>';
+						html_elem += '<li><input class="cekbox shiftCheckbox category' + categories_id + '" checked="true" type="checkbox" name="category' + categories_id + '" id="cb_' + categories_id + '_' + products_data.id + '" value="' + products_data.id + '"/>' + products_data.name + '</li>';
 			
 						checked_rp++;
 					} else {
-						html_elem += '<li><input class="cekbox shiftCheckbox category' + categories_id + '" type="checkbox" name="category' + categories_id + '" value="' + products_data.id + '"/>' + products_data.name + '</li>';
+						html_elem += '<li><input class="cekbox shiftCheckbox category' + categories_id + '" type="checkbox" name="category' + categories_id + '" id="cb_' + categories_id + '_' + products_data.id + '" value="' + products_data.id + '"/>' + products_data.name + '</li>';
 					}
 				});
 				if (checked_rp > 0) {
@@ -206,6 +210,44 @@ jQuery(document).ready(function($) {
 		showOtherMonths: true,
 		yearRange: "###YEAR_RANGE###"
 	});
+	jQuery("#starttime_visitor").datetimepicker({
+		dateFormat: "###DATE_FORMAT###",
+		changeMonth: true,
+		changeYear: true,
+		showOtherMonths: true,
+		yearRange: "###YEAR_RANGE###",	
+		timeFormat: 'HH:mm:ss',
+		altField: "#starttime",
+		altFieldTimeOnly: false,
+		altFormat: "yy-mm-dd",
+		altTimeFormat: "HH:mm:ss"	
+	});	
+	jQuery("#endtime_visitor").datetimepicker({
+		dateFormat: "###DATE_FORMAT###",
+		changeMonth: true,
+		changeYear: true,
+		showOtherMonths: true,
+		yearRange: "###YEAR_RANGE###",	
+		timeFormat: 'HH:mm:ss',
+		altField: "#endtime",
+		altFieldTimeOnly: false,
+		altFormat: "yy-mm-dd",
+		altTimeFormat: "HH:mm:ss"	
+	});
+	jQuery("#specials_price_start").datepicker({ 
+		dateFormat: "dd-mm-yy",
+		changeMonth: true,
+		changeYear: true,
+		showOtherMonths: true,  
+		yearRange: "###YEAR_RANGE###"
+	});
+	jQuery("#specials_price_expired").datepicker({ 
+		dateFormat: "dd-mm-yy",
+		changeMonth: true,
+		changeYear: true,
+		showOtherMonths: true,  
+		yearRange: "###YEAR_RANGE###"
+	});
 	// related product ajax server
 	var url_relatives = "###AJAX_URL_PRODUCT_RELATIVE###";
 	// populate the existing related products
@@ -297,6 +339,7 @@ jQuery(document).ready(function($) {
 		<li><a href="#product_attributes">###LABEL_TABS_PRODUCT_ATTRIBUTES###</a></li>
 		<li><a href="#product_relatives">###LABEL_TABS_PRODUCT_RELATIVES###</a></li>
 		<li><a href="#product_copy">###LABEL_TABS_PRODUCT_COPY###</a></li>
+		###LABEL_EXTRA_PLUGIN_TABS###
 	</ul>
 	<div class="tab_container">
 		<form class="admin_product_edit" name="admin_product_edit_###PRODUCT_PID###" id="admin_product_edit_###PRODUCT_PID###" method="post" action="###FORM_ACTION_URL###" enctype="multipart/form-data">
@@ -318,6 +361,14 @@ jQuery(document).ready(function($) {
 					<input name="old_categories_id" type="hidden" value="###VALUE_OLD_CATEGORY_ID###" />
 					###INPUT_CATEGORY_TREE###
 				</div>
+				<div class="account-field toggle_advanced_option" id="msEditProductInputStartEndTime">
+					<label for="starttime" class="starttime">Starttime</label>
+					<input type="text" name="starttime_visitor" class="starttime" id="starttime_visitor" value="###VALUE_STARTTIME_VISUAL###" >
+					<input type="hidden" name="starttime" class="starttime" id="starttime" value="###VALUE_STARTTIME_SYS###" >
+					<label for="endtime" class="endtime">Endtime</label>
+					<input type="text" name="endtime_visitor" class="endtime" id="endtime_visitor" value="###VALUE_ENDTIME_VISUAL###" >
+					<input type="hidden" name="endtime" class="endtime" id="endtime" value="###VALUE_ENDTIME_SYS###" >
+				</div>				
 				<!-- ###DETAILS_CONTENT### begin -->
 				<div class="account-field toggle_advanced_option msEditProductLanguageDivider">
 					<label>###LABEL_LANGUAGE###</label>
@@ -369,6 +420,12 @@ jQuery(document).ready(function($) {
 						<div class="msAttributesField">###LABEL_CURRENCY2### <input type="text" name="specials_new_products_price_excl_vat" class="price small_input msPriceExcludingVat" id="specials_new_products_price_excl_vat" value="###VALUE_EXCL_VAT_SPECIAL_PRICE###"><label for="specials_new_products_price_excl_vat">Excl. VAT</label></div>
 						<div class="msAttributesField">###LABEL_CURRENCY3### <input type="text" name="specials_new_products_price_incl_vat" class="price small_input msPriceIncludingVat" id="specials_new_products_price_incl_vat" value="###VALUE_INCL_VAT_SPECIAL_PRICE###"><label for="specials_new_products_price_incl_vat">Incl. VAT</label></div>
 						<div class="msAttributesField hidden"><input type="hidden" class="msFinalPriceExcludingVat" name="specials_new_products_price" value="###VALUE_ORIGINAL_SPECIAL_PRICE###" /></div>
+						<div class="special_price_timer">
+							<label for="specials_price_start">###LABEL_SPECIAL_PRICE_START###</label>
+							<input type="text" name="specials_price_start" class="price small_input" id="specials_price_start" value="###VALUE_SPECIAL_PRICE_START###"> 
+							<label for="specials_price_expired">###LABEL_SPECIAL_PRICE_EXPIRED###</label>
+							<input type="text" name="specials_price_expired" class="price small_input" id="specials_price_expired" value="###VALUE_SPECIAL_PRICE_EXPIRED###">
+						</div>	
 					</div>
 					<div class="msAdminFormFieldValueFloatContainer" id="msEditProductInputCapitalPrice">
 						<label for="product_capital_price">###LABEL_CAPITAL_PRICE###</label>
@@ -483,7 +540,7 @@ jQuery(document).ready(function($) {
 	        <div style="display: block;" id="product_copy" class="tab_content">
 				###INPUT_PRODUCT_COPY_BLOCK###
 	        </div>
-	        
+	        ###CONTENT_EXTRA_PLUGIN_TABS###
 			<div class="save_block">
 				<input name="advanced" type="button" value="###FOOTER_VALUE_ADVANCED_OPTION###" class="toggle_advanced_options submit" />
 				<input name="cancel" type="button" value="###FOOTER_LABEL_BUTTON_CANCEL###" onclick="parent.window.hs.close();" class="submit" />

@@ -82,6 +82,37 @@ if (!$skipMultishopUpdates) {
 			}	
 		}
 		
+		$str="select plain_text from tx_multishop_product_feeds limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE `tx_multishop_product_feeds` ADD `plain_text` tinyint(1) default '0'";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}
+		$str="select starttime from tx_multishop_products limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `tx_multishop_products` ADD `starttime` int(11) default '0', ADD KEY `starttime` (starttime)";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}
+		$str="select endtime from tx_multishop_products limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `tx_multishop_products` ADD `endtime` int(11) default '0', ADD KEY `endtime` (endtime)";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}
+				
+		$str="select user_agent from tx_multishop_orders limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `tx_multishop_orders` ADD `user_agent` varchar(255) default '', ADD KEY `user_agent` (user_agent)";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}
+		
+		
 		$str="select tx_multishop_vat_id from fe_users limit 1";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		if (!$qry) {
@@ -140,16 +171,36 @@ if (!$skipMultishopUpdates) {
 			$str="ALTER TABLE  `tx_multishop_manufacturers_cms` ADD `meta_keywords` text NOT NULL DEFAULT ''";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			$messages[]=$str;
-		}				
-		
-
+		}			
 		$str="select alert_quantity_threshold from tx_multishop_products limit 1";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		if (!$qry) {
 			$str="ALTER TABLE  `tx_multishop_products` ADD `alert_quantity_threshold` int(11) not null default '0'";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			$messages[]=$str;
-		}	
+		}
+		$str="select ean_code from tx_multishop_orders_products limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `tx_multishop_orders_products` ADD `ean_code` varchar(50) DEFAULT  ''";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}
+		$str="select sku_code from tx_multishop_orders_products limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `tx_multishop_orders_products` ADD `sku_code` varchar(50) DEFAULT  ''";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}
+		$str="select vendor_code from tx_multishop_orders_products limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="ALTER TABLE  `tx_multishop_orders_products` ADD `vendor_code` varchar(50) DEFAULT  ''";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}
+		
 		$str="describe `tx_multishop_products`";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
@@ -850,7 +901,7 @@ if (!$skipMultishopUpdates) {
 		{
 			if ($row['Field']=='products_price')
 			{
-				if ($row['Type']=='decimal(10,4)')
+				if ($row['Type']=='decimal(10,4)' || $row['Type']=='decimal(8,2)')
 				{
 					$str="ALTER TABLE  `tx_multishop_products` CHANGE  `products_price`  `products_price` decimal(24,14) DEFAULT  '0.00000000000000', CHANGE  `product_capital_price`  `product_capital_price` decimal(24,14) DEFAULT  '0.00000000000000'";
 					$qry=$GLOBALS['TYPO3_DB']->sql_query($str);		
@@ -1821,6 +1872,13 @@ if (!$skipMultishopUpdates) {
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);		
 			$messages[]=$str;
 		}
+		$key='CUSTOMERS_DATA_EXPORT_IMPORT';
+		if (!isset($settings['GLOBAL_MODULES'][$key]))
+		{
+			$str="INSERT INTO `tx_multishop_configuration` (`id`, `configuration_title`, `configuration_key`, `configuration_value`, `description`, `group_id`, `sort_order`, `last_modified`, `date_added`, `use_function`, `set_function`) VALUES('', 'Admin customers export/import data', '".$key."', '0', 'Enable export/import data of the customers.', 11, NULL, NULL, now(), NULL, 'tep_cfg_select_option(array(''0'',''1''),');";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			$messages[]=$str;
+		}
 		$key='ADMIN_INVOICE_MODULE';
 		if (!isset($settings['GLOBAL_MODULES'][$key]))
 		{
@@ -2267,16 +2325,14 @@ if (!$skipMultishopUpdates) {
 		$str="select tx_multishop_customer_id from tt_address limit 1";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		if (!$qry) {
-			$str="ALTER TABLE  `tt_address` ADD  `tx_multishop_customer_id` INT( 11 ) NOT NULL ,
-		ADD INDEX (  `tx_multishop_customer_id` )"; 
+			$str="ALTER TABLE  `tt_address` ADD  `tx_multishop_customer_id` INT( 11 ) NOT NULL, ADD INDEX (`tx_multishop_customer_id`)"; 
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);							
 			$messages[]=$str;				
 		}
 		$str="select tx_multishop_default from tt_address limit 1";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		if (!$qry) {
-			$str="ALTER TABLE  `tt_address` ADD  `tx_multishop_default` tinyint( 1 ) NOT NULL ,
-		ADD INDEX (  `tx_multishop_default` )"; 
+			$str="ALTER TABLE  `tt_address` ADD  `tx_multishop_default` tinyint( 1 ) NOT NULL, ADD INDEX (`tx_multishop_default`)"; 
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);							
 			$messages[]=$str;				
 		}
@@ -4392,8 +4448,7 @@ if (!$skipMultishopUpdates) {
 		$keys=array();
 		$keys[]='CATEGORIES_LISTING_TYPE';
 		$keys[]='PRODUCTS_LISTING_TYPE';
-		foreach ($keys as $key)
-		{
+		foreach ($keys as $key) {
 			$str="UPDATE `tx_multishop_configuration` SET configuration_value='default' where configuration_key='".$key."' and configuration_value='grid'";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);							
 		//	$messages[]=$str;
@@ -4405,8 +4460,7 @@ if (!$skipMultishopUpdates) {
 			
 		$str="select page_uid from tt_address limit 1";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-		if (!$qry)
-		{
+		if (!$qry) {
 			$str="ALTER TABLE  `tt_address` ADD `page_uid` int(11) NOT NULL default '0', ADD KEY page_uid (page_uid) ";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			$messages[]=$str;

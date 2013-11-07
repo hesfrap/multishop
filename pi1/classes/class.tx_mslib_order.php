@@ -237,34 +237,41 @@ class tx_mslib_order extends tslib_pibase {
 		if ($order['billing_country']) {
 			$billing_address.='<br />'.mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$order['billing_country']);
 		}
-
+		$loadFromPids=array();
+		if ($this->conf['masterShop']) {
+			$loadFromPids[]=$order['page_uid'];
+			$loadFromPids[]=$this->shop_pid;
+			if ($this->showCatalogFromPage and $this->showCatalogFromPage != $this->shop_pid) {
+				$loadFromPids[]=$this->showCatalogFromPage;
+			}							
+		}
 		// loading the email template
 		$page=array();
 		if ($mail_template) {
 			switch ($mail_template) {
 				case 'email_order_paid_letter':
 					if ($order['payment_method']) {
-						$page=mslib_fe::getCMScontent('email_order_paid_letter_'.$order['payment_method'],$GLOBALS['TSFE']->sys_language_uid);
+						$page=mslib_fe::getCMScontent('email_order_paid_letter_'.$order['payment_method'],$GLOBALS['TSFE']->sys_language_uid,$loadFromPids);
 					}
 					if (!count($page[0])) {
-						$page=mslib_fe::getCMScontent('email_order_paid_letter',$GLOBALS['TSFE']->sys_language_uid);						
+						$page=mslib_fe::getCMScontent('email_order_paid_letter',$GLOBALS['TSFE']->sys_language_uid,$loadFromPids);
 					}				
 				break;
 				default:
-					$page=mslib_fe::getCMScontent($mail_template,$GLOBALS['TSFE']->sys_language_uid);
+					$page=mslib_fe::getCMScontent($mail_template,$GLOBALS['TSFE']->sys_language_uid,$loadFromPids);
 				break;
 			}				
 		} else if ($order['is_proposal']) {
 			// proposal template
 			$mail_template='email_order_proposal';
-			$page=mslib_fe::getCMScontent($mail_template,$GLOBALS['TSFE']->sys_language_uid);	
+			$page=mslib_fe::getCMScontent($mail_template,$GLOBALS['TSFE']->sys_language_uid,$loadFromPids);	
 		} else {
 			// normal order template
 			if ($order['payment_method']) {
-				$page=mslib_fe::getCMScontent('email_order_confirmation_'.$order['payment_method'],$GLOBALS['TSFE']->sys_language_uid);
+				$page=mslib_fe::getCMScontent('email_order_confirmation_'.$order['payment_method'],$GLOBALS['TSFE']->sys_language_uid,$loadFromPids);
 			}
 			if (!count($page[0])) {
-				$page=mslib_fe::getCMScontent('email_order_confirmation',$GLOBALS['TSFE']->sys_language_uid);
+				$page=mslib_fe::getCMScontent('email_order_confirmation',$GLOBALS['TSFE']->sys_language_uid,$loadFromPids);
 			}
 		}		
 		if ($page[0]['content']) {
@@ -764,7 +771,6 @@ class tx_mslib_order extends tslib_pibase {
 		}
 		$itemsWrapper=array();
 		$c = true;
-		
 		foreach ($order['products'] as $product) {
 			if ($product['products_id']) {
 				$product_db=mslib_fe::getProduct($product['products_id']);
@@ -793,6 +799,15 @@ class tx_mslib_order extends tslib_pibase {
 			if ($template_type == 'email' && $order['mail_template'] == 'email_order_paid_letter' && $order['paid'] == 1 && isset($product['file_download_code']) && !empty($product['file_download_code'])) {
 				$download_link = '<br/><a href="'.$this->FULL_HTTP_URL.mslib_fe::typolink(",2002",'&tx_multishop_pi1[page_section]=get_micro_download&orders_id=' . $order['orders_id'] . '&code=' . $product['file_download_code'], 1) . '" alt="'.$product['products_name'].'" title="'.$product['products_name'].'">Download product</a>';
 				$item['ITEM_NAME'] .= $download_link;
+			}
+			if (!empty($product['ean_code'])) {
+				$item['ITEM_NAME'] .= '<br/>EAN: '.$product['ean_code'];
+			}
+			if (!empty($product['sku_code'])) {
+				$item['ITEM_NAME'] .= '<br/>SKU: '.$product['sku_code'];
+			}
+			if (!empty($product['vendor_code'])) {
+				$item['ITEM_NAME'] .= '<br/>Vendor code: '.$product['vendor_code'];
 			}
 			
 			if (count($product['attributes'])) {

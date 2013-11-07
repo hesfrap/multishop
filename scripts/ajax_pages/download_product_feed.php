@@ -1,67 +1,57 @@
 <?php
 if (!defined('TYPO3_MODE')) die ('Access denied.');
 
-if ($this->get['feed_hash'])
-{
-    $feed=mslib_fe::getProductFeed($this->get['feed_hash'],'code');
-	$lifetime=7200;
-	if ($this->ADMIN_USER) $lifetime=0;
+if ($this->get['feed_hash']) {
+    $feed = mslib_fe::getProductFeed($this->get['feed_hash'],'code');
+	$lifetime = 7200;
+	if ($this->ADMIN_USER) {
+		$lifetime = 0;
+	}
     $options = array(
         'caching' => true,
         'cacheDir' => $this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/cache/',
         'lifeTime' => $lifetime
     );
     $Cache_Lite = new Cache_Lite($options);
-    $string='productfeed_'.$this->shop_pid.'_'.serialize($feed).'-'.md5($this->cObj->data['uid'].'_'.$this->server['REQUEST_URI'].$this->server['QUERY_STRING']);			
+    $string = 'productfeed_'.$this->shop_pid.'_'.serialize($feed).'-'.md5($this->cObj->data['uid'].'_'.$this->server['REQUEST_URI'].$this->server['QUERY_STRING']);			
 	if ($this->ADMIN_USER and $this->get['clear_cache']) {
 		$Cache_Lite->remove($string);
 	}
-    if (!$content=$Cache_Lite->get($string))
-    {
+    if (!$content=$Cache_Lite->get($string)) {
 		// preload attibute option names
 		$attributes=array();
-		$str="SELECT * FROM `tx_multishop_products_options` where language_id='".$GLOBALS['TSFE']->sys_language_uid."' order by products_options_id asc";					
-		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-		while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false)
-		{
-			$attributes['attribute_option_name_'.$row['products_options_id']]=$row['products_options_name'];		
-		}	
+		$str = "SELECT * FROM `tx_multishop_products_options` where language_id='".$GLOBALS['TSFE']->sys_language_uid."' order by products_options_id asc";					
+		$qry = $GLOBALS['TYPO3_DB']->sql_query($str);
+		while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
+			$attributes['attribute_option_name_'.$row['products_options_id']] = $row['products_options_name'];		
+		}
 		// preload attibute option names eof
-				
-		if ($feed['feed_type'])
-		{
+		if ($feed['feed_type']) {
 			// custom page hook that can be controlled by third-party plugin
-			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/download_product_feed.php']['feedTypesProc']))
-			{
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/download_product_feed.php']['feedTypesProc'])) {
 				$params = array (
 					'feed' => &$feed
 				); 
-				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/download_product_feed.php']['feedTypesProc'] as $funcRef)
-				{
+				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/download_product_feed.php']['feedTypesProc'] as $funcRef) {
 					t3lib_div::callUserFunction($funcRef, $params, $this);
 				}
 			}	
 			// custom page hook that can be controlled by third-party plugin eof
 		}
-        $fields=unserialize($feed['fields']);
-		$post_data=unserialize($feed['post_data']);
-        $fields_headers=$post_data['fields_headers'];
-        $fields_values=$post_data['fields_values'];
-		if ($feed['include_header'])
-		{
-			$total=count($fields);
-			$rowCount=0;
-			foreach ($fields as $counter => $field)
-			{
+        $fields = unserialize($feed['fields']);
+		$post_data = unserialize($feed['post_data']);
+        $fields_headers = $post_data['fields_headers'];
+        $fields_values = $post_data['fields_values'];
+		if ($feed['include_header']) {
+			$total = count($fields);
+			$rowCount = 0;
+			foreach ($fields as $counter => $field) {
 				$rowCount++;
-				if ($this->get['format']=='csv')
-				{				
+				if ($this->get['format']=='csv') {				
 					$content.= '"';
 				}
-				if ($this->get['target']=='google_shopping')
-				{
-					switch ($field)
-					{
+				if ($this->get['target']=='google_shopping') {
+					switch ($field) {
 						case 'products_ean':
 							$content.='gtin';
 						break;							
@@ -120,9 +110,7 @@ if ($this->get['feed_hash'])
 							else $content.=$field;
 						break;
 					}
-				}
-				else
-				{
+				} else {
 					switch ($field)	{
 						case 'custom_field':
 							$content.=$fields_headers[$counter];						
@@ -132,22 +120,15 @@ if ($this->get['feed_hash'])
 						break;
 					}
 				}
-				if ($this->get['format']=='csv')
-				{				
+				if ($this->get['format']=='csv') {				
 					$content.= '"';
 				}
-//				if (($counter+1)<$total)
-				if ($rowCount<$total)
-				{
-					if ($this->get['format']=='csv')
-					{
+				if ($rowCount<$total) {
+					if ($this->get['format']=='csv') {
 						$content.= ';';
-					}
-					else
-					{
+					} else {
 						// add delimiter
-						switch ($feed['delimiter'])
-						{
+						switch ($feed['delimiter']) {
 							case 'dash':
 								$content.= '|';
 							break;
@@ -164,22 +145,16 @@ if ($this->get['feed_hash'])
 			$content.= "\r\n";
 		}
 		$mode='products';
-		if (in_array('products_id',$fields) or in_array('products_name',$fields))
-		{
+		if (in_array('products_id',$fields) or in_array('products_name',$fields)) {
 			// retrieve products
 			$mode='products';
-		}
-		elseif (in_array('categories_id',$fields) || in_array('category_link',$fields))
-		{
+		} else if (in_array('categories_id',$fields) || in_array('category_link',$fields)) {
 			$mode='categories';
-		}
-		elseif (in_array('manufacturers_id',$fields))
-		{
+		} else if (in_array('manufacturers_id',$fields)) {
 			$mode='manufacturers';
 		}
 		$records=array();
-		switch ($mode)
-		{
+		switch ($mode) {
 			case 'products':
 				// product search
 				$filter		=array();
@@ -188,49 +163,45 @@ if ($this->get['feed_hash'])
 				$where		=array();
 				$orderby	=array();
 				$select		=array();	
-				if (is_numeric($this->get['products_id']))
-				{
+				if (is_numeric($this->get['products_id'])) {
 					$filter[]="p.products_id='".$this->get['products_id']."'";
 				}			
-				if (is_numeric($this->get['categories_id']))
-				{
+				if (is_numeric($this->get['categories_id'])) {
 					$parent_id=$this->get['categories_id'];
 				}				
-				if (is_numeric($this->get['manufacturers_id']))
-				{
+				if (is_numeric($this->get['manufacturers_id'])) {
 					if ($this->ms['MODULES']['FLAT_DATABASE']) 	$tbl='pf.';
 					else									$tbl='p.';
 					$filter[]="(".$tbl."manufacturers_id='".addslashes($this->get['manufacturers_id'])."')";					
 				}
-				if (strlen($this->get['skeyword']) >2)
-				{
+				if (strlen($this->get['skeyword']) >2) {
 					$extra_columns='';
-					if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_ID'])
-					{
-						if ($this->ms['MODULES']['FLAT_DATABASE']) 	$tbl='pf.';
-						else									$tbl='p.';			
+					if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_ID']) {
+						if ($this->ms['MODULES']['FLAT_DATABASE']) {
+							$tbl='pf.';
+						} else {
+							$tbl='p.';			
+						}
 						$extra_columns.=" or ".$tbl."products_id ='".addslashes($this->get['skeyword'])."'";
 					}			
 					$array=explode(" ",$this->get['skeyword']);
 					$total=count($array);
 					$oldsearch=0;	
-					if (!$this->ms['MODULES']['ENABLE_FULLTEXT_SEARCH_IN_PRODUCTS_SEARCH'])
-					{
+					if (!$this->ms['MODULES']['ENABLE_FULLTEXT_SEARCH_IN_PRODUCTS_SEARCH']) {
 						$oldsearch=1;
-					}
-					else
-					{
-						foreach ($array as $item)
-						{
-							if (strlen($item) < $this->ms['MODULES']['FULLTEXT_SEARCH_MIN_CHARS'])
-							{
+					} else {
+						foreach ($array as $item) {
+							if (strlen($item) < $this->ms['MODULES']['FULLTEXT_SEARCH_MIN_CHARS']) {
 								$oldsearch=1;
 								break;
 							}
 						}
 					}
-					if ($this->ms['MODULES']['FLAT_DATABASE']) 	$tbl='pf.';
-					else									$tbl='pd.';
+					if ($this->ms['MODULES']['FLAT_DATABASE']) {
+						$tbl='pf.';
+					} else {
+						$tbl='pd.';
+					}
 					if ($oldsearch) {
 						if ($this->ms['MODULES']['REGULAR_SEARCH_MODE'] == '%keyword') {
 							// do normal indexed search					
@@ -261,14 +232,15 @@ if ($this->get['feed_hash'])
 						// do fulltext search
 						$tmpstr=addslashes(mslib_befe::ms_implode(', ', $array,'"','+',true));				
 						$fields=$tbl."products_name";
-						if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_DESCRIPTION'])
-						{
+						if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_DESCRIPTION']) {
 							$fields.=",".$tbl."products_description";
 						}
-						if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_ID'])
-						{
-							if ($this->ms['MODULES']['FLAT_DATABASE']) 	$tbl='pf.';
-							else									$tbl='p.';						
+						if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_ID']) {
+							if ($this->ms['MODULES']['FLAT_DATABASE']) {
+								$tbl='pf.';
+							} else {
+								$tbl='p.';						
+							}
 							$fields.=",".$tbl."products_id";
 						}				
 						$select[]	="MATCH (".$fields.") AGAINST ('".$tmpstr."' in boolean mode) AS score";
@@ -280,11 +252,15 @@ if ($this->get['feed_hash'])
 					if ($this->ms['MODULES']['FLAT_DATABASE']) {
 						$string='(';
 						for ($i=0;$i<4;$i++) {
-							if ($i>0) $string.=" or ";
+							if ($i>0) {
+								$string.=" or ";
+							}
 							$string.="categories_id_".$i." = '".$parent_id."'";
 						}
 						$string.=')';
-						if ($string) $filter[]=$string;
+						if ($string) {
+							$filter[]=$string;
+						}
 						// 
 					} else {
 						$cats=mslib_fe::get_subcategory_ids($parent_id);
@@ -306,15 +282,12 @@ if ($this->get['feed_hash'])
 				}
 				$pageset=mslib_fe::getProductsPageSet($filter,$offset,999999,$orderby,$having,$select,$where,0,array(),array(),'products_feeds');
 				$products=$pageset['products'];		
-				if ($pageset['total_rows'] > 0)
-				{
-					foreach ($pageset['products'] as $row)
-					{
+				if ($pageset['total_rows'] > 0) {
+					foreach ($pageset['products'] as $row) {
 						$product=mslib_fe::getProduct($row['products_id']);
-						if ($product['products_id'])
-						{
-							$cats=mslib_fe::Crumbar($product['categories_id']);
-							$cats=array_reverse($cats);	
+						if ($product['products_id']) {
+							$cats = mslib_fe::Crumbar($product['categories_id']);
+							$cats = array_reverse($cats);	
 							$product['categories_crum']=$cats;
 							// some parts are not available in flat table and vice versa so lets merge them
 							$records[]=array_merge($product,$row);						
@@ -324,21 +297,17 @@ if ($this->get['feed_hash'])
 			break;
 			case 'categories':
 				$qry = $GLOBALS['TYPO3_DB']->sql_query("SELECT * from tx_multishop_categories c, tx_multishop_categories_description cd where c.page_uid='".$this->shop_pid."' and c.status=1 and c.categories_id=cd.categories_id");
-				while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry))
-				{
-					if ($row['categories_id'])
-					{
-						$cats=mslib_fe::Crumbar($row['categories_id']);
-		                $cats=array_reverse($cats);	
-						$row['categories_crum']=$cats;
+				while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
+					if ($row['categories_id']) {
+						$cats = mslib_fe::Crumbar($row['categories_id']);
+		                $cats = array_reverse($cats);	
+						$row['categories_crum'] = $cats;
 						
 						// get all cats to generate multilevel fake url
 						$level=0;
 						$where='';
-						if (count($cats) > 0)
-						{
-							foreach ($cats as $item)
-							{
+						if (count($cats) > 0) {
+							foreach ($cats as $item) {
 								$where.="categories_id[".$level."]=".$item['id']."&";
 								$level++;
 							}
@@ -347,166 +316,168 @@ if ($this->get['feed_hash'])
 						}
 //						$where.='categories_id['.$level.']='.$row['categories_id'];
 						// get all cats to generate multilevel fake url eof
-						if ($row['categories_url'])
-						{
-							$link=$row['categories_url'];
-						}
-						else
-						{
-							$target="";
+						if ($row['categories_url']) {
+							$link = $row['categories_url'];
+						} else {
+							$target = "";
 							$link=mslib_fe::typolink($this->conf['products_listing_page_pid'],'&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 						}		
-						$row['category_link']=$this->FULL_HTTP_URL.$link;
-						$records[]=$row;
+						$row['category_link'] = $this->FULL_HTTP_URL.$link;
+						$records[] = $row;
 					}
 				}			
 			break;
 			case 'manufacturers':
-//				$qry = $GLOBALS['TYPO3_DB']->sql_query("SELECT * from tx_multishop_manufacturers m, tx_multishop_manufacturers_description md where m.status=1 and m.manufacturers_id=md.manufacturers_id");
 				$qry = $GLOBALS['TYPO3_DB']->sql_query("SELECT * from tx_multishop_manufacturers m where m.status=1");
-				while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry))
-				{
-					if ($row['manufacturers_id'])
-					{					
-						$records[]=$row;
+				while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
+					if ($row['manufacturers_id']) {					
+						$records[] = $row;
 					}
 				}			
 			break;			
 		}
-	
         // load all products'
-		foreach ($records as $row)
-		{			
+		foreach ($records as $row) {			
 			$total=count($fields);
 			$count=0;
 	
-			foreach ($fields as $counter => $field)
-			{
+			foreach ($fields as $counter => $field) {
 				$count++;
-				if ($this->get['format']=='csv')
-				{
-					$content.= '"';
+				if ($this->get['format']=='csv') {
+					$content .= '"';
 				}										
 				$tmpcontent='';					
-				switch ($field)
-				{
+				switch ($field) {
 					case 'categories_id':
-						$tmpcontent.= $row['categories_id'];
+						$tmpcontent .= $row['categories_id'];
 					break;
 					case 'categories_name':
-						$tmpcontent.= $row['categories_name'];
+						$tmpcontent .= $row['categories_name'];
 					break;
 					case 'categories_content_top':
 						$string=strip_tags(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['categories_content_top']));
-						if ($string)
-						{
+						if ($string) {
 							$string = preg_replace('/\s+/', ' ', $string);
-							$tmpcontent.=$string;
+							$tmpcontent .= $string;
 						}					
 					break;
 					case 'categories_content_bottom':
 						$string=strip_tags(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['categories_content_bottom']));
-						if ($string)
-						{
+						if ($string) {
 							$string = preg_replace('/\s+/', ' ', $string);
-							$tmpcontent.=$string;
+							$tmpcontent .= $string;
 						}
 					break;
 					case 'categories_meta_title':
-						$tmpcontent.= $row['meta_title'];
+						$tmpcontent .= $row['meta_title'];
 					break;										
 					case 'categories_meta_keywords':
-						$tmpcontent.= $row['meta_keywords'];
+						$tmpcontent .= $row['meta_keywords'];
 					break;										
 					case 'categories_meta_description':
-						$tmpcontent.= $row['meta_description'];
+						$tmpcontent .= $row['meta_description'];
 					break;										
 					case 'products_condition':
-						$tmpcontent.= $row['products_condition'];
+						$tmpcontent .= $row['products_condition'];
 					break;
 					case 'products_id':
-						$tmpcontent.= $row['products_id'];
+						$tmpcontent .= $row['products_id'];
 					break;
 					case 'products_weight':
-						$tmpcontent.= $row['products_weight'];
+						$tmpcontent .= $row['products_weight'];
 					break;
 					case 'custom_field':
-						$tmpcontent.=$fields_values[$counter];
+						$tmpcontent .=$fields_values[$counter];
 					break;					
 					case 'products_name':
-						$tmpcontent.= $row['products_name'];
+						$tmpcontent .= $row['products_name'];
 					break;
 					case 'products_status':
-						$tmpcontent.= $row['products_status'];
+						$tmpcontent .= $row['products_status'];
 					break;					
 					case 'products_model':
-						$tmpcontent.= $row['products_model'];
+						$tmpcontent .= $row['products_model'];
 					break;
 					case 'products_price':
-						$tmpcontent.= mslib_fe::final_products_price($row);
+						$tmpcontent .= mslib_fe::final_products_price($row);
 					break;
 					case 'products_price_excluding_vat':
-						$tmpcontent.= round($row['final_price'],14);
+						$tmpcontent .= round($row['final_price'],14);
 					break;
 					case 'manufacturers_id':
-						$tmpcontent.= $row['manufacturers_id'];
+						$tmpcontent .= $row['manufacturers_id'];
 					break;
 					case 'manufacturers_name':
-						if ($row['manufacturers_id'])
-						{
-							$manufacturer=mslib_fe::getManufacturer($row['manufacturers_id']);
-							if ($manufacturer['manufacturers_name'])
-							{
-								$tmpcontent.= $manufacturer['manufacturers_name'];
+						if ($row['manufacturers_id']) {
+							$manufacturer = mslib_fe::getManufacturer($row['manufacturers_id']);
+							if ($manufacturer['manufacturers_name']) {
+								$tmpcontent .= $manufacturer['manufacturers_name'];
 							}
 						}
 					break;
 					case 'category_crum_path':
-						$tmpcontent.= $row['categories_crum'][0]['name'];
-						if ($row['categories_crum'][1]['name'])
-						{
-							$tmpcontent.= " > ".$row['categories_crum'][1]['name'];
+						$tmpcontent .= $row['categories_crum'][0]['name'];
+						if ($row['categories_crum'][1]['name']) {
+							$tmpcontent .= " > ".$row['categories_crum'][1]['name'];
 						}
-						if ($row['categories_crum'][2]['name'])
-						{
-							$tmpcontent.= " > ".$row['categories_crum'][2]['name'];
+						if ($row['categories_crum'][2]['name']) {
+							$tmpcontent .= " > ".$row['categories_crum'][2]['name'];
 						}
-						if ($row['categories_crum'][3]['name'])
-						{
-							$tmpcontent.= " > ".$row['categories_crum'][3]['name'];
+						if ($row['categories_crum'][3]['name']) {
+							$tmpcontent .= " > ".$row['categories_crum'][3]['name'];
 						}
 					break;
 					case 'category_link':
-						if ($row['category_link']) $tmpcontent.= $row['category_link'];
+						if ($row['category_link']) {
+							$tmpcontent .= $row['category_link'];
+						}
 					break;
 					case 'category_level_1':
-						if ($row['categories_crum'][0]['name']) $tmpcontent.= $row['categories_crum'][0]['name'];
+						if ($row['categories_crum'][0]['name']) {
+							$tmpcontent .= $row['categories_crum'][0]['name'];
+						}
 					break;
 					case 'category_level_2':
-						if ($row['categories_crum'][1]['name']) $tmpcontent.= $row['categories_crum'][1]['name'];
+						if ($row['categories_crum'][1]['name']) {
+							$tmpcontent .= $row['categories_crum'][1]['name'];
+						}
 					break;
 					case 'category_level_3':
-						if ($row['categories_crum'][2]['name']) $tmpcontent.= $row['categories_crum'][2]['name'];
+						if ($row['categories_crum'][2]['name']) {
+							$tmpcontent .= $row['categories_crum'][2]['name'];
+						}
 					break;
 					case 'delivery_time':
-						$tmpcontent.= $row['delivery_time'];
+						$tmpcontent .= $row['delivery_time'];
 					break;						
 					case 'products_shortdescription':
-						$string=strip_tags(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['products_shortdescription']));
-						if ($string)
-						{
+						$string = strip_tags(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['products_shortdescription']));
+						if ($string) {
 							$string = preg_replace('/\s+/', ' ', $string);
-							$tmpcontent.=$string;
+							$tmpcontent .= $string;
 						}
 					break;
 					case 'products_description':
 						$string=preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['products_description']);
-						if ($string)
-						{
+						if ($string) {
 							$string = preg_replace('/\s+/', ' ', $string);
 							$tmpcontent.=$string;
 						}
-					break;		
+					break;
+					case 'products_description_encoded':
+						$string=htmlentities(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['products_description']));
+						if ($string) {
+							$string = preg_replace('/\s+/', ' ', $string);
+							$tmpcontent.=$string;
+						}
+					break;						
+					case 'products_description_strip_tags':
+						$string=preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ", strip_tags($row['products_description']));
+						if ($string) {
+							$string = preg_replace('/\s+/', ' ', $string);
+							$tmpcontent.=$string;
+						}
+					break;							
 					case 'products_external_url':
 						if ($row['products_url']) $tmpcontent.= $row['products_url'];
 					break;										
@@ -602,7 +573,12 @@ if ($this->get['feed_hash'])
 					}
 				}	
 				// custom page hook that can be controlled by third-party plugin eof					
-				$tmpcontent=str_replace("\"","",$tmpcontent);					
+				$tmpcontent=str_replace("\"","",$tmpcontent);
+				if ($feed['plain_text'] == '1') {
+					$tmpcontent = strip_tags($tmpcontent);
+					$tmpcontent = html_entity_decode($tmpcontent);
+                    $tmpcontent = str_replace(array('&nbsp;', '&amp;', '&euro;', '&amp;quot;', '&quot;'), array(' ', '&', 'EUR', "'", "'"), $tmpcontent);
+				}
 				$content.=$tmpcontent;
 				
 				if ($this->get['format']=='csv')

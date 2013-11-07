@@ -131,12 +131,12 @@ class tx_multishop_pi1 extends tslib_pibase {
 		if (!$GLOBALS['TSFE']->config['config']['locale_all']) {
 			$GLOBALS['TSFE']->config['config']['locale_all']=$this->pi_getLL('locale_all');
 		}
-		$this->lang=$GLOBALS['TSFE']->config['config']['language'];
+		$this->lang=$GLOBALS['TSFE']->config['config']['language'];	
+		setlocale(LC_TIME,$GLOBALS['TSFE']->config['config']['locale_all']);		
 		$this->sys_language_uid=$GLOBALS['TSFE']->config['config']['sys_language_uid'];		
 		if (!isset($this->sys_language_uid)) {
 			$this->sys_language_uid=0;	
 		}		
-		setlocale(LC_TIME,$GLOBALS['TSFE']->config['config']['locale_all']);		
 		// load language cookie for the backend eof		
 		if (!$GLOBALS['TSFE']->config['config']['baseURL']) {
 			echo 'config.baseURL='.$this->FULL_HTTP_URL.' is not set yet. Please go to the TYPO3 template setup field editor and add it.';
@@ -167,7 +167,8 @@ class tx_multishop_pi1 extends tslib_pibase {
 		}
 		require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_fe.php');
 		require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_befe.php');
-		require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_payment.php');		
+		require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_payment.php');	
+		require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_catalog.php');				
 	}
 	function admin_main($content, $conf) {
 		self::construct($conf);
@@ -249,7 +250,18 @@ class tx_multishop_pi1 extends tslib_pibase {
 				} else {
 					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/content_elements/categories_default.php');			
 				}
-			break;	
+			break;
+			case 'crumbar':
+				if (strstr($this->ms['MODULES']['CRUMBAR_TYPE'],"/")) {
+					require($this->DOCUMENT_ROOT.$this->ms['MODULES']['	'].'.php');	
+				} elseif($this->ms['MODULES']['CRUMBAR_TYPE']) {
+					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/crumbar/'.$this->ms['MODULES']['CRUMBAR_TYPE'].'.php');
+				} else {
+					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/crumbar/default.php');
+				}
+				require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/crumbar/default.php');
+				$content=$crum;
+			break;
 			case 'search':
 				// setting coming from typoscript or from flexform
 				if ($this->conf['contentType']) $this->contentType = $this->conf['contentType'];
@@ -314,8 +326,10 @@ class tx_multishop_pi1 extends tslib_pibase {
 						require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/products_detail.php');						
 						$content.='</div>';
 					break;					
-					case 'products_listing':
-						if ($this->categoriesStartingPoint and !$this->get['categories_id']) {
+					case 'products_listing':					
+						if ($this->categoriesID and !$this->get['categories_id']) {
+							$this->get['categories_id']=$this->categoriesID;
+						} elseif ($this->categoriesStartingPoint and !$this->get['categories_id']) {
 							$this->get['categories_id']=$this->categoriesStartingPoint;
 						}
 						require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/products_listing.php');						
@@ -413,7 +427,7 @@ class tx_multishop_pi1 extends tslib_pibase {
 		}
 		if ($this->skipWrapInBase) {
 			return $content;
-		}		
+		}
 		if ($this->hideIfNoResults and $this->no_database_results) {
 			// when the content element in TYPO3 has been configured with hideIfNoResults = true then hide the content if there is no data fetched from the database
 			$this->cObj->data['header']='';
@@ -431,7 +445,7 @@ class tx_multishop_pi1 extends tslib_pibase {
 			$content=mslib_fe::typobox($this->cObj->data['header'],$content,$this->box_class);
 		}
 		elseif (!$this->hideHeader) {
-			if (!$this->hideIfNoResults and $this->no_database_results) {
+			if (!$this->hideIfNoResults or ($this->hideIfNoResults and !$this->no_database_results)) {
 				$content = $this->cObj->cObjGetSingle(
 					$GLOBALS['TSFE']->tmpl->setup['lib.']['stdheader'],
 					$GLOBALS['TSFE']->tmpl->setup['lib.']['stdheader.']

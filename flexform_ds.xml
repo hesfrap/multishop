@@ -83,7 +83,7 @@
 				</addBox>
 				<hideHeader>
 					<TCEforms>
-						 <label>Hide header</label>
+						 <label>Hide Multishops internal CE header (so only the header of the current content element gets be printed)</label>
 						 <config>
 						  <type>check</type>
 						 </config>
@@ -458,7 +458,7 @@
 				</customSettings>						
 				<categoriesStartingPoint>
 					<TCEforms>
-					<label>Categories ID / Starting point (default 0)</label>
+					<label>Categories Starting Point (default 0)</label>
 					<config>
 						<type>input</type>
 						<eval>num</eval>
@@ -467,6 +467,17 @@
 					</config>
 					</TCEforms>
 				</categoriesStartingPoint>	
+				<categoriesID>
+					<TCEforms>
+					<label>Categories ID</label>
+					<config>
+						<type>input</type>
+						<eval>num</eval>
+						<size>11</size>
+						<default></default>
+					</config>
+					</TCEforms>
+				</categoriesID>				
 				<productsID>
 					<TCEforms>
 					<label>Products ID</label>

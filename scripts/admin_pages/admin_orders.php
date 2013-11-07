@@ -9,26 +9,21 @@ if ($this->post['tx_multishop_pi1']['edit_order']==1 and is_numeric($this->post[
 	jQuery(document).ready(function($){
 		hs.htmlExpand(null, {contentId: \'highslide-html2\', objectType: \'iframe\', width: 980, height: $(document).height(),src: \''.$url.'\'} );
 	});
-	</script>
-	';
+	</script>';
 }
-
 if (!$this->post['tx_multishop_pi1']['action'] && $this->get['tx_multishop_pi1']['action']) {
 	$this->post['tx_multishop_pi1']['action'] = $this->get['tx_multishop_pi1']['action'];
 }
-
 if ($this->post) {
 	foreach ($this->post as $post_idx => $post_val) {
 		$this->get[$post_idx] = $post_val;
 	}
 }
-
 if ($this->get) {
 	foreach ($this->get as $get_idx => $get_val) {
 		$this->post[$get_idx] = $get_val;
 	}
 }
-
 switch ($this->post['tx_multishop_pi1']['action']) {
 	case 'export_selected_order_to_xls':
 		if (is_array($this->post['selected_orders']) and count($this->post['selected_orders'])) {
@@ -53,14 +48,13 @@ switch ($this->post['tx_multishop_pi1']['action']) {
 				if (is_numeric($orders_id)) {
 					$orders=mslib_fe::getOrder($orders_id);
 					if ($orders['orders_id'] and ($orders['status'] != $this->post['tx_multishop_pi1']['update_to_order_status'])) {
-//						mslib_befe::updateOrderStatus($orders['orders_id'],$this->post['tx_multishop_pi1']['update_to_order_status']);
+						// mslib_befe::updateOrderStatus($orders['orders_id'],$this->post['tx_multishop_pi1']['update_to_order_status']);
 						mslib_befe::updateOrderStatus($orders['orders_id'],$this->post['tx_multishop_pi1']['update_to_order_status'],1);
 					}
 				}
 			}
 		}	
 	break;
-	
 	case 'delete_selected_orders':
 		if (is_array($this->post['selected_orders']) and count($this->post['selected_orders'])) {
 			foreach ($this->post['selected_orders'] as $orders_id) {
@@ -124,6 +118,236 @@ switch ($this->post['tx_multishop_pi1']['action']) {
 			}
 		}
 	break;
+	case 'mail_selected_orders_for_payment_reminder':
+		if (is_array($this->post['selected_orders']) and count($this->post['selected_orders'])) {
+			foreach ($this->post['selected_orders'] as $orders_id) {
+				$tmpArray = mslib_befe::getRecord($orders_id, 'tx_multishop_orders', 'orders_id');
+				if ($tmpArray['paid'] == 0) {
+					// replacing the variables with dynamic values
+					$billing_address 	= '';
+					$delivery_address 	= '';
+					$full_customer_name = $tmpArray['billing_first_name'];
+					if ($tmpArray['billing_middle_name']) {
+						$full_customer_name .= ' '.$tmpArray['billing_middle_name'];
+					}
+					if ($tmpArray['billing_last_name']) {
+						$full_customer_name .= ' '.$tmpArray['billing_last_name'];
+					}
+					$delivery_full_customer_name = $tmpArray['delivery_first_name'];
+					if ($tmpArray['delivery_middle_name']) {
+						$delivery_full_customer_name .= ' '.$tmpArray['delivery_middle_name'];
+					}
+					if ($order['delivery_last_name']) {
+						$delivery_full_customer_name .= ' '.$tmpArray['delivery_last_name'];
+					}
+					$full_customer_name 			= preg_replace('/\s+/', ' ', $full_customer_name);
+					$delivery_full_customer_name 	= preg_replace('/\s+/', ' ', $delivery_full_customer_name);
+					if ($tmpArray['delivery_company']) {
+						$delivery_address = $tmpArray['delivery_company']."<br />";
+					}
+					if ($delivery_full_customer_name) {
+						$delivery_address .= $delivery_full_customer_name."<br />";
+					}
+					if ($tmpArray['delivery_address']) {
+						$delivery_address .= $tmpArray['delivery_address']."<br />";
+					}
+					if ($tmpArray['delivery_zip'] and $tmpArray['delivery_city']) {
+						$delivery_address .= $tmpArray['delivery_zip']." ".$tmpArray['delivery_city'];
+					}
+					if ($tmpArray['delivery_country']) {
+						$delivery_address .= '<br />'.ucfirst(mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$tmpArray['delivery_country']));
+					}
+					if ($tmpArray['billing_company']) {
+						$billing_address = $tmpArray['billing_company']."<br />";
+					}
+					if ($full_customer_name) {
+						$billing_address .= $full_customer_name."<br />";
+					}
+					if ($tmpArray['billing_address']) {
+						$billing_address .= $tmpArray['billing_address']."<br />";
+					}
+					if ($tmpArray['billing_zip'] and $tmpArray['billing_city']) {
+						$billing_address .= $tmpArray['billing_zip']." ".$tmpArray['billing_city'];
+					}
+					if ($tmpArray['billing_country']) {
+						$billing_address .= '<br />'.ucfirst(mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$tmpArray['billing_country']));
+					}
+					
+					if (empty($tmpArray['hash'])) {
+						$hashcode = md5($orders_id + time());
+						
+						$updateArray = array();
+						$updateArray['hash'] = $hashcode;
+						$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_orders', 'orders_id=' . $orders_id, $updateArray);
+						$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+					} else {
+						$hashcode = $tmpArray['hash'];
+					}
+					
+					$array1 = array();
+					$array2 = array();
+					
+					$array1[] = '###DELIVERY_FIRST_NAME###';
+					$array2[] = $tmpArray['delivery_first_name'];
+					$array1[] = '###DELIVERY_LAST_NAME###';
+					$array2[] = preg_replace('/\s+/', ' ', $tmpArray['delivery_middle_name'].' '.$tmpArray['delivery_last_name']);
+					
+					$array1[] = '###BILLING_FIRST_NAME###';
+					$array2[] = $order['billing_first_name'];
+					$array1[] = '###BILLING_LAST_NAME###';
+					$array2[] = preg_replace('/\s+/', ' ', $tmpArray['billing_middle_name'].' '.$tmpArray['billing_last_name']);
+					
+					$array1[] = '###BILLING_TELEPHONE###';
+					$array2[] = $tmpArray['billing_telephone'];
+					
+					$array1[] = '###DELIVERY_TELEPHONE###';
+					$array2[] = $tmpArray['delivery_telephone'];
+					
+					$array1[] = '###BILLING_MOBILE###';
+					$array2[] = $tmpArray['billing_mobile'];
+					
+					$array1[] = '###DELIVERY_MOBILE###';
+					$array2[] = $tmpArray['delivery_mobile'];
+					
+					$array1[] = '###FULL_NAME###';
+					$array2[] = $full_customer_name;
+					
+					$array1[] = '###DELIVERY_FULL_NAME###';
+					$array2[] = $delivery_full_customer_name;
+					
+					$array1[] = '###BILLING_NAME###';
+					$array2[] = $tmpArray['billing_name'];
+					
+					$array1[] = '###BILLING_EMAIL###';
+					$array2[] = $tmpArray['billing_email'];
+					
+					$array1[] = '###DELIVERY_EMAIL###';
+					$array2[] = $tmpArray['delivery_email'];
+					
+					$array1[] = '###DELIVERY_NAME###';
+					$array2[] = $tmpArray['delivery_name'];
+					
+					$array1[] = '###CUSTOMER_EMAIL###';
+					$array2[] = $tmpArray['billing_email'];
+					
+					$array1[] = '###STORE_NAME###';
+					$array2[] = $this->ms['MODULES']['STORE_NAME'];
+					
+					$array1[] = '###TOTAL_AMOUNT###';
+					$array2[] = mslib_fe::amount2Cents($tmpArray['total_amount']);
+					
+					require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.tx_mslib_order.php');
+					$mslib_order=t3lib_div::makeInstance('tx_mslib_order');
+					$mslib_order->init($this);
+					$ORDER_DETAILS = $mslib_order->printOrderDetailsTable($tmpArray, 'site');
+					
+					$array1[] = '###ORDER_DETAILS###';
+					$array2[] = $ORDER_DETAILS;
+					
+					$array1[] = '###BILLING_ADDRESS###';
+					$array2[] = $billing_address;
+					
+					$array1[] = '###DELIVERY_ADDRESS###';
+					$array2[] = $delivery_address;
+					
+					$array1[] = '###CUSTOMER_ID###';
+					$array2[] = $tmpArray['customer_id'];
+					
+					$array1[] = '###SHIPPING_METHOD###';
+					$array2[] = $tmpArray['shipping_method_label'];
+					
+					$array1[] = '###PAYMENT_METHOD###';
+					$array2[] = $tmpArray['payment_method_label'];
+					
+					$array1[] = '###ORDERS_ID###';
+					$array2[] = $tmpArray['orders_id'];
+					
+					$invoice 		= mslib_fe::getOrderInvoice($tmpArray['orders_id'],0);
+					$invoice_id 	= '';
+					$invoice_link 	= '';
+					if (is_array($invoice)) {
+						$invoice_id = $invoice['invoice_id'];
+						$invoice_link = '<a href="'.$this->FULL_HTTP_URL.mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=download_invoice&tx_multishop_pi1[hash]='.$invoice['hash']).'">'.$invoice['invoice_id'].'</a>';
+					}
+					$array1[] = '###INVOICE_NUMBER###';
+					$array2[] = $invoice_id;
+					
+					$array1[] = '###INVOICE_LINK###';
+					$array2[] = $invoice_link;
+					
+					$time 		= $tmpArray['crdate'];
+					$long_date 	= strftime($this->pi_getLL('full_date_format'),$time);
+					$array1[] = '###ORDER_DATE_LONG###'; // ie woensdag 23 juni, 2010
+					$array2[] = $long_date;
+					// backwards compatibility
+					$array1[] = '###LONG_DATE###'; // ie woensdag 23 juni, 2010
+					$array2[] = $long_date;
+					
+					$time = time();
+					$long_date = strftime($this->pi_getLL('full_date_format'),$time);
+					$array1[] = '###CURRENT_DATE_LONG###'; // ie woensdag 23 juni, 2010
+					$array2[] = $long_date;
+					
+					$array1[] = '###STORE_NAME###';
+					$array2[] = $this->ms['MODULES']['STORE_NAME'];
+					
+					$array1[] = '###TOTAL_AMOUNT###';
+					$array2[] = mslib_fe::amount2Cents($tmpArray['total_amount']);
+					
+					$array1[] = '###PROPOSAL_NUMBER###';
+					$array2[] = $tmpArray['orders_id'];
+					
+					$array1[] = '###ORDER_NUMBER###';
+					$array2[] = $tmpArray['orders_id'];
+					
+					$array1[] = '###ORDER_LINK###';
+					$array2[] = '';
+					
+					$array1[] = '###CUSTOMER_ID###';
+					$array2[] = $tmpArray['customer_id'];
+					
+					$link = $this->FULL_HTTP_URL . mslib_fe::typolink($this->shop_pid, 'tx_multishop_pi1[page_section]=payment_reminder_checkout&tx_multishop_pi1[hash]=' . $hashcode);
+					$array1[] = '###PAYMENT_PAGE_LINK###';
+					$array2[] = $link;
+					
+					$cms_type = 'payment_reminder_email_templates_' . $tmpArray['payment_method'];
+					$page = mslib_fe::getCMScontent($cms_type, $GLOBALS['TSFE']->sys_language_uid);
+					
+					if (!count($page[0])) {
+						$page=mslib_fe::getCMScontent('payment_reminder_email_templates', $GLOBALS['TSFE']->sys_language_uid);
+					}
+					
+					if ($page[0]['name']) {
+						$reminder_cms_content = '';
+						if ($page[0]['name']) {
+							$page[0]['name'] = str_replace($array1,$array2,$page[0]['name']);
+							$reminder_cms_content .= '<div class="main-heading"><h2>'.$page[0]['name'].'</h2></div>';
+						}
+						if ($page[0]['content']) {
+							$page[0]['content'] = str_replace($array1,$array2,$page[0]['content']);
+							$reminder_cms_content .= $page[0]['content'];
+						}
+						
+						$full_customer_name = $tmpArray['billing_first_name'];
+						if ($order['billing_middle_name']) {
+							$full_customer_name.=' '.$tmpArray['billing_middle_name'];
+						}
+						if ($order['billing_last_name']) {
+							$full_customer_name.=' '.$tmpArray['billing_last_name'];
+						}
+						
+						$user = array();
+						$user['name'] 	= $full_customer_name;
+						$user['email'] 	= $tmpArray['billing_email'];
+						if ($user['email']) {
+							mslib_fe::mailUser($user, $page[0]['name'], $page[0]['content'], $this->ms['MODULES']['STORE_EMAIL'], $this->ms['MODULES']['STORE_NAME']);
+						}
+					}
+					
+				}
+			}
+		}
+	break;
 	default:
 		// post processing by third party plugins
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_orders.php']['adminOrdersPostHookProc'])) {
@@ -134,27 +358,23 @@ switch ($this->post['tx_multishop_pi1']['action']) {
 		}	
 	break;
 }
-
 // now parse all the objects in the tmpl file
 if ($this->conf['admin_orders_tmpl_path']) {
 	$template = $this->cObj->fileResource($this->conf['admin_orders_tmpl_path']);
 } else {
 	$template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath($this->extKey).'templates/admin_orders.tmpl');
 }
-
 // Extract the subparts from the template
 $subparts=array();
 $subparts['template'] 			= $this->cObj->getSubpart($template, '###TEMPLATE###');
 $subparts['orders_results'] 	= $this->cObj->getSubpart($subparts['template'], '###RESULTS###');
 $subparts['orders_listing'] 	= $this->cObj->getSubpart($subparts['orders_results'], '###ORDERS_LISTING###');
 $subparts['orders_noresults'] 	= $this->cObj->getSubpart($subparts['template'], '###NORESULTS###');
-
-if ($this->post['Search'] and ($this->post['paid_orders_only'] != $this->cookie['paid_orders_only'])) {	
-	$this->cookie['paid_orders_only'] = $this->post['paid_orders_only'];
+if ($this->post['Search'] and ($this->post['payment_status'] != $this->cookie['payment_status'])) {
+	$this->cookie['payment_status'] = $this->post['payment_status'];
 	$GLOBALS['TSFE']->fe_user->setKey('ses', 'tx_multishop_cookie', $this->cookie);
 	$GLOBALS['TSFE']->storeSessionData();
 }
-
 if ($this->post['Search'] and ($this->post['limit'] != $this->cookie['limit'])) {	
 	$this->cookie['limit'] = $this->post['limit'];
 	$GLOBALS['TSFE']->fe_user->setKey('ses', 'tx_multishop_cookie', $this->cookie);
@@ -332,8 +552,10 @@ if (!empty($this->post['order_date_from']) && !empty($this->post['order_date_til
 if ($this->post['orders_status_search'] > 0) {
 	$filter[]="(o.status='".$this->post['orders_status_search']."')";
 }
-if ($this->cookie['paid_orders_only']) {
-	$filter[]="(o.paid='1')";		
+if ($this->cookie['payment_status'] == 'paid_only') {
+	$filter[]="(o.paid='1')";
+} else if ($this->cookie['payment_status'] == 'unpaid_only') {
+	$filter[]="(o.paid='0')";
 }
 if (!$this->masterShop) {
 	$filter[]='o.page_uid='.$this->shop_pid;
@@ -397,6 +619,20 @@ if ($pageset['total_rows'] > 0) {
 	$no_results = $this->cObj->substituteMarkerArrayCached($subparts['orders_noresults'], array(), $subpartArray);
 }
 
+$payment_status_select = '<select name="payment_status">
+<option value="">'.$this->pi_getLL('select_orders_payment_status').'</option>';
+if ($this->cookie['payment_status'] == 'paid_only') {
+	$payment_status_select .= '<option value="paid_only" selected="selected">'.$this->pi_getLL('show_paid_orders_only').'</option>';
+} else {
+	$payment_status_select .= '<option value="paid_only">'.$this->pi_getLL('show_paid_orders_only').'</option>';
+}
+if ($this->cookie['payment_status'] == 'unpaid_only') {
+	$payment_status_select .= '<option value="unpaid_only" selected="selected">'.$this->pi_getLL('show_unpaid_orders_only').'</option>';
+} else {
+	$payment_status_select .= '<option value="unpaid_only">'.$this->pi_getLL('show_unpaid_orders_only').'</option>';
+}
+$payment_status_select .= '</select>';
+
 $subpartArray = array();
 $subpartArray['###AJAX_ADMIN_EDIT_ORDER_URL###'] = mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&action=edit_order');
 $subpartArray['###FORM_SEARCH_ACTION_URL###'] = mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_orders');
@@ -412,8 +648,7 @@ $subpartArray['###LABEL_DATE_TO###'] = $this->pi_getLL('to');
 $subpartArray['###VALUE_DATE_TO###'] = $this->post['order_date_till'];
 $subpartArray['###LABEL_FILTER_LAST_MODIFIED###'] = $this->pi_getLL('filter_by_date_status_last_modified','Filter by date status last modified');
 $subpartArray['###FILTER_BY_LAST_MODIFIED_CHECKED###'] = ($this->post['search_by_status_last_modified']?' checked':'');
-$subpartArray['###LABEL_PAID_ORDERS_ONLY###'] = $this->pi_getLL('show_paid_orders_only');
-$subpartArray['###PAID_ORDERS_ONLY_CHECKED###'] = ($this->cookie['paid_orders_only']?' checked':'');
+$subpartArray['###PAYMENT_STATUS_SELECTBOX###'] = $payment_status_select;
 $subpartArray['###LABEL_RESULTS_LIMIT_SELECTBOX###'] = $this->pi_getLL('limit_number_of_records_to');
 $subpartArray['###RESULTS_LIMIT_SELECTBOX###'] = $limit_selectbox;
 

@@ -136,6 +136,12 @@ if ($this->post) {
 		$this->post['ean_code']=str_pad($this->post['ean_code'],13,'0',STR_PAD_LEFT);
 		$updateArray['ean_code']=$this->post['ean_code'];
 	}
+	if (isset($this->post['starttime'])) {
+		$updateArray['starttime']=strtotime($this->post['starttime']);
+	}
+	if (isset($this->post['endtime'])) {
+		$updateArray['endtime']=strtotime($this->post['endtime']);
+	}	
 	$updateArray['alert_quantity_threshold'] = $this->post['alert_quantity_threshold'];
 	$updateArray['custom_settings']				= $this->post['custom_settings'];
 	$updateArray['products_model']				= $this->post['products_model'];
@@ -149,7 +155,7 @@ if ($this->post) {
 	$updateArray['order_unit_id']				=$this->post['order_unit_id'];
 	$updateArray['tax_id']						=$this->post['tax_id'];
 	$updateArray['file_number_of_downloads']	=$this->post['file_number_of_downloads'];
-	
+
 	if ($this->post['manufacturers_name'] != '') {
 		$manufacturer=mslib_fe::getManufacturer($this->post['manufacturers_name'],'manufacturers_name');
 		if ($manufacturer['manufacturers_id']) {
@@ -298,8 +304,8 @@ if ($this->post) {
 			// EXTRA TAB CONTENT
 			if ($this->ms['MODULES']['PRODUCTS_DETAIL_NUMBER_OF_TABS']) {
 				for ($i=1;$i<=$this->ms['MODULES']['PRODUCTS_DETAIL_NUMBER_OF_TABS'];$i++) {
-					$updateArray['products_description_tab_title_'.$i]		=$this->post['products_description_tab_title_'.$i][$key];	
-					$updateArray['products_description_tab_content_'.$i]	=$this->post['products_description_tab_content_'.$i][$key];	
+					$updateArray['products_description_tab_title_'.$i] = $this->post['products_description_tab_title_'.$i][$key];	
+					$updateArray['products_description_tab_content_'.$i] = $this->post['products_description_tab_content_'.$i][$key];	
 				}
 			}
 			// EXTRA TAB CONTENT EOF
@@ -316,6 +322,14 @@ if ($this->post) {
 		}
 		// specials price
 		if ($this->post['specials_new_products_price']) {
+			$specials_start_date 	= 0;
+			$specials_expired_date 	= 0;
+			if ($this->post['specials_price_start'] > 0) {
+				$specials_start_date = strtotime($this->post['specials_price_start']);
+			}
+			if ($this->post['specials_price_expired'] > 0) {
+				$specials_expired_date = strtotime($this->post['specials_price_expired']);
+			}
 			$str="SELECT * from tx_multishop_specials where products_id='".$prodid."'";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0) {
@@ -323,6 +337,8 @@ if ($this->post) {
 				$specials_id=$row['specials_id'];				
 				$updateArray=array();
 				$updateArray['specials_new_products_price']				=$this->post['specials_new_products_price'];
+				$updateArray['start_date'] = $specials_start_date;
+				$updateArray['expires_date'] = $specials_expired_date;
 				/* if ($this->post['tax_id'])
 				{
 					// we have to substract the vat so the price is excl. vat
@@ -335,7 +351,9 @@ if ($this->post) {
 			} else {
 				$updateArray=array();
 				$updateArray['products_id']								=$prodid;
-				$updateArray['specials_new_products_price']				=$this->post['specials_new_products_price'];				
+				$updateArray['specials_new_products_price']				=$this->post['specials_new_products_price'];
+				$updateArray['start_date'] = $specials_start_date;
+				$updateArray['expires_date'] = $specials_expired_date;
 				/* if ($this->post['tax_id'])
 				{
 					// we have to substract the vat so the price is excl. vat
@@ -596,7 +614,9 @@ if ($this->post) {
 		} else {
 			$markerArray['AJAX_REQUEST_SPECIAL_PRICE'] 	= '';
 		}
-		$markerArray['DATE_FORMAT'] 		= $this->pi_getLL('locale_date_format', 'm/d/Y');
+		$markerArray['DATE_FORMAT'] = $this->pi_getLL('locale_date_format_js', 'yy/mm/dd');		
+
+		
 		$markerArray['YEAR_RANGE'] 		= date("Y").':'.(date("Y")+2);
 		$markerArray['AJAX_URL_PRODUCT_RELATIVE'] 		= mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax_product_relatives');
 		$js_header .= $this->cObj->substituteMarkerArray($subparts['js_header'], $markerArray,'###|###');
@@ -611,11 +631,11 @@ if ($this->post) {
 				for ($i=1;$i<=$this->ms['MODULES']['PRODUCTS_DETAIL_NUMBER_OF_TABS'];$i++) {
 					$details_tab_content .= '
 					<div class="account-field" id="msEditProductInputTabTitle_'.$i.'">
-						<label for="products_description_tab_title_'.$i.'">'.$this->pi_getLL('admin_name').'</label>
+						<label for="products_description_tab_title_'.$i.'">'.$this->pi_getLL('admin_title_tab_'.$i,'TITLE TAB '.$i).'</label>
 						<input type="text" class="text" name="products_description_tab_title_'.$i.'['.$language['uid'].']" id="products_description_tab_title_'.$i.'['.$language['uid'].']" value="'.htmlspecialchars($lngproduct[$language['uid']]['products_description_tab_title_'.$i.'']).'">
 					</div>
 					<div class="account-field" id="msEditProductInputTabContent_'.$i.'">
-						<label for="products_description_tab_content_'.$i.'">'.$this->pi_getLL('admin_full_description').' TAB '.$i.'</label>
+						<label for="products_description_tab_content_'.$i.'">'.$this->pi_getLL('admin_full_description_tab_'.$i,'DESCRIPTION TAB '.$i).'</label>
 						<textarea name="products_description_tab_content_'.$i.'['.$language['uid'].']" id="products_description_tab_content_'.$i.'['.$language['uid'].']" class="mceEditor" rows="4">'.htmlspecialchars($lngproduct[$language['uid']]['products_description_tab_content_'.$i]).'</textarea>
 					</div>';
 				}
@@ -679,7 +699,17 @@ if ($this->post) {
 			$specials_price=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
 				
 			if ($specials_price['specials_new_products_price']) {
-				$product['specials_new_products_price']=$specials_price['specials_new_products_price'];
+				if ($specials_price['start_date'] > 0) {
+					$product['specials_start_date'] 			= date('d-m-Y', $specials_price['start_date']);
+				} else {
+					$product['specials_start_date'] 			= '';
+				}
+				if ($specials_price['expires_date'] > 0) {
+					$product['specials_expired_date'] 			= date('d-m-Y', $specials_price['expires_date']);
+				} else {
+					$product['specials_expired_date'] 			= '';
+				}
+				$product['specials_new_products_price']		= $specials_price['specials_new_products_price'];
 			}
 		}
 			
@@ -1280,8 +1310,8 @@ if ($this->post) {
 			
 							$attributes_tab_block .= '</select></td><td><input type="text" name="prefix[]" value="' . $row ['price_prefix'] . '" /></td>
 										<td>
-											<div class="msAttributesField"><input type="text" id="display_name" name="display_name" class="msAttributesPriceExcludingVat" value="' . $attribute_price_display . '"><label for="display_name">Excl. VAT</label></div>
-											<div class="msAttributesField"><input type="text" name="display_name" id="display_name" class="msAttributesPriceIncludingVat" value="' . $attribute_price_display_incl . '"><label for="display_name">Incl. VAT</label></div>
+											<div class="msAttributesField">'.mslib_fe::currency().' <input type="text" id="display_name" name="display_name" class="msAttributesPriceExcludingVat" value="' . $attribute_price_display . '"><label for="display_name">Excl. VAT</label></div>
+											<div class="msAttributesField">'.mslib_fe::currency().' <input type="text" name="display_name" id="display_name" class="msAttributesPriceIncludingVat" value="' . $attribute_price_display_incl . '"><label for="display_name">Incl. VAT</label></div>
 											<div class="msAttributesField hidden"><input type="hidden" name="price[]" value="' . $row ['options_values_price'] . '" /></div>
 										</td><td><input type="button" value="' . htmlspecialchars ( $this->pi_getLL ( 'delete' ) ) . '" class="msadmin_button" onclick="removeAttributeRow(\'' . $ctr . '\')"></td></tr>';
 							$attributes_tab_block .= '<tr id="attributes_select_box_' . $ctr . '_b" class="option_row2"><td>&nbsp;</td><td><input type="text" name="manual_attributes[]" /></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>';
@@ -1450,6 +1480,10 @@ if ($this->post) {
 		$subpartArray['###VALUE_EXCL_VAT_SPECIAL_PRICE###'] 			= htmlspecialchars($special_price_excl_vat_display);
 		$subpartArray['###VALUE_INCL_VAT_SPECIAL_PRICE###'] 			= htmlspecialchars($special_price_incl_vat_display);
 		$subpartArray['###VALUE_ORIGINAL_SPECIAL_PRICE###'] 			= htmlspecialchars($product['specials_new_products_price']);
+		$subpartArray['###LABEL_SPECIAL_PRICE_START###'] 				= t3lib_div::strtoupper($this->pi_getLL('special_price_start'));
+		$subpartArray['###VALUE_SPECIAL_PRICE_START###'] 				= $product['specials_start_date'];
+		$subpartArray['###LABEL_SPECIAL_PRICE_EXPIRED###'] 				= t3lib_div::strtoupper($this->pi_getLL('special_price_expired'));
+		$subpartArray['###VALUE_SPECIAL_PRICE_EXPIRED###'] 				= $product['specials_expired_date'];
 		$subpartArray['###LABEL_CAPITAL_PRICE###'] 						= $this->pi_getLL('capital_price');
 		$subpartArray['###VALUE_EXCL_VAT_CAPITAL_PRICE###'] 			= htmlspecialchars($capital_price_excl_vat_display);
 		$subpartArray['###VALUE_INCL_VAT_CAPITAL_PRICE###'] 			= htmlspecialchars($capital_price_incl_vat_display);
@@ -1460,11 +1494,31 @@ if ($this->post) {
 		$subpartArray['###LABEL_THRESHOLD_QTY###'] 						= t3lib_div::strtoupper($this->pi_getLL('admin_alert_quantity_threshold', 'Alert stock threshold'));
 		$subpartArray['###VALUE_THRESHOLD_QTY###'] 						= $product['alert_quantity_threshold'];
 		$subpartArray['###LABEL_DATE_AVAILABLE###'] 					= t3lib_div::strtoupper($this->pi_getLL('products_date_available'));
-		$subpartArray['###VALUE_DATE_AVAILABLE_VISUAL###'] 					= $product['products_date_available'];
-		$subpartArray['###VALUE_DATE_AVAILABLE_SYS###'] 					= $product['products_date_available'];
+		
+		if ($product['starttime']==0) {
+			$product['endtime_sys']='';
+			$product['endtime_visual']='';
+		} else {
+			$product['starttime_visual']=date($this->pi_getLL('locale_datetime_format'),$product['starttime']);			
+			$product['starttime_sys']=date("Y-m-d H:i:s",$product['starttime']);
+		}
+		if ($product['endtime']==0) {
+			$product['endtime_sys']='';
+			$product['endtime_visual']='';
+		} else {
+			$product['endtime_visual']=date($this->pi_getLL('locale_datetime_format'),$product['endtime']);			
+			$product['endtime_sys']=date("Y-m-d H:i:s",$product['endtime']);
+		}
+		$subpartArray['###VALUE_DATE_AVAILABLE_VISUAL###'] 				= $product['products_date_available'];
+		$subpartArray['###VALUE_DATE_AVAILABLE_SYS###'] 				= $product['products_date_available'];
+		$subpartArray['###VALUE_STARTTIME_VISUAL###'] 					= $product['starttime_visual'];
+		$subpartArray['###VALUE_STARTTIME_SYS###'] 						= $product['starttime_sys'];
+		$subpartArray['###VALUE_ENDTIME_VISUAL###'] 					= $product['endtime_visual'];
+		$subpartArray['###VALUE_ENDTIME_SYS###'] 						= $product['endtime_sys'];
+		
 		$subpartArray['###LABEL_DATE_ADDED###'] 						= t3lib_div::strtoupper($this->pi_getLL('date_added'));
-		$subpartArray['###VALUE_DATE_ADDED_VISUAL###'] 						= $product['products_date_added'];
-		$subpartArray['###VALUE_DATE_ADDED_SYS###'] 						= $product['products_date_added'];
+		$subpartArray['###VALUE_DATE_ADDED_VISUAL###'] 					= $product['products_date_added'];
+		$subpartArray['###VALUE_DATE_ADDED_SYS###'] 					= $product['products_date_added'];
 		$subpartArray['###LABEL_PRODUCT_MODEL###'] 						= $this->pi_getLL('admin_model');
 		$subpartArray['###VALUE_PRODUCT_MODEL###'] 						= htmlspecialchars($product['products_model']);
 		$subpartArray['###LABEL_PRODUCT_MANUFACTURER###'] 				= $this->pi_getLL('admin_manufacturer');
@@ -1533,17 +1587,31 @@ if ($this->post) {
 		*/
 		$subpartArray['###INPUT_PRODUCT_COPY_BLOCK###'] 				= $product_copy_block;
 		
+		// plugin marker place holder
+		$plugins_extra_tab = array();
+		$plugins_extra_tab['tabs_header'] = array();
+		$plugins_extra_tab['tabs_content'] = array();
+		
 		// custom page hook that can be controlled by third-party plugin
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_product.php']['adminEditProductPreProc'])) {
 			$params = array (
 				'subpartArray' => &$subpartArray,
-				'product' => &$product
+				'product' => &$product,
+				'plugins_extra_tab' => &$plugins_extra_tab
 			);
 			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_product.php']['adminEditProductPreProc'] as $funcRef) {
 				t3lib_div::callUserFunction($funcRef, $params, $this);
 			}
 		}
 		// custom page hook that can be controlled by third-party plugin eof
+		
+		if (!count($plugins_extra_tab['tabs_header']) && !count($plugins_extra_tab['tabs_content'])) {
+			$subpartArray['###LABEL_EXTRA_PLUGIN_TABS###'] = '';
+			$subpartArray['###CONTENT_EXTRA_PLUGIN_TABS###'] = '';
+		} else {
+			$subpartArray['###LABEL_EXTRA_PLUGIN_TABS###'] = implode("\n", $plugins_extra_tab['tabs_header']);
+			$subpartArray['###CONTENT_EXTRA_PLUGIN_TABS###'] = implode("\n", $plugins_extra_tab['tabs_content']);
+		}
 		
 		$content .= $this->cObj->substituteMarkerArrayCached($subparts['template'], array(), $subpartArray);
 	} else {

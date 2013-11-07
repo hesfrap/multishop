@@ -24,14 +24,11 @@ if (!$this->ms['MODULES']['COUPONS']) {
 	$subparts['footer']=$this->cObj->substituteMarkerArrayCached($subparts['footer'], array(), $subpartFooterArray);
 }
 //JS
-if ($this->ms['MODULES']['COUPONS'])
-{
+if ($this->ms['MODULES']['COUPONS']) {
 	$GLOBALS['TSFE']->additionalHeaderData[]= '
 	<script type="text/javascript">
-	function postCoupon(value)
-	{
-		jQuery.ajax(
-		{
+	function postCoupon(value) {
+		jQuery.ajax({
 			type: "POST",
 			url: "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=get_discount').'",
 			cache :false,
@@ -47,9 +44,9 @@ if ($this->ms['MODULES']['COUPONS'])
 				}
 		 });		
 	}
-	jQuery(document).ready(function($){
+	jQuery(document).ready(function($) {
 		postCoupon(jQuery("#coupons_code").val());
-		jQuery("#coupons_code").bind("keyup",function(){
+		jQuery("#coupons_code").bind("keyup",function() {
 			postCoupon(this.value);
 		});
 	});
@@ -365,7 +362,7 @@ if (count($cart['products']) > 0) {
 } else {
 	$content .= '<div class="noitems_message">'.$this->pi_getLL('there_are_no_products_in_your_cart').'</div>';
 	$content .= '
-	<div id="bottom-navigation"><a href="'.mslib_fe::typolink($this->shop_pid).'" class="proceed_to_shop">'.$this->pi_getLL('go_to_catalog').'</a>
+	<div id="bottom-navigation"><a href="'.mslib_fe::typolink($this->shop_pid).'" class="msFrontButton prevState arrowLeft arrowPosLeft proceed_to_shop"><span>'.$this->pi_getLL('go_to_catalog').'</span></a>
 		<div class="cart"></div>
 	</div>';
 }

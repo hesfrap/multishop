@@ -146,6 +146,9 @@ plugin.multishop {
 	cacheConfiguration=0	
 	# cat=plugin.multishop - advanced/enable; type=boolean; label= This will improve performance, but the shop should not use VAT rates.
 	disableFeFromCalculatingVatPrices=0
+	
+	# cat=plugin.multishop - advanced; type=string; label= Unique identifier of the cart: Optional field. The unique identifier of the cart. This way you can seperate carts from shops.
+	cart_uid =
 
 	# cat=plugin.multishop - optional; type=int+; label= PID of the products detail page: Optional field. The ID number of the page where the products detail must be shown.
 	products_detail_page_pid =
@@ -212,6 +215,9 @@ plugin.multishop {
 	
 	# cat=plugin.multishop - templates/file; type=string; label= Admin orders File Path: Optionally specify the location of the template file that is being used for building up the admin orders. Example: fileadmin/templates/multishop/admin_orders.tmpl.
 	admin_orders_tmpl_path = EXT:multishop/templates/admin_orders.tmpl
+	
+	# cat=plugin.multishop - templates/file; type=string; label= Admin user-agents File Path: Optionally specify the location of the template file that is being used for building up the admin user-agents statistic. Example: fileadmin/templates/multishop/admin_useragents.tmpl.
+	admin_useragents_tmpl_path = EXT:multishop/templates/admin_useragents.tmpl
 
 	# cat=plugin.multishop - templates/file; type=string; label= Admin home File Path: Optionally specify the location of the template file that is being used for building up the admin home. Example: fileadmin/templates/multishop/admin_home.tmpl.
 	admin_home_tmpl_path = EXT:multishop/templates/admin_home.tmpl

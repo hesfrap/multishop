@@ -39,6 +39,7 @@ form#admin_categories_edit_ .account-field table td { color:#fff; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content select { background:#f5f5f5; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content table th,
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content table td { color:#fff; }
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content table tr.odd td { background:#555; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content table td a { color:#fff; }
 /* #tx_multishop_pi1_core #tab-container .tab_container .tab_content table tr:hover td { background-color:transparent; } */
 /* #tx_multishop_pi1_core #tab-container .tab_container .tab_content table.msadmin_border tr:hover td { background-color:#bbb; } */

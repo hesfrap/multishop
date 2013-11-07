@@ -1,54 +1,48 @@
 <!-- ###TEMPLATE### begin -->
-<table class="border" id="msOrderDetailsTable">
+<table class="border" id="msOrderDetailsTable" cellpadding="0" cellspacing="0" border="1" width="60%" style="border-width: 1px; border-color:#ddd; border-spacing: 0px; border-style: none; border-collapse: collapse;">
 	<!-- ###ITEMS_HEADER_WRAPPER### begin -->
 	<tr class="msOrderDetailsHeading">
-		<th class="msOrderDetailsHeadingImage">&nbsp;</th>
-		<th class="msOrderDetailsHeadingName">###HEADING_PRODUCTS_NAME###</th>
-		<th class="msOrderDetailsHeadingQuantity">###HEADING_QUANTITY###</th>
-		<th class="msOrderDetailsHeadingTotal">###HEADING_TOTAL###</th>
+		<th class="msOrderDetailsHeadingImage" width="5%" style="background:#000; color:#fff; border:1px solid #000; padding:5px 10px;">&nbsp;</th>
+		<th class="msOrderDetailsHeadingName" width="79%" align="left" style="background:#000; color:#fff; border:1px solid #000; padding:5px 10px;">###HEADING_PRODUCTS_NAME###</th>
+		<th class="msOrderDetailsHeadingQuantity" width="8%" align="right" style="background:#000; color:#fff; border:1px solid #000; padding:5px 10px;">###HEADING_QUANTITY###</th>
+		<th class="msOrderDetailsHeadingTotal" width="8%" align="right" style="background:#000; color:#fff; border:1px solid #000; padding:5px 10px;">###HEADING_TOTAL###</th>
 	</tr>
 	<!-- ###ITEMS_HEADER_WRAPPER### end -->	
 	<!-- ###ITEMS_WRAPPER### begin -->
 	<tr class="###ITEM_CLASS###">
-		<td class="msOrderDetailsItemImage">###ITEM_IMAGE###</td>
-		<td class="msOrderDetailsItemName">###ITEM_NAME###</td>
-		<td class="msOrderDetailsItemQuantity">###ITEM_QUANTITY###</td>
-		<td class="msOrderDetailsItemTotal">###ITEM_TOTAL###</td>
+		<td class="msOrderDetailsItemImage" style="padding:5px 10px;">###ITEM_IMAGE###</td>
+		<td class="msOrderDetailsItemName" align="left" style="padding:5px 10px;">###ITEM_NAME###</td>
+		<td class="msOrderDetailsItemQuantity" align="right" style="padding:5px 10px;">###ITEM_QUANTITY###</td>
+		<td class="msOrderDetailsItemTotal" align="right" style="padding:5px 10px;">###ITEM_TOTAL###</td>
 	</tr>
     <!-- ###ITEMS_WRAPPER### end -->
 </table>
-<table id="msOrderDetailsSubTotalTable">
-<!-- ###SUBTOTAL_WRAPPER### begin -->
-<tr>
-	<td class="msOrderDetailsSubTotalProductsLabel msOrderDetailsSubTotalLabel">###PRODUCTS_TOTAL_PRICE_INCLUDING_VAT_LABEL###</td>
-	<td class="msOrderDetailsSubTotalProducts msOrderDetailsSubTotalValue">###PRODUCTS_TOTAL_PRICE_INCLUDING_VAT###</td>
-</tr>
-<!-- ###SUBTOTAL_WRAPPER### end -->
+<table id="msOrderDetailsSubTotalTable" cellpadding="0" cellspacing="0" border="0" width="60%" >
 <!-- ###DISCOUNT_WRAPPER### begin -->
 <tr>
 	<td class="msOrderDetailsDiscountLabel msOrderDetailsSubTotalLabel">###DISCOUNT_LABEL###</td>
 	<td class="msOrderDetailsDiscountValue msOrderDetailsSubTotalValue">###DISCOUNT###</td>
 </tr>
-<!-- ###DISCOUNT_WRAPPER### end -->	
+<!-- ###DISCOUNT_WRAPPER### end -->
 <!-- ###SHIPPING_COSTS_WRAPPER### begin -->
 <tr>
-	<td class="msOrderDetailsShippingCostsLabel msOrderDetailsSubTotalLabel">###SHIPPING_COSTS_INCLUDING_VAT_LABEL###</td>
-	<td class="msOrderDetailsShippingCosts msOrderDetailsSubTotalValue">###SHIPPING_COSTS_INCLUDING_VAT###</td>
+	<td class="msOrderDetailsShippingCostsLabel msOrderDetailsSubTotalLabel" align="right" style="padding:5px 10px;">###SHIPPING_COSTS_INCLUDING_VAT_LABEL###</td>
+	<td class="msOrderDetailsShippingCosts msOrderDetailsSubTotalValue" align="right" style="padding:5px 10px;">###SHIPPING_COSTS_INCLUDING_VAT###</td>
 </tr>
 <!-- ###SHIPPING_COSTS_WRAPPER### end -->	
 <!-- ###PAYMENT_COSTS_WRAPPER### begin -->
 <tr>
-	<td class="msOrderDetailsPaymentCostsLabel msOrderDetailsSubTotalLabel">###PAYMENT_COSTS_INCLUDING_VAT_LABEL###</td>
-	<td class="msOrderDetailsPaymentCosts msOrderDetailsSubTotalValue">###PAYMENT_COSTS_INCLUDING_VAT###</td>
+	<td class="msOrderDetailsPaymentCostsLabel msOrderDetailsSubTotalLabel" align="right" style="padding:5px 10px;">###PAYMENT_COSTS_INCLUDING_VAT_LABEL###</td>
+	<td class="msOrderDetailsPaymentCosts msOrderDetailsSubTotalValue" align="right" style="padding:5px 10px;">###PAYMENT_COSTS_INCLUDING_VAT###</td>
 </tr>
 <!-- ###PAYMENT_COSTS_WRAPPER### end -->
 <tr>
-<td colspan="2"><div class="hr"></div></td>
+<td colspan="2" style="padding:0;"><hr style="height:1px; border:none; background:#999;" /></td>
 </tr>
 <!-- ###GRAND_TOTAL_WRAPPER### begin -->
 <tr>
-	<td class="msOrderDetailsGrandTotalLabel msOrderDetailsSubTotalLabel">###GRAND_TOTAL_COSTS_LABEL###</td>
-	<td class="msOrderDetailsGrandTotal msOrderDetailsSubTotalValue">###GRAND_TOTAL_COSTS###</td>
+	<td class="msOrderDetailsGrandTotalLabel msOrderDetailsSubTotalLabel" align="right" style="padding:5px 10px;">Totaalprijs inclusief 21% BTW</td>
+	<td class="msOrderDetailsGrandTotal msOrderDetailsSubTotalValue" align="right" style="padding:5px 10px;">###GRAND_TOTAL_COSTS###</td>
 </tr>
 <!-- ###GRAND_TOTAL_WRAPPER### end -->
 <!-- ###TAX_COSTS_WRAPPER### begin -->
@@ -56,6 +50,6 @@
   <td class="msOrderDetailsTaxTotalLabel msOrderDetailsSubTotalLabel" align="right" style="padding:5px 10px;">###TAX_RATE_LABEL###</td>
   <td class="msOrderDetailsTaxTotal msOrderDetailsSubTotalValue" align="right" style="padding:5px 10px;">###TAX_COSTS###</td>
 </tr>
-<!-- ###TAX_COSTS_WRAPPER### end -->				
+<!-- ###TAX_COSTS_WRAPPER### end -->
 </table>
 <!-- ###TEMPLATE### end -->

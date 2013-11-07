@@ -21,21 +21,21 @@ class tx_multishop_realurl {
 						'multishop_admin' => 2003,
 					),
 					'noMatch' => 'bypass'
-				),
+				),		
 			),
 			'postVarSets' => array (
 				array(
-							'GETvar' => 'type',
-							'valueMap' => array(
-							),
+					'GETvar' => 'type',
+					'valueMap' => array(
+					),
 				),									
 				'_DEFAULT' => array (
 					/******* MULTISHOP BEGIN **/
 					// checkout-section
 					'checkout-section' => array (
 						array(
-							'GETvar' => 'tx_multishop_pi1[previous_checkout_section]'
-						)
+							'GETvar' => 'tx_multishop_pi1[previous_checkout_section]',
+						),
 					),
 					// delete-products
 					'delete-products'=>array(
@@ -47,17 +47,17 @@ class tx_multishop_realurl {
 								'alias_field' => 'products_name',
 								'useUniqueCache' => 1,
 								'useUniqueCache_conf' => array(
-										'strtolower' => 1,
-										'spaceCharacter' => '-'
-								)
-							)
-						)
+									'strtolower' => 1,
+									'spaceCharacter' => '-',
+								),
+							),
+						),
 					),
 					// section
 					'section' => array (
 						array(
-							'GETvar' => 'tx_multishop_pi1[page_section]'
-						),
+							'GETvar' => 'tx_multishop_pi1[page_section]',
+						),						
 						array(
 							'GETvar' => 'categories_id[0]',
 							'lookUpTable' => array (
@@ -67,10 +67,75 @@ class tx_multishop_realurl {
 								'useUniqueCache' => 1,
 								'useUniqueCache_conf' => array (
 									'strtolower' => 1,
-									'spaceCharacter' => '-'
-								)
-							)
+									'spaceCharacter' => '-',
+								),
+							),
 						),
+						array(
+							'GETvar' => 'categories_id[1]',
+							'lookUpTable' => array (
+								'table' => 'tx_multishop_categories_description',
+								'id_field' => 'categories_id',
+								'alias_field' => 'categories_name',
+								'useUniqueCache' => 1,
+								'useUniqueCache_conf' => array (
+									'strtolower' => 1,
+									'spaceCharacter' => '-',
+								),
+							),
+						),
+						array(
+							'GETvar' => 'categories_id[2]',
+							'lookUpTable' => array (
+								'table' => 'tx_multishop_categories_description',
+								'id_field' => 'categories_id',
+								'alias_field' => 'categories_name',
+								'useUniqueCache' => 1,
+								'useUniqueCache_conf' => array (
+									'strtolower' => 1,
+									'spaceCharacter' => '-',
+								),
+							),
+						),
+						array(
+							'GETvar' => 'categories_id[3]',
+							'lookUpTable' => array (
+								'table' => 'tx_multishop_categories_description',
+								'id_field' => 'categories_id',
+								'alias_field' => 'categories_name',
+								'useUniqueCache' => 1,
+								'useUniqueCache_conf' => array (
+									'strtolower' => 1,
+									'spaceCharacter' => '-',
+								),
+							),
+						),
+						array(
+							'GETvar' => 'categories_id[4]',
+							'lookUpTable' => array (
+								'table' => 'tx_multishop_categories_description',
+								'id_field' => 'categories_id',
+								'alias_field' => 'categories_name',
+								'useUniqueCache' => 1,
+								'useUniqueCache_conf' => array (
+									'strtolower' => 1,
+									'spaceCharacter' => '-',
+								),
+							),
+						),
+						array(
+							'GETvar' => 'categories_id[5]',
+							'lookUpTable' => array (
+								'table' => 'tx_multishop_categories_description',
+								'id_field' => 'categories_id',
+								'alias_field' => 'categories_name',
+								'useUniqueCache' => 1,
+								'useUniqueCache_conf' => array (
+									'strtolower' => 1,
+									'spaceCharacter' => '-',
+								),
+							),
+						),						
 						array(
 							'GETvar' => 'products_id',
 							'lookUpTable' => array (
@@ -80,32 +145,32 @@ class tx_multishop_realurl {
 								'useUniqueCache' => 1,
 								'useUniqueCache_conf' => array (
 									'strtolower' => 1,
-									'spaceCharacter' => '-'
-								)
-							)
-						)
-					)
+									'spaceCharacter' => '-',
+								),
+							),
+						),
+					
+					),
 					/******* MULTISHOP END **/
-				)
+				),
 			),
 			'fileName' => array (
 				'index' => array(
 					/******* MULTISHOP BEGIN **/
 					'multishop.html' => array(
 						'keyValues' => array(
-								'type' => 2002,
+							'type' => 2002,
 						),
 					),
 					'multishop_admin.html' => array(
 						'keyValues' => array(
-								'type' => 2003,
+							'type' => 2003,
 						),
 					),
 					/******* MULTISHOP END **/
 				),
 			),
 		);
-
 		return array_merge_recursive($params['config'], $config);
 	}
 }

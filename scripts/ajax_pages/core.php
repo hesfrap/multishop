@@ -319,6 +319,70 @@ switch ($this->ms['page'])
 		require(t3lib_extMgm::extPath('multishop').'scripts/ajax_pages/download_product_feed.php');
 		exit();				
 	break;
+	case 'admin_ajax_upload':
+		if ($this->ADMIN_USER) {
+	        if (isset($_SERVER["CONTENT_LENGTH"])) {				
+				switch ($this->get['file_type']) {
+					case 'fe_user_image':
+						$temp_file=$this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/'.uniqid(); 
+						if (isset($_FILES['qqfile'])) {						
+							move_uploaded_file($_FILES['qqfile']['tmp_name'],$temp_file);
+						} else {
+							$input = fopen("php://input", "r");
+							$temp = tmpfile();
+							$realSize = stream_copy_to_stream($input, $temp);
+							fclose($input);
+							$target = fopen($temp_file, "w");        
+							fseek($temp, 0, SEEK_SET);
+							stream_copy_to_stream($temp, $target);
+							fclose($target);
+						}
+						$size=getimagesize($temp_file);						
+						if ($size[0] > 5 and $size[1] > 5) {
+							$imgtype = mslib_befe::exif_imagetype($temp_file);
+							if ($imgtype) {							
+								// valid image
+								$ext = image_type_to_extension($imgtype, false);
+								if ($ext) {				
+									$i=0;				
+									//$filename=mslib_fe::rewritenamein($this->get['products_name']).'.'.$ext;
+									$name=md5(time());
+									$filename=$name.'.'.$ext;					
+									$targetFolder=$this->DOCUMENT_ROOT.'uploads/pics/';
+									$target=$targetFolder.$filename;
+									if (file_exists($target)) {
+										do {		
+											$filename=$name.($i > 0?'-'.$i:'').'.'.$ext;			
+											$target=$targetFolder.$filename;
+											$i++;
+										} while (file_exists($target));
+									}
+									if (copy($temp_file,$target)) {
+										//$filename=mslib_befe::resizeProductImage($target,$filename,$this->DOCUMENT_ROOT.t3lib_extMgm::siteRelPath($this->extKey),1);
+										copy($temp_file,$target);
+										if (is_numeric($this->get['tx_multishop_pi1']['uid'])) {
+											$updateArray = array(
+												'image' => $filename
+											);
+											$query = $GLOBALS['TYPO3_DB']->UPDATEquery('fe_users', 'uid='.$this->get['tx_multishop_pi1']['uid'],$updateArray);
+											$res = $GLOBALS['TYPO3_DB']->sql_query($query);										
+										}
+										$result=array();
+										$result['success']=true;
+										$result['error']=false;
+										$result['filename']=$filename;
+										echo htmlspecialchars(json_encode($result), ENT_NOQUOTES);
+										exit();										
+									}
+								}
+							}
+						}					
+					break;
+				}
+			}
+		}
+		exit();					
+	break;
 	case 'admin_upload_product_images':
 		if ($this->ADMIN_USER) {
 	        if (isset($_SERVER["CONTENT_LENGTH"])) {				

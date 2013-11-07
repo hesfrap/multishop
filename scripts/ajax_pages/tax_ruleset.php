@@ -5,7 +5,7 @@ $tax_group_id 	= $_REQUEST['tax_group_id'];
 $current_price 	= $_REQUEST['current_price'];
 $to_tax_include = $_REQUEST['to_tax_include'];
 
-if (strpos($current_price, ':') !== false || strpos($current_price, ',') !== false) {
+if (strpos($current_price, ':') !== false) {
 	$price_list_format = explode(',', $current_price);
 	$price_list_incl_tax = array();
 	foreach ($price_list_format as $price_format) {
@@ -18,7 +18,7 @@ if (strpos($current_price, ':') !== false || strpos($current_price, ',') !== fal
 			$price_excl[0] = str_replace(',', '', $data['price_excluding_tax']);
 		}
 		
-		$price_excl[0] = mslib_fe::taxDecimalCrop($price_excl[0], 2, false);
+		$price_excl[0] = mslib_fe::taxDecimalCrop($price_excl[0]);
 		$price_list_incl_tax[] = implode(':', $price_excl);
 	}
 		

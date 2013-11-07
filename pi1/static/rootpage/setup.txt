@@ -12,7 +12,8 @@ default = < lib.stdheader
 
 	# Do nothing (empty "TEXT" object) for "my_plugin_pi1" 		
 	# and "kb_plugin_pi1". Both wont get a header rendered
-tx_multishop_pi1 = TEXT
+multishop_pi1 = TEXT
+multishop_pi1.value =
 }
 
 # HANDOVER THE HEADER TO MULTISHOP SO WE CAN CONTROL IT EOF
@@ -103,9 +104,11 @@ plugin.tx_multishop_pi1 {
 	admin_cms_tmpl_path={$plugin.multishop.admin_cms_tmpl_path}
 	admin_categories_tmpl_path={$plugin.multishop.admin_categories_tmpl_path}
 	admin_orders_tmpl_path={$plugin.multishop.admin_orders_tmpl_path}
+	admin_useragents_tmpl_path={$plugin.multishop.admin_useragents_tmpl_path}
 	admin_home_tmpl_path={$plugin.multishop.admin_home_tmpl_path}
 	tt_address_record_id_store={$plugin.multishop.tt_address_record_id_store}
 	disableFeFromCalculatingVatPrices={$plugin.multishop.disableFeFromCalculatingVatPrices}
+	cart_uid={$plugin.multishop.cart_uid}
 }
 # LOAD MULTISHOP APPLICATION (HEAD SECTION)
 
@@ -245,22 +248,27 @@ page {
   includeJS {
     msGeneral = EXT:multishop/js/general.js
     msGeneral.compress=1	
-    jqueryvalidate = EXT:multishop/js/form-wizard/jquery.validate.js
+    jqueryvalidate = EXT:multishop/js/jquery.h5validate.js
     jqueryvalidate.compress=1	
-    jqueryvalidatefunctions = EXT:multishop/js/form-wizard/jquery.validation.functions.js
-    jqueryvalidatefunctions.compress=1	
+    #jqueryvalidatefunctions = EXT:multishop/js/form-wizard/jquery.validation.functions.js
+    #jqueryvalidatefunctions.compress=1	
     prettycheckboxes = EXT:multishop/js/prettycheckboxes/js/prettyCheckboxes.js	
     prettycheckboxes.compress=1
+    #webshim for fallback html5 attributes support
+    webshimsJs = EXT:multishop/js/js-webshim/extras/modernizr-custom.js	
+    webshimsJs.compress=1
+    pollyfillerJs = EXT:multishop/js/js-webshim/polyfiller.js	
+    pollyfillerJs.compress=1
   }
 }
 multishop_admin_page {
   includeJS {
     msGeneral = EXT:multishop/js/general.js
     msGeneral.compress=1	
-    jqueryvalidate = EXT:multishop/js/form-wizard/jquery.validate.js
+    jqueryvalidate = EXT:multishop/js/jquery.h5validate.js
     jqueryvalidate.compress=1	
-    jqueryvalidatefunctions = EXT:multishop/js/form-wizard/jquery.validation.functions.js
-    jqueryvalidatefunctions.compress=1	
+    #jqueryvalidatefunctions = EXT:multishop/js/form-wizard/jquery.validation.functions.js
+    #jqueryvalidatefunctions.compress=1	
     prettycheckboxes = EXT:multishop/js/prettycheckboxes/js/prettyCheckboxes.js	
     prettycheckboxes.compress=1
   }

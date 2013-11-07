@@ -38,7 +38,9 @@ if ($this->cookie['limit']) {
 	$this->get['limit']=10;
 }
 $this->ms['MODULES']['PAGESET_LIMIT']=$this->get['limit'];	
-if (is_numeric($this->get['p'])) 	$p=$this->get['p'];
+if (is_numeric($this->get['p'])) {
+	$p=$this->get['p'];
+}
 $this->searchKeywords=array();
 if ($this->get['tx_multishop_pi1']['keyword']) {
 	//  using $_REQUEST cause TYPO3 converts "Command & Conquer" to "Conquer" (the & sign sucks ass)
