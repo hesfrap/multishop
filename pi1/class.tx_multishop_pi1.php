@@ -225,6 +225,9 @@ class tx_multishop_pi1 extends tslib_pibase {
 				if (strstr($this->ms['MODULES']['BASKET_TYPE'],"/")) {
 					require($this->DOCUMENT_ROOT.$this->ms['MODULES']['BASKET_TYPE'].'.php');	
 				} elseif($this->ms['MODULES']['BASKET_TYPE']) {
+					if ($this->ms['MODULES']['BASKET_TYPE']=='default') {
+						$this->ms['MODULES']['BASKET_TYPE']='basket_default';
+					}
 					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/content_elements/'.$this->ms['MODULES']['BASKET_TYPE'].'.php');		
 				} else {
 					require_once(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/content_elements/basket_default.php');
@@ -246,6 +249,9 @@ class tx_multishop_pi1 extends tslib_pibase {
 				if (strstr($this->ms['MODULES']['CATEGORIES_TYPE'],"/")) {
 					require($this->DOCUMENT_ROOT.$this->ms['MODULES']['CATEGORIES_TYPE'].'.php');
 				} elseif($this->ms['MODULES']['CATEGORIES_TYPE']) {
+					if ($this->ms['MODULES']['CATEGORIES_TYPE']=='default') {
+						$this->ms['MODULES']['CATEGORIES_TYPE']='categories_default';
+					}
 					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/content_elements/'.$this->ms['MODULES']['CATEGORIES_TYPE'].'.php');		
 				} else {
 					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/content_elements/categories_default.php');			
