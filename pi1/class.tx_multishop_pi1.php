@@ -39,7 +39,7 @@ class tx_multishop_pi1 extends tslib_pibase {
 	var $prefixId      = 'tx_multishop_pi1';		// Same as class name
 	var $scriptRelPath = 'pi1/class.tx_multishop_pi1.php';	// Path to this script relative to the extension dir.
 	var $extKey        = 'multishop';	// The extension key.
-	var $pi_checkCHash = true;
+	var $pi_checkCHash = false;
 	
 	// var to hold user/shop info loaded from tt_address table
 	var $tta_user_info 		= array();
@@ -168,7 +168,7 @@ class tx_multishop_pi1 extends tslib_pibase {
 		require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_fe.php');
 		require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_befe.php');
 		require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_payment.php');	
-		require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_catalog.php');				
+		require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.tx_mslib_catalog.php');		
 	}
 	function admin_main($content, $conf) {
 		self::construct($conf);
@@ -253,7 +253,7 @@ class tx_multishop_pi1 extends tslib_pibase {
 			break;
 			case 'crumbar':
 				if (strstr($this->ms['MODULES']['CRUMBAR_TYPE'],"/")) {
-					require($this->DOCUMENT_ROOT.$this->ms['MODULES']['	'].'.php');	
+					require($this->DOCUMENT_ROOT.$this->ms['MODULES']['CRUMBAR_TYPE'].'.php');	
 				} elseif($this->ms['MODULES']['CRUMBAR_TYPE']) {
 					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/crumbar/'.$this->ms['MODULES']['CRUMBAR_TYPE'].'.php');
 				} else {

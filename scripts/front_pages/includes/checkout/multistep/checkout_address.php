@@ -25,14 +25,14 @@ if (count($cart['products']) < 1) {
 				$user['address'] 			= preg_replace('/\s+/', ' ', $user['address']);
 				
 				$user['zip']				= $billing_address['zip'];
-				$user['city']				= $billing_address['city'];
+				$user['city']= $billing_address['city'];
 				if ($this->ms['MODULES']['CHECKOUT_ENABLE_STATE']) {
-					$user['state']				=$billing_address['state'];
+					$user['state'] = $billing_address['state'];
 				}
-				$user['email']				=$billing_address['email'];
-				$user['telephone']			=$billing_address['phone'];
-				$user['mobile']             =$billing_address['mobile']; 
-				$user['country']			=$billing_address['country'];
+				$user['email']				= $billing_address['email'];
+				$user['telephone']			= $billing_address['phone'];
+				$user['mobile']             = $billing_address['mobile']; 
+				$user['country']			= $billing_address['country'];
 				
 			} else {	
 				$user=array();
@@ -48,16 +48,20 @@ if (count($cart['products']) < 1) {
 				$user['address']			= $GLOBALS['TSFE']->fe_user->user['street_name'].' '.$GLOBALS['TSFE']->fe_user->user['address_number'].($GLOBALS['TSFE']->fe_user->user['address_ext']? '-'.$GLOBALS['TSFE']->fe_user->user['address_ext']:'');
 				$user['address'] 			= preg_replace('/\s+/', ' ', $user['address']);
 	
-				$user['zip']				=$GLOBALS['TSFE']->fe_user->user['zip'];
-				$user['city']				=$GLOBALS['TSFE']->fe_user->user['city'];
+				$user['zip']				= $GLOBALS['TSFE']->fe_user->user['zip'];
+				$user['city']				= $GLOBALS['TSFE']->fe_user->user['city'];
 				if ($this->ms['MODULES']['CHECKOUT_ENABLE_STATE']) {
-					$user['state']				=$GLOBALS['TSFE']->fe_user->user['state'];
-					$user['delivery_state']		=$GLOBALS['TSFE']->fe_user->user['delivery_state'];
+					$user['state'] = $GLOBALS['TSFE']->fe_user->user['state'];
+					$user['delivery_state'] = $GLOBALS['TSFE']->fe_user->user['delivery_state'];
 				}
-				$user['email']				=$GLOBALS['TSFE']->fe_user->user['email'];
-				$user['telephone']			=$GLOBALS['TSFE']->fe_user->user['telephone'];
-                $user['mobile']             =$GLOBALS['TSFE']->fe_user->user['mobile'];				
-				$user['country']			=$GLOBALS['TSFE']->fe_user->user['country'];
+				$user['email']				= $GLOBALS['TSFE']->fe_user->user['email'];
+				$user['telephone']			= $GLOBALS['TSFE']->fe_user->user['telephone'];
+                $user['mobile']             = $GLOBALS['TSFE']->fe_user->user['mobile'];				
+				$user['country']			= $GLOBALS['TSFE']->fe_user->user['country'];
+			}
+			
+			if($this->ms['MODULES']['CHECKOUT_DISPLAY_VAT_ID_INPUT'] && !empty($GLOBALS['TSFE']->fe_user->user['tx_multishop_vat_id'])) {
+				$user['tx_multishop_vat_id'] = $GLOBALS['TSFE']->fe_user->user['tx_multishop_vat_id'];
 			}
 		}
 	} else {
@@ -65,65 +69,82 @@ if (count($cart['products']) < 1) {
 	}
 	if ($posted_page==current($stepCodes)) {
 		// now verify the posted values
-		if (!$this->post['tx_multishop_pi1']['email']) $erno[]=$this->pi_getLL('no_email_address_has_been_specified');
-		if (!$this->post['street_name']) 			$erno[]='No street name has been specified';
-		if (!$this->post['address_number']) 		$erno[]=$this->pi_getLL('no_address_number_has_been_specified');
-		if (!$this->post['first_name']) 			$erno[]=$this->pi_getLL('no_first_name_has_been_specified');
-		if (!$this->post['last_name']) 				$erno[]=$this->pi_getLL('no_last_name_has_been_specified');
-		if (!$this->post['zip']) 					$erno[]=$this->pi_getLL('no_zip_has_been_specified');
-		if (!$this->post['city'])					$erno[]=$this->pi_getLL('no_city_has_been_specified');
+		if (!$this->post['tx_multishop_pi1']['email']) {
+			$erno[]=$this->pi_getLL('no_email_address_has_been_specified');
+		}
+		if (!$this->post['street_name']) {
+			$erno[]='No street name has been specified';
+		}
+		if (!$this->post['address_number']) {
+			$erno[]=$this->pi_getLL('no_address_number_has_been_specified');
+		}
+		if (!$this->post['first_name']) {
+			$erno[]=$this->pi_getLL('no_first_name_has_been_specified');
+		}
+		if (!$this->post['last_name']) {
+			$erno[]=$this->pi_getLL('no_last_name_has_been_specified');
+		}
+		if (!$this->post['zip']) {
+			$erno[]=$this->pi_getLL('no_zip_has_been_specified');
+		}
+		if (!$this->post['city']) {
+			$erno[]=$this->pi_getLL('no_city_has_been_specified');
+		}
 		if (!$erno) {
 			// billing details
-			$user['email']					=$this->post['tx_multishop_pi1']['email'];
-			$user['company']				=$this->post['company'];
-			$user['first_name']			=$this->post['first_name'];
-			$user['middle_name']			=$this->post['middle_name'];
-			$user['last_name']			=$this->post['last_name'];
+			$user['email']				= $this->post['tx_multishop_pi1']['email'];
+			$user['company']			= $this->post['company'];
+			$user['first_name']			= $this->post['first_name'];
+			$user['middle_name']		= $this->post['middle_name'];
+			$user['last_name']			= $this->post['last_name'];
 			if ($this->ms['MODULES']['CHECKOUT_ENABLE_BIRTHDAY']) {
-				$user['birthday']		=$this->post['birthday'];
+				$user['birthday']		= $this->post['birthday'];
 			}
-			$user['telephone']			=$this->post['telephone'];
-			$user['mobile']				=$this->post['mobile'];			
-			$user['gender']				=$this->post['gender'];
-			$user['street_name']		=$this->post['street_name'];
-			$user['address_number']		=$this->post['address_number'];
-			$user['address_ext']		=$this->post['address_ext'];
+			$user['telephone']			= $this->post['telephone'];
+			$user['mobile']				= $this->post['mobile'];			
+			$user['gender']				= $this->post['gender'];
+			$user['street_name']		= $this->post['street_name'];
+			$user['address_number']		= $this->post['address_number'];
+			$user['address_ext']		= $this->post['address_ext'];
 			$user['address'] = $user['street_name'].' '.$user['address_number'].($user['address_ext']? '-'.$user['address_ext']:'');
 			$user['address'] = preg_replace('/\s+/', ' ', $user['address']);
-			$user['zip']				=$this->post['zip'];
-			$user['city']				=$this->post['city'];
-			$user['country']			=$this->post['country'];
-			$user['email']				=$this->post['tx_multishop_pi1']['email'];
-			$user['telephone']			=$this->post['telephone'];
+			$user['zip']				= $this->post['zip'];
+			$user['city']				= $this->post['city'];
+			$user['country']			= $this->post['country'];
+			$user['email']				= $this->post['tx_multishop_pi1']['email'];
+			$user['telephone']			= $this->post['telephone'];
 			$user['tx_multishop_newsletter']			=$this->post['tx_multishop_newsletter'];
 			if ($this->ms['MODULES']['CHECKOUT_ENABLE_STATE']) {
 				$user['state']				=$this->post['state'];
 			}
+			if($this->ms['MODULES']['CHECKOUT_DISPLAY_VAT_ID_INPUT'] && !empty($this->post['tx_multishop_vat_id'])) {
+				$user['tx_multishop_vat_id'] = $this->post['tx_multishop_vat_id'];
+			}
 			// billing details eof	
 			// delivery details	
 			if (!$this->post['different_delivery_address']) {
-				$user['different_delivery_address']		=0;	
+				$user['different_delivery_address']		= 0;	
 			} else {
-				$user['different_delivery_address']		=1;		
-				$user['delivery_email']					=$this->post['delivery_email'];
-				$user['delivery_company']				=$this->post['delivery_company'];
-				$user['delivery_first_name']			=$this->post['delivery_first_name'];
-				$user['delivery_middle_name']			=$this->post['delivery_middle_name'];
-				$user['delivery_last_name']				=$this->post['delivery_last_name'];
-				$user['delivery_telephone']				=$this->post['delivery_telephone'];
-				$user['delivery_mobile']				=$this->post['delivery_mobile'];			
-				$user['delivery_gender']				=$this->post['delivery_gender'];
-				$user['delivery_street_name']			=$this->post['delivery_street_name'];
-				$user['delivery_address_number']		=$this->post['delivery_address_number'];
-				$user['delivery_address_ext']			=$this->post['delivery_address_ext'];
-				$user['delivery_address']				=$user['delivery_street_name'].' '.$user['delivery_address_number'].($user['delivery_address_ext']? '-'.$user['delivery_address_ext']:'');
-				$user['delivery_address'] 				=preg_replace('/\s+/', ' ', $user['delivery_address']);
-				$user['delivery_zip']					=$this->post['delivery_zip'];
-				$user['delivery_city']					=$this->post['delivery_city'];
-				$user['delivery_country']				=$this->post['delivery_country'];
-				$user['delivery_email']					=$this->post['delivery_email'];
-				$user['delivery_telephone']				=$this->post['delivery_telephone'];	
-				$user['delivery_state']					=$this->post['delivery_state'];		
+				$user['different_delivery_address']		= 1;		
+				$user['delivery_email']					= $this->post['delivery_email'];
+				$user['delivery_company']				= $this->post['delivery_company'];
+				$user['delivery_first_name']			= $this->post['delivery_first_name'];
+				$user['delivery_middle_name']			= $this->post['delivery_middle_name'];
+				$user['delivery_last_name']				= $this->post['delivery_last_name'];
+				$user['delivery_telephone']				= $this->post['delivery_telephone'];
+				$user['delivery_mobile']				= $this->post['delivery_mobile'];			
+				$user['delivery_gender']				= $this->post['delivery_gender'];
+				$user['delivery_street_name']			= $this->post['delivery_street_name'];
+				$user['delivery_address_number']		= $this->post['delivery_address_number'];
+				$user['delivery_address_ext']			= $this->post['delivery_address_ext'];
+				$user['delivery_address']				= $user['delivery_street_name'].' '.$user['delivery_address_number'].($user['delivery_address_ext']? '-'.$user['delivery_address_ext']:'');
+				$user['delivery_address'] 				= preg_replace('/\s+/', ' ', $user['delivery_address']);
+				$user['delivery_zip']					= $this->post['delivery_zip'];
+				$user['delivery_city']					= $this->post['delivery_city'];
+				$user['delivery_country']				= $this->post['delivery_country'];
+				$user['delivery_email']					= $this->post['delivery_email'];
+				$user['delivery_telephone']				= $this->post['delivery_telephone'];	
+				$user['delivery_state']					= $this->post['delivery_state'];		
 			}
 			// delivery details eof	
 			$cart['user']=$user;
@@ -133,18 +154,18 @@ if (count($cart['products']) < 1) {
 			next($stepCodes);
 			require(current($stepCodes).'.php');	
 		} else {
-			$user=array_merge($user,$this->post);
+			$user = array_merge($user,$this->post);
 		}
 	} else {
-		$show_checkout_address=1;
+		$show_checkout_address = 1;
 	}
 	if ($erno or $show_checkout_address) {
 		// load enabled countries to array
-		$str2="SELECT * from static_countries c, tx_multishop_countries_to_zones c2z where c2z.cn_iso_nr=c.cn_iso_nr order by c.cn_short_en";
-		$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
-		$enabled_countries=array();
-		while (($row2=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry2)) != false) {
-			$enabled_countries[]=$row2;
+		$str2 = "SELECT * from static_countries c, tx_multishop_countries_to_zones c2z where c2z.cn_iso_nr=c.cn_iso_nr order by c.cn_short_en";
+		$qry2 = $GLOBALS['TYPO3_DB']->sql_query($str2);
+		$enabled_countries = array();
+		while (($row2 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry2)) != false) {
+			$enabled_countries[] = $row2;
 		}
 		// load enabled countries to array eof
 		//$regex = "/^[^\\\W][a-zA-Z0-9\\\_\\\-\\\.]+([a-zA-Z0-9\\\_\\\-\\\.]+)*\\\@[a-zA-Z0-9\\\_\\\-\\\.]+([a-zA-Z0-9\\\_\\\-\\\.]+)*\\\.[a-zA-Z]{2,4}$/";
@@ -161,24 +182,23 @@ if (count($cart['products']) < 1) {
 		}
 		// birthday validation
 		if ($this->ms['MODULES']['CHECKOUT_ENABLE_BIRTHDAY']) {
-		$GLOBALS['TSFE']->additionalHeaderData[] = '
-		<script type="text/javascript">
-			jQuery(document).ready(function ($) {
-				$("#birthday_visitor").datepicker({ 
-					dateFormat: "'.$this->pi_getLL('locale_date_format', 'mm-d-yy').'",
-					altField: "#birthday",
-					altFormat: "yy-mm-dd",
-					changeMonth: true,
-					changeYear: true,
-					showOtherMonths: true,  
-					yearRange: "-100:+0"
-				});									
-			});			
-		 </script>';
+			$GLOBALS['TSFE']->additionalHeaderData[] = '
+			<script type="text/javascript">
+				jQuery(document).ready(function ($) {
+					$("#birthday_visitor").datepicker({ 
+						dateFormat: "'.$this->pi_getLL('locale_date_format', 'mm-d-yy').'",
+						altField: "#birthday",
+						altFormat: "yy-mm-dd",
+						changeMonth: true,
+						changeYear: true,
+						showOtherMonths: true,  
+						yearRange: "-100:+0"
+					});									
+				});			
+			 </script>';
 		}
 		// birthday validation eof
-		
-		$content.=CheckoutStepping($stepCodes,current($stepCodes),$this);
+		$content .= CheckoutStepping($stepCodes,current($stepCodes),$this);
 		if (is_array($erno) and count($erno) > 0) {
 			$content.='<div class="error_msg">';
 			$content.='<h3>'.$this->pi_getLL('the_following_errors_occurred').'</h3><ul>';
@@ -225,8 +245,13 @@ if (count($cart['products']) < 1) {
 		</div>
 		<div class="account-field">
 			<label for="company" id="account-company">'.ucfirst($this->pi_getLL('company')).'</label>
-			<input type="text" name="company" class="company" id="company" value="'.htmlspecialchars($user['company']).'"/>
-				
+			<input type="text" name="company" class="company" id="company" value="'.htmlspecialchars($user['company']).'"/>';
+
+		if($this->ms['MODULES']['CHECKOUT_DISPLAY_VAT_ID_INPUT']) {
+			$content .= '<label for="tx_multishop_vat_id" id="account-tx_multishop_vat_id">'.ucfirst($this->pi_getLL('vat_id')).'</label>
+			<input type="text" name="tx_multishop_vat_id" class="tx_multishop_vat_id" id="tx_multishop_vat_id" value="'.htmlspecialchars($user['tx_multishop_vat_id']).'"/>';
+		}
+		$content.='
 		</div>		
 		<div class="account-field">
 			<label class="account-address" for="address">'.ucfirst($this->pi_getLL('street_address')).'*</label>

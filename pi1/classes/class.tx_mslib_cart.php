@@ -884,6 +884,9 @@ class tx_mslib_cart extends tslib_pibase {
 			$insertArray['pid']					=	$this->conf['fe_customer_pid'];
 			$insertArray['http_referer']		=	$this->cookie['HTTP_REFERER'];			
 			$insertArray['ip_address']			=	$this->server['REMOTE_ADDR'];
+			if($this->ms['MODULES']['CHECKOUT_DISPLAY_VAT_ID_INPUT'] && !empty($address['tx_multishop_vat_id'])) {
+				$insertArray['tx_multishop_vat_id']					=	$address['tx_multishop_vat_id'];
+			}
 			$query = $GLOBALS['TYPO3_DB']->INSERTquery('fe_users', $insertArray);
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 			if ($res) {
@@ -1231,8 +1234,10 @@ class tx_mslib_cart extends tslib_pibase {
 			$insertArray['billing_country']				=	$address['country'];		
 			$insertArray['billing_telephone']			=	$address['telephone'];
 			$insertArray['billing_mobile']				=	$address['mobile'];	
-			$insertArray['billing_fax']					=	'';		
-			$insertArray['billing_vat_id']				=	'';	
+			$insertArray['billing_fax']					=	'';
+			if($this->ms['MODULES']['CHECKOUT_DISPLAY_VAT_ID_INPUT'] && !empty($address['tx_multishop_vat_id'])) {
+				$insertArray['billing_vat_id']					=	$address['tx_multishop_vat_id'];
+			}
 			
 			if (!$address['different_delivery_address']) {
 				$insertArray['delivery_email']					=$insertArray['billing_email'];

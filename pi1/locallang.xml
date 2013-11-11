@@ -6,6 +6,7 @@
   </meta>
   <data type="array">
     <languageKey index="default" type="array">
+      <label index="vat_id">VAT number:</label>
       <label index="list_mode_1">Mode 1</label>
       <label index="list_mode_2">Mode 2</label>
       <label index="list_mode_3">Mode 3</label>
@@ -691,6 +692,7 @@
 	  <label index="special_price_expired">expire date</label>
     </languageKey>
     <languageKey index="nl" type="array">
+      <label index="vat_id">BTW nummer:</label>
       <label index="list_mode_1">Mode 1</label>
       <label index="list_mode_2">Mode 2</label>
       <label index="list_mode_3">Mode 3</label>

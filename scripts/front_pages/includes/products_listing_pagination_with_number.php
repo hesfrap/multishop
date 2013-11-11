@@ -8,22 +8,20 @@ $tmp.='<div id="pagenav_container_list_wrapper">
 if($p > 0) {
 	$tmp .= '<div class="dyna_button"><a class="ajax_link pagination_button" href="'.mslib_fe::typolink('',''.mslib_fe::tep_get_all_get_params(array('p','Submit','page','mini_foto','clearcache'))).'">'.$this->pi_getLL('first').'</a></div>';
 } else {
-	$tmp .= '<span>&nbsp;</span>';
+	$tmp .= '<div class="dyna_button"><span>'.$this->pi_getLL('first').'</span></div>';
 }
 $tmp.='</li>';
-if ($p > 0) {
-	$tmp .= '<li class="pagenav_previous">';
-	if($p > 0) {
-		if (($p-1) > 0) {
-			$tmp .= '<div class="dyna_button"><a class="ajax_link pagination_button" href="'.mslib_fe::typolink('','p='.($p-1).'&'.mslib_fe::tep_get_all_get_params(array('p','Submit','page','mini_foto','clearcache'))).'">'.$this->pi_getLL('previous').'</a></div>';
-		} else {
-			$tmp .= '<div class="dyna_button"><a class="ajax_link pagination_button" href="'.mslib_fe::typolink('','p='.($p-1).'&'.mslib_fe::tep_get_all_get_params(array('p','Submit','page','mini_foto','clearcache'))).'">'.$this->pi_getLL('previous').'</a></div>';
-		}
+$tmp .= '<li class="pagenav_previous">';
+if($p > 0) {
+	if (($p-1) > 0) {
+		$tmp .= '<div class="dyna_button"><a class="ajax_link pagination_button" href="'.mslib_fe::typolink('','p='.($p-1).'&'.mslib_fe::tep_get_all_get_params(array('p','Submit','page','mini_foto','clearcache'))).'">'.$this->pi_getLL('previous').'</a></div>';
 	} else {
-		$tmp .= '<span>&nbsp;</span>';
+		$tmp .= '<div class="dyna_button"><a class="ajax_link pagination_button" href="'.mslib_fe::typolink('','p='.($p-1).'&'.mslib_fe::tep_get_all_get_params(array('p','Submit','page','mini_foto','clearcache'))).'">'.$this->pi_getLL('previous').'</a></div>';
 	}
-	$tmp .= '</li>';
+} else {
+	$tmp .= '<div class="dyna_button"><span>'.$this->pi_getLL('previous').'</span></div>';
 }
+$tmp .= '</li>';
 if ($p == 0 || $p < 9) {
 	$start_page_number 		= 1;
 	if ($total_pages <= 10) {
@@ -49,11 +47,13 @@ for ($x = $start_page_number; $x <= $end_page_number; $x++) {
 }
 $tmp.='</ul>
 </li>';
+$tmp .= '<li class="pagenav_next">';
 if((($p+1)*$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']) < $pageset['total_rows']) {
-	$tmp .= '<li class="pagenav_last">';
 	$tmp .= '<div class="dyna_button"><a class="ajax_link pagination_button" href="'.mslib_fe::typolink('','p='.($p+1).'&'.mslib_fe::tep_get_all_get_params(array('p','Submit','page','mini_foto','clearcache'))).'">'.$this->pi_getLL('next').'</a></div>'; 	
-	$tmp .= '</li>';
+} else {
+	$tmp .= '<div class="dyna_button"><span>'.$this->pi_getLL('next').'</span></div>';
 }
+$tmp .= '</li>';
 $tmp .= '<li class="pagenav_last">';
 if((($p+1)*$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']) < $pageset['total_rows']) {
 	$times=($pageset['total_rows']/$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']);
@@ -63,7 +63,7 @@ if((($p+1)*$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']) < $pageset['total_row
 	}	
 	$tmp .= '<div class="dyna_button"><a class="ajax_link pagination_button" href="'.mslib_fe::typolink('','p='.$lastpage.'&'.mslib_fe::tep_get_all_get_params(array('p','Submit','page','mini_foto','clearcache'))).'">'.$this->pi_getLL('last').'</a></div>';
 } else{
-	$tmp .= '<span>&nbsp;</span>';
+	$tmp .= '<div class="dyna_button"><span>'.$this->pi_getLL('last').'</span></div>';
 }
 $tmp.='</li>';
 $tmp .= '</ul></div>';
