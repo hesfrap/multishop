@@ -105,6 +105,7 @@ $coltypes['attribute_option_value']='Attribute option value (specify option name
 $coltypes['products_meta_title']='Products meta title';
 $coltypes['products_meta_description']='Products meta description';
 $coltypes['products_meta_keywords']='Products meta keywords';
+$coltypes['products_delivery_time']='Products delivery time';
 
 $str="SELECT * FROM `tx_multishop_products_options` where language_id='".$language_id."' order by products_options_id asc";					
 $qry=$GLOBALS['TYPO3_DB']->sql_query($str);
@@ -1668,13 +1669,13 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 									unset($item['img']);
 								}
 								$updateArray=array();
-								if ($item['products_meta_title']) {
+								if (isset($item['products_meta_title'])) {
 									$updateArray['products_meta_title']	= $item['products_meta_title'];
 								}
-								if ($item['products_meta_description'])	{
+								if (isset($item['products_meta_description']))	{
 									$updateArray['products_meta_description'] = $item['products_meta_description'];
 								}
-								if ($item['products_meta_keywords']) {
+								if (isset($item['products_meta_keywords'])) {
 									$updateArray['products_meta_keywords'] = $item['products_meta_keywords'];								
 								}
 								if (isset($item['products_name']) and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_name',$this->post['tx_multishop_pi1']['locked_fields'])))) {
@@ -1686,26 +1687,29 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								} elseif ($item['products_description']) {
 									$updateArray['products_description'] = $item['products_description'];
 								} */
-								if ($item['products_description_encoded'] and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_description',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+								if (isset($item['products_description_encoded']) and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_description',$this->post['tx_multishop_pi1']['locked_fields'])))) {
 									$updateArray['products_description'] = $item['products_description_encoded'];
 								} elseif ($item['products_description'] and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_description',$this->post['tx_multishop_pi1']['locked_fields'])))) {
 									$updateArray['products_description'] = $item['products_description'];
 								}
-								if ($item['products_short_description']) {
+								if (isset($item['products_short_description'])) {
 									$updateArray['products_shortdescription'] = $item['products_short_description'];
 								}
 								if ($this->ms['MODULES']['PRODUCTS_DETAIL_NUMBER_OF_TABS']) {
 									for ($x=1;$x<=$this->ms['MODULES']['PRODUCTS_DETAIL_NUMBER_OF_TABS'];$x++) {
-										if ($item['products_description_tab_title_'.$x]) {
+										if (isset($item['products_description_tab_title_'.$x])) {
 											$updateArray['products_description_tab_title_'.$x] = $item['products_description_tab_title_'.$x];
 										}
-										if ($item['products_description_tab_content_'.$x]) {
+										if (isset($item['products_description_tab_content_'.$x])) {
 											$updateArray['products_description_tab_content_'.$x] = $item['products_description_tab_content_'.$x];
 										}
 									}
 								}								
-								if ($item['products_deeplink'])	{
+								if (isset($item['products_deeplink']))	{
 									$updateArray['products_url'] = $item['products_deeplink'];
+								}
+								if (isset($item['products_delivery_time']))	{
+									$updateArray['delivery_time'] = $item['products_delivery_time'];
 								}
 								if (count($updateArray)) {
 									// custom hook that can be controlled by third-party plugin
@@ -1723,17 +1727,17 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 									$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products_description', 'products_id='.$item['updated_products_id'],$updateArray);
 									$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
 								}
-								if ($item['products_specials_price'] and ($item['products_specials_price'] <= $item['products_price'])) {
+								if (isset($item['products_specials_price']) and ($item['products_specials_price'] <= $item['products_price'])) {
 									$updateArray=array();
 									$updateArray['specials_new_products_price']=$item['products_specials_price'];									
 									if (strstr($updateArray['specials_new_products_price'],",")) {
 										$updateArray['specials_new_products_price']=str_replace(",",'.',$updateArray['specials_new_products_price']);
 									}									
 									$updateArray['specials_last_modified']=time();
-									if ($item['products_special_price_expiry_date']) {
+									if (isset($item['products_special_price_expiry_date'])) {
 										$updateArray['expires_date']=strtotime($item['products_special_price_expiry_date']);
 									}
-									if ($item['products_special_price_start_date']) {
+									if (isset($item['products_special_price_start_date'])) {
 										$updateArray['start_date']=strtotime($item['products_special_price_start_date']);
 									}
 									// custom hook that can be controlled by third-party plugin
@@ -1936,6 +1940,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								}								
 								$updateArray['products_shortdescription'] = $item['products_short_description'];
 								$updateArray['products_url'] = $item['products_deeplink'];
+								$updateArray['delivery_time'] = $item['products_delivery_time'];
 								// custom hook that can be controlled by third-party plugin
 								if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_import.php']['insertProductsDescriptionPreHook'])) {
 									$params = array (
@@ -2118,6 +2123,10 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 							if ($this->ms['MODULES']['FLAT_DATABASE'] or $this->ms['MODULES']['GLOBAL_MODULES']['FLAT_DATABASE']) {
 								mslib_befe::convertProductToFlat($products_id,'tx_multishop_products_flat');
 							}
+							
+							// lets notify plugin that we have update action in product
+							tx_mslib_catalog::productsUpdateNotifierForPlugin($item);
+							
 							// update flat database eof
 							if ($item['added_products_id']) {
 								// custom hook that can be controlled by third-party plugin

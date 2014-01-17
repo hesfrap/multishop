@@ -343,3 +343,9 @@ text-decoration:none;
 .msBackendButton.miscState { background-color:purple;}
 .msBackendButton.updateState { background-color:orange;}
 .msBackendButton.searchState { background-color:dodgerblue; }
+
+#msadmin_section #msadmin_content #tx_multishop_pi1_core #enabledServicesWrapper.account-field ul { margin:0; padding:0 0 0 200px; list-style:none; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core #enabledServicesWrapper.account-field ul li { overflow:hidden; width:400px; background:none; margin:0; padding:0 0 3px; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core #enabledServicesWrapper.account-field ul li .checkboxWithLabel { float:left; width:50%; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core #enabledServicesWrapper.account-field ul li input[type="checkbox"] { float:left; margin:3px 5px 0 0; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core #enabledServicesWrapper.account-field ul li label { clear:none; float:left; display:block; width:150px; padding:3px 0 0; text-align:left; }

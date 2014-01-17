@@ -139,7 +139,7 @@ if (count($statusses)) {
 			$tr_type='even';
 		}
 		$content.='<tr class="'.$tr_type.'">
-		<td width="30" align="right">
+		<td width="50" align="right">
 			'.$status['id'].'
 		</td>				
 		';

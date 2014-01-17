@@ -227,6 +227,30 @@ if (!$skipMultishopUpdates) {
 				$messages[]=$str;				
 			}
 		}		
+		
+		$str="select id from tx_multishop_payment_log limit 1";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		if (!$qry) {
+			$str="CREATE TABLE `tx_multishop_payment_log` (
+  `id` int(11) NOT NULL auto_increment,
+  `orders_id` int(11) NOT NULL DEFAULT '0',
+  `multishop_transaction_id` varchar(127) DEFAULT '',
+  `provider_transaction_id` varchar(127) DEFAULT '',
+  `provider` varchar(127) DEFAULT '',
+  `ip_address` varchar(127) DEFAULT '',
+  `crdate` int(11) DEFAULT '0',
+  `title` varchar(127) DEFAULT '',
+  `description` text,  
+  `is_error` tinyint(1) DEFAULT '0',
+  `status_type` varchar(127) DEFAULT '',
+  `raw_data` mediumtext NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `orders_id` (`orders_id`),
+  KEY `multishop_transaction_id` (`multishop_transaction_id`)
+) ENGINE=InnoDB;"; 
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);							
+			$messages[]=$str;
+		}
 		$str="select title from tx_multishop_payment_log limit 1";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		if (!$qry) {
@@ -2059,8 +2083,7 @@ if (!$skipMultishopUpdates) {
 		
 		$str="select page_uid, zone_id from tx_multishop_payment_methods limit 1";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-		if (!$qry=$GLOBALS['TYPO3_DB']->sql_query($str))
-		{
+		if (!$qry=$GLOBALS['TYPO3_DB']->sql_query($str)) {
 			$str="ALTER TABLE `tx_multishop_payment_methods`
 				ADD  `page_uid` INT( 11 ) NOT NULL DEFAULT  '0',
 				ADD  `zone_id` INT( 11 ) NOT NULL DEFAULT  '0',
@@ -4574,7 +4597,29 @@ if (!$skipMultishopUpdates) {
 		$key='INCLUDE_VAT_OVER_METHOD_COSTS';
 		$qry = $GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_multishop_configuration','configuration_key=\''.$key.'\'');									
 		$qry = $GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_multishop_configuration_values','configuration_key=\''.$key.'\'');
+
+		$required_indexes=array();
+		$required_indexes[]='products_date_added';
+		$required_indexes[]='products_last_modified';
+		$required_indexes[]='products_date_available';
+		
+		$indexes=array();
+		$table_name='tx_multishop_products';
+		$str="show indexes from `".$table_name."` ";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		while (($rs = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
+			$indexes[]=$rs['Key_name'];
+		}
+		foreach ($required_indexes as $required_index) {
+			if (!in_array($required_index,$indexes)) {
+				$str="ALTER TABLE  `".$table_name."` ADD INDEX `".$required_index."` (`".$required_index."`)";
+				$qry=$GLOBALS['TYPO3_DB']->sql_query($str);			
+				$messages[]=$str;	
+			}	
+		}			
+		
 		// now fix the V2 orders to V3 eof
+
 		
 		// FIXING V1 IMAGES TO V3
 		// V1 had images without subdirectory. lets verify if this site has this file structure, so we can fix it dynamically			

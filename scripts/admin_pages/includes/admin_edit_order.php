@@ -533,7 +533,7 @@ if (is_numeric($this->get['orders_id'])) {
 		$save_block='
 			<div class="save_block">
 				<input name="cancel" type="button" value="'.$this->pi_getLL('admin_cancel').'" onClick="parent.window.hs.close();"  class="submit" />
-				<input name="Submit" type="submit" value="'.$this->pi_getLL('admin_save').'"  class="submit" />
+				<input name="Submit" type="submit" value="'.$this->pi_getLL('admin_save').'"  class="submit submit_button" />
 			</div>';	
 		// count total products
 		$total_amount=0;
@@ -583,7 +583,7 @@ if ($dont_overide_billing_countries) {
 } else {
 	$billing_countries = array_merge(array('<option value="'.$orders['billing_country'].'">'.$orders['billing_country'].'</option>'),$billing_countries);
 }
-$billing_countries_sb ='<select name="tx_multishop_pi1[billing_country]" id="edit_billing_country">'.implode("\n",$billing_countries).'</select>';
+$billing_countries_sb ='<select name="tx_multishop_pi1[billing_country]" id="edit_billing_country" required="required">'.implode("\n",$billing_countries).'</select>';
 if ($dont_overide_delivery_countries) {
 	$delivery_countries = array_merge(array('<option value="">'.ucfirst($this->pi_getLL('choose_country')).'</option>'),$delivery_countries);
 } else {
@@ -604,23 +604,43 @@ $editOrderFormFieldset=array();
 						<td align="left" valign="top">
 						<h3>'.$this->pi_getLL('billing_details').'</h3>';
 if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
-	$tmpcontent.='<div class="edit_billing_details_container" id="edit_billing_details_container" style="display:none">
-	<div class="account-field">
+	$hide_billing_vcard = false;
+	if (empty($orders['billing_telephone']) || 
+		empty($orders['billing_name']) || 
+		empty($orders['billing_street_name']) || 
+		empty($orders['billing_address_number']) || 
+		empty($orders['billing_zip']) ||
+		empty($orders['billing_city']) || 
+		empty($orders['billing_country']) ||
+		empty($orders['billing_email']) ||
+		empty($orders['billing_telephone'])) {
+		$tmpcontent.='<div class="edit_billing_details_container" id="edit_billing_details_container">';
+		$hide_billing_vcard = true;
+		
+	} else {
+		$tmpcontent.='<div class="edit_billing_details_container" id="edit_billing_details_container" style="display:none">';
+	}
+	
+	$tmpcontent.='<div class="account-field">
 	<label>'.ucfirst($this->pi_getLL('company')).':</label>
 	<input name="tx_multishop_pi1[billing_company]" type="text" id="edit_billing_company" value="'.$orders['billing_company'].'" />
 	</div>
 	<div class="account-field">
+	<label>'.ucfirst($this->pi_getLL('vat_id','VAT ID')).'</label>
+	<input name="tx_multishop_pi1[billing_vat_id]" type="text" id="edit_billing_vat_id" value="'.$orders['billing_vat_id'].'" />
+	</div>
+	<div class="account-field">
 	<label>'.ucfirst($this->pi_getLL('name')).'*:</label>
-	<input name="tx_multishop_pi1[billing_name]" type="text" id="edit_billing_name" value="'.$orders['billing_name'].'" />
+	<input name="tx_multishop_pi1[billing_name]" type="text" id="edit_billing_name" value="'.$orders['billing_name'].'" required="required" />
 	</div>
 	<div class="account-field">
 	<label for="delivery_address">'.ucfirst($this->pi_getLL('street_address')).'*:</label>
-	<input name="tx_multishop_pi1[billing_street_name]" type="text" id="edit_billing_street_name" value="'.$orders['billing_street_name'].'" />
+	<input name="tx_multishop_pi1[billing_street_name]" type="text" id="edit_billing_street_name" value="'.$orders['billing_street_name'].'" required="required" />
 	<span  class="error-space left-this"></span>
 	</div>
 	<div class="account-field">
 	<label class="billing_account-addressnumber" for="billing_address_number">'.ucfirst($this->pi_getLL('street_address_number')).'*</label>
-	<input name="tx_multishop_pi1[billing_address_number]" type="text" id="edit_billing_address_number" value="'.$orders['billing_address_number'].'" /><span class="error-space left-this"></span>
+	<input name="tx_multishop_pi1[billing_address_number]" type="text" id="edit_billing_address_number" value="'.$orders['billing_address_number'].'" required="required" /><span class="error-space left-this"></span>
 	</div>
 	<div class="account-field">
 	<label class="billing_account-address_ext" for="billing_address_ext">'.ucfirst($this->pi_getLL('address_extension')).'</label>
@@ -632,11 +652,11 @@ if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 	</div>
 	<div class="account-field">
 	<label class="account-zip" for="zip">'.ucfirst($this->pi_getLL('zip')).'*</label>
-	<input name="tx_multishop_pi1[billing_zip]" type="text" id="edit_billing_zip" value="'.$orders['billing_zip'].'" /><span class="error-space"></span>
+	<input name="tx_multishop_pi1[billing_zip]" type="text" id="edit_billing_zip" value="'.$orders['billing_zip'].'" required="required" /><span class="error-space"></span>
 	</div>
 	<div class="account-field">
 	<label class="account-city" for="city">'.ucfirst($this->pi_getLL('city')).'*</label>
-	<input name="tx_multishop_pi1[billing_city]" type="text" id="edit_billing_city" value="'.$orders['billing_city'].'" /><span class="error-space"></span>
+	<input name="tx_multishop_pi1[billing_city]" type="text" id="edit_billing_city" value="'.$orders['billing_city'].'" required="required" /><span class="error-space"></span>
 	</div>
 	<div class="account-field">
 	<label>'.ucfirst($this->pi_getLL('country')).'*:</label>
@@ -644,12 +664,19 @@ if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 	</div>
 	<div class="account-field">
 	<label>'.ucfirst($this->pi_getLL('email')).'*:</label>
-	<input name="tx_multishop_pi1[billing_email]" type="text" id="edit_billing_email" value="'.$orders['billing_email'].'" />
+	<input name="tx_multishop_pi1[billing_email]" type="text" id="edit_billing_email" value="'.$orders['billing_email'].'" required="required" />
 	</div>
-	<div class="account-field">
-	<label>'.ucfirst($this->pi_getLL('telephone')).'*:</label>
-	<input name="tx_multishop_pi1[billing_telephone]" type="text" id="edit_billing_telephone" value="'.$orders['billing_telephone'].'" />
-	</div>
+	<div class="account-field">';
+	
+	if (!empty($orders['billing_telephone'])) {
+		$tmpcontent .= '<label>'.ucfirst($this->pi_getLL('telephone')).'*:</label>
+		<input name="tx_multishop_pi1[billing_telephone]" type="text" id="edit_billing_telephone" value="'.$orders['billing_telephone'].'" required="required" />';
+	} else {
+		$tmpcontent .= '<label>'.ucfirst($this->pi_getLL('telephone')).':</label>
+		<input name="tx_multishop_pi1[billing_telephone]" type="text" id="edit_billing_telephone" value="'.$orders['billing_telephone'].'" />';
+	}
+	
+	$tmpcontent .= '</div>
 	<div class="account-field">
 	<label>'.ucfirst($this->pi_getLL('mobile')).':</label>
 	<input name="tx_multishop_pi1[billing_mobile]" type="text" id="edit_billing_mobile" value="'.$orders['billing_mobile'].'" />
@@ -661,12 +688,18 @@ if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 	<a href="#" id="close_edit_billing_info" class="float_right msadmin_button">'.$this->pi_getLL('save').'</a>
 	</div>';
 }
-	
-$tmpcontent.='
-<div class="address_details_container" id="billing_details_container">';
+
+if ($hide_billing_vcard) {
+	$tmpcontent .= '<div class="address_details_container" id="billing_details_container" style="display:none">';
+} else {
+	$tmpcontent .= '<div class="address_details_container" id="billing_details_container">';
+}
 	
 if ($orders['billing_company']) {
 	$tmpcontent.='<strong>'.$orders['billing_company'].'</strong><br />';
+}
+if ($orders['billing_vat_id']) {
+	$tmpcontent.='<strong>'.$orders['billing_vat_id'].'</strong><br />';
 }
 $tmpcontent.=$orders['billing_name'].'<br />
 	'.$orders['billing_address'].'<br />
@@ -702,8 +735,25 @@ $tmpcontent.='
 ';
 
 if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
-	$tmpcontent.='<div class="edit_delivery_details_container" id="edit_delivery_details_container" style="display:none">
-	<div class="account-field">
+	$hide_delivery_vcard = false;
+	if (empty($orders['billing_telephone']) ||
+			empty($orders['delivery_name']) ||
+			empty($orders['delivery_street_name']) ||
+			empty($orders['delivery_address_number']) ||
+			empty($orders['delivery_zip']) ||
+			empty($orders['delivery_city']) ||
+			empty($orders['delivery_country']) ||
+			empty($orders['delivery_email']) ||
+			empty($orders['delivery_telephone'])) {
+		$tmpcontent.='<div class="edit_delivery_details_container" id="edit_delivery_details_container">';
+		$hide_delivery_vcard = true;
+	
+	} else {
+		$tmpcontent.='<div class="edit_delivery_details_container" id="edit_delivery_details_container" style="display:none">';
+	}
+	
+	
+	$tmpcontent.='<div class="account-field">
 	<label>'.ucfirst($this->pi_getLL('company')).':</label>
 	<input name="tx_multishop_pi1[delivery_company]" type="text" id="edit_delivery_company" value="'.$orders['delivery_company'].'" />
 	</div>
@@ -760,9 +810,11 @@ if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 	';
 }
 
-	
-$tmpcontent.='
-	<div class="address_details_container" id="delivery_details_container">';
+if ($hide_delivery_vcard) {
+	$tmpcontent .= '<div class="address_details_container" id="delivery_details_container" style="display:none">';
+} else {
+	$tmpcontent .= '<div class="address_details_container" id="delivery_details_container">';
+}
 
 if ($orders['delivery_company']) {
 	$tmpcontent.='<strong>'.$orders['delivery_company'].'</strong><br />';
@@ -808,6 +860,17 @@ $headerData='
 		});
 	}
 	jQuery(document).ready(function($) {
+		$(".submit_button").live("click", function() {
+			var edit_form = $(".admin_product_edit");
+			if (!edit_form[0].checkValidity()) {
+				$("#billing_details_container").hide();
+				$("#edit_billing_details_container").show();
+			
+				$("#delivery_details_container").hide();
+				$("#edit_delivery_details_container").show();
+			}
+		});
+				
 		$("#edit_billing_info").live("click", function(e) {
 			e.preventDefault();			
 			$("#billing_details_container").hide();
@@ -819,6 +882,10 @@ $headerData='
 			var address_data 		= "";
 			$("[id^=edit_billing]").each(function(){
 				if ($(this).attr("id") == "edit_billing_company") {
+					if ($(this).val() != "") {
+						billing_details += "<strong>" + $(this).val() + "</strong><br/>";
+					}
+				} else if ($(this).attr("id") == "edit_billing_vat_id") {
 					if ($(this).val() != "") {
 						billing_details += "<strong>" + $(this).val() + "</strong><br/>";
 					}
@@ -861,6 +928,7 @@ $headerData='
 					}
 				}
 			});
+								
 			$("#billing_details_container").empty();
 			$("#billing_details_container").html(billing_details + "<span><a href=\"#\" id=\"edit_billing_info\" class=\"msadmin_button\">'.$this->pi_getLL('edit').'</a></span>");							
 			updateCustomerOrderDetails("billing_details", $("[id^=edit_billing]").serialize());		
@@ -1151,7 +1219,7 @@ $tmpcontent.='
 						<input type="button" value="'.$this->pi_getLL('edit').'" onclick="location.href=\''.$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$this->get['orders_id']).'&action=edit_order&edit_product=1&order_pid='.$order['orders_products_id'].'\'" class="msadmin_button">
 						<a href="'.$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$this->get['orders_id']).'&action=edit_order&delete_product=1&order_pid='.$order['orders_products_id'].'" style="text-decoration:none"><input type="button" value="'.$this->pi_getLL('delete').'" onclick="return CONFIRM();" class="msadmin_button"></a></td>';
 					} else {
-						$tmpcontent.='<td align="right" class="cell_products_action"><input type="button" value="'.$this->pi_getLL('cancel').'" onclick="location.href=\''.$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$this->get['orders_id']).'&action=edit_order\'" class="msadmin_button">&nbsp;<input type="submit" value="'.$this->pi_getLL('save').'" class="msadmin_button"></td>';
+						$tmpcontent.='<td align="right" class="cell_products_action"><input type="button" value="'.$this->pi_getLL('cancel').'" onclick="location.href=\''.$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$this->get['orders_id']).'&action=edit_order\'" class="msadmin_button">&nbsp;<input type="submit" value="'.$this->pi_getLL('save').'" class="msadmin_button submit_button"></td>';
 					}
 				}
 				$tmpcontent.='</tr>';
@@ -1437,7 +1505,7 @@ $tmpcontent.='
 			
 						</td>';	
 			$tmpcontent.='<td align="right" id="manual_final_price">&nbsp;</td>';
-			$tmpcontent.='<td align="right"><input type="submit" value="'.$this->pi_getLL('add').'" class="msadmin_button"></td>';
+			$tmpcontent.='<td align="right"><input type="submit" value="'.$this->pi_getLL('add').'" class="msadmin_button submit_button"></td>';
 			$tmpcontent.='';
 			$tmpcontent.='</tr>';
 			$tmpcontent.='<tr><td colspan="'.$colspan.'" style="text-align:left;"><a href="#" id="button_manual_new_product" class="msadmin_button">'.$this->pi_getLL('add_manual_product', 'ADD ITEM').'</a></td></tr>';

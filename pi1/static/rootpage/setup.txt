@@ -189,7 +189,7 @@ page {
       media = screen
       import = 0
       compress=1
-    }	
+    }
   }
 }
 multishop_admin_page {
@@ -217,7 +217,13 @@ multishop_admin_page {
       media = screen
       import = 0
       compress=1
-    }	
+    }
+    select2 = EXT:multishop/js/select2/select2.css
+    select2 {
+      media = screen
+      import = 0
+      compress=1
+    }
   }
 }
 [end]
@@ -256,9 +262,9 @@ page {
     prettycheckboxes.compress=1
     #webshim for fallback html5 attributes support
     webshimsJs = EXT:multishop/js/js-webshim/extras/modernizr-custom.js	
-    webshimsJs.compress=1
+    #webshimsJs.compress=1
     pollyfillerJs = EXT:multishop/js/js-webshim/polyfiller.js	
-    pollyfillerJs.compress=1
+    #pollyfillerJs.compress=1
   }
 }
 multishop_admin_page {
@@ -271,6 +277,8 @@ multishop_admin_page {
     #jqueryvalidatefunctions.compress=1	
     prettycheckboxes = EXT:multishop/js/prettycheckboxes/js/prettyCheckboxes.js	
     prettycheckboxes.compress=1
+    jquerySelect2 = EXT:multishop/js/select2/select2.min.js
+    jquerySelect2.compress=1
   }
 }
 [end]

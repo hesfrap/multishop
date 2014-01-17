@@ -72,7 +72,8 @@ if ($this->post) {
 		$updateArray['categories_image'] =$update_category_image;
 	}
 	//Options ID
-	$option_attributes = "";
+	// disabled for test (19/12/2013)
+	/* $option_attributes = "";
 	$i_x = 0;
 	if (is_array($this->post['products_options']) and count($this->post['products_options'])) {
 		foreach ($this->post['products_options'] as $option_id) {
@@ -82,7 +83,8 @@ if ($this->post) {
 			$i_x++;
 		}
 	}
-	$updateArray['option_attributes']			=$option_attributes;
+	$updateArray['option_attributes']			=$option_attributes; */
+	$updateArray['option_attributes'] = '';
 	if ($_REQUEST['action']=='add_category') {
 		$updateArray['page_uid'] = $this->showCatalogFromPage;		
 		$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_categories', $updateArray);

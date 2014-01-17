@@ -191,7 +191,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 		// create the meta tags eof
 		*/
 		// load optional cms content and show the current category name
-		$show_default_header=0;
+		/* $show_default_header=0;
 		if ($current['content'] and !$p) {
 			$hide_no_products_message=1;
 			if ($current['content']) {
@@ -203,7 +203,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 		else {
 			$show_default_header=1;
 		}
-		// load optional cms content and show the current category name eof
+		// load optional cms content and show the current category name eof */
 		// load products listing	
 		
 		$products_compare = true;

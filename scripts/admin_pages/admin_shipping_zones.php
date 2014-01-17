@@ -45,7 +45,8 @@ foreach ($zones as $zone) {
 	$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 	$rows=$GLOBALS['TYPO3_DB']->sql_num_rows($qry);
 	if (is_numeric($this->get['zone_id']) and $this->get['edit'] and $this->get['zone_id']==$zone['id']) {
-		$str="SELECT sc.*, c.id as cid from static_countries sc, tx_multishop_shipping_countries c where sc.cn_iso_nr=c.cn_iso_nr order by sc.cn_short_en";
+		$str="SELECT sc.*, c.id as cid from static_countries sc, tx_multishop_shipping_countries c where c.page_uid='".$this->showCatalogFromPage."' and sc.cn_iso_nr=c.cn_iso_nr order by sc.cn_short_en";
+
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		$countries=array();	
 		while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
@@ -70,7 +71,7 @@ foreach ($zones as $zone) {
 			<ul id="tx_multishop_countries_checkboxes">';
 			$counter=0;
 			foreach ($countries as $country) {
-				$content.='<li><input name="countries['.$country['cn_iso_nr'].']" type="checkbox" value="1" '.(($country['current'])?'checked':'').' id="zone_country_'.$counter.'" /><label for="zone_country_'.$counter.'">'.$country['cn_short_en'].'</label></li>';
+				$content.='<li><input name="countries['.$country['cn_iso_nr'].']" type="checkbox" value="1" '.(($country['current'])?'checked':'').' id="zone_country_'.$counter.'" /><label for="zone_country_'.$counter.'">'.mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$country['cn_short_en']).'</label></li>';
 				$counter++;
 			}
 			$content.='</ul>
@@ -83,8 +84,8 @@ foreach ($zones as $zone) {
 	} else {
 		if ($rows > 0) {		
 			$content.='<ul class="zone_item">';
-			while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
-				$content.='<li>'.$row['cn_short_en'].'</li>';
+			while (($country=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
+				$content.='<li>'.mslib_fe::getTranslatedCountryNameByEnglishName($this->lang,$country['cn_short_en']).'</li>';
 			}
 			$content.='</ul>';
 		} else {

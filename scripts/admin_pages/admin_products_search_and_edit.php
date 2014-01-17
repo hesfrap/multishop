@@ -1,8 +1,11 @@
 <?php
-if (!defined('TYPO3_MODE')) die ('Access denied.');
+if (!defined('TYPO3_MODE')) {
+	die ('Access denied.');
+}
 if (!is_numeric($this->get['cid'])) {
 	$this->get['cid']=$this->categoriesStartingPoint;
 }
+$postMessageArray=array();
 // now parse all the objects in the tmpl file
 if ($this->conf['admin_products_search_and_edit_tmpl_path']) {
 	$template = $this->cObj->fileResource($this->conf['admin_products_search_and_edit_tmpl_path']);
@@ -140,8 +143,36 @@ if ($this->post['submit']) {
 					}
 				}
 			break;
+			case 'duplicate':
+				foreach ($this->post['selectedProducts'] as $old_categories_id => $array) {
+					if ($this->post['tx_multishop_pi1']['target_categories_id'] > 0) {
+						$target_cat_id = $this->post['tx_multishop_pi1']['target_categories_id'];
+					} else {
+						$target_cat_id = $old_categories_id;
+					}
+					foreach ($array as $pid) {
+						mslib_befe::duplicateProduct($pid, $target_cat_id);
+					}
+				}
+			break;
+			default:
+				// custom page hook that can be controlled by third-party plugin
+				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_products_search_and_edit.php']['adminProductsSearchAndEditActionProductIteratorProc'])) {
+					$params = array (
+						'action' => &$this->post['tx_multishop_pi1']['action'],
+						'postMessageArray' => &$postMessageArray
+					);
+					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_products_search_and_edit.php']['adminProductsSearchAndEditActionProductIteratorProc'] as $funcRef) {
+						t3lib_div::callUserFunction($funcRef, $params, $this);
+					}
+				}						
+				// custom page hook that can be controlled by third-party plugin eof
+			break;
 		}
 	}
+	
+	// lets notify plugin that we have update action in products
+	tx_mslib_catalog::productsUpdateNotifierForPlugin($this->post);
 }
 
 $fields=array();
@@ -156,7 +187,7 @@ $fields['products_quantity']	=$this->pi_getLL('admin_stock');
 $fields['products_weight']		=$this->pi_getLL('admin_weight');
 $fields['manufacturers_name']	=$this->pi_getLL('manufacturer');
 //asort($fields);
-			
+
 
 $searchby_selectbox = '<select name="tx_multishop_pi1[search_by]">';
 foreach ($fields as $key => $label) {
@@ -571,7 +602,18 @@ if ($pageset['total_rows'] > 0) {
 	
 	$actions=array();
 	$actions['move']=$this->pi_getLL('move_selected_products_to').':';
+	$actions['duplicate']=$this->pi_getLL('duplicate_selected_products_to').':';
 	$actions['delete']=$this->pi_getLL('delete_selected_products');
+	// custom page hook that can be controlled by third-party plugin
+	if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_products_search_and_edit.php']['adminProductsSearchAndEditActionItemsPreProc'])) {
+		$params = array (
+			'actions' => &$actions
+		);
+		foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_products_search_and_edit.php']['adminProductsSearchAndEditActionItemsPreProc'] as $funcRef) {
+			t3lib_div::callUserFunction($funcRef, $params, $this);
+		}
+	}
+	// custom page hook that can be controlled by third-party plugin eof			
 	$action_selectbox .= '<select name="tx_multishop_pi1[action]" id="products_search_action"><option value="">'.$this->pi_getLL('choose_action').'</option>';
 	foreach ($actions as $key => $value) {
 		$action_selectbox .= '<option value="'.$key.'">'.$value.'</option>';
@@ -629,6 +671,15 @@ if ($pageset['total_rows'] > 0) {
 }
 
 $subpartArray = array();
+$subpartArray['###POST_MESSAGE###']='';
+if ($postMessageArray) {
+	$postmessage='<div id="postMessage"><h3>System message</h3><ul>';
+	foreach ($postMessageArray as $item) {
+		$postmessage.='<li>'.$item.'</li>';		
+	}
+	$postmessage.='</ul></div>';
+	$subpartArray['###POST_MESSAGE###'] = $postmessage;	
+}
 $subpartArray['###SHOP_PID###'] 							= $this->shop_pid;
 $subpartArray['###PAGE_HEADER###'] 							= $this->pi_getLL('products');
 $subpartArray['###LABEL_SEARCH_KEYWORD###'] 				= t3lib_div::strtoupper($this->pi_getLL('admin_search_for'));
@@ -644,7 +695,5 @@ $subpartArray['###RESULTS###'] 								= $tmp_content_results;
 $subpartArray['###NORESULTS###'] 							= $tmp_content_noresults;
 
 $content .= $this->cObj->substituteMarkerArrayCached($subparts['template'], array(), $subpartArray);
-
-
 $content=$prepending_content.'<div class="fullwidth_div">'.mslib_fe::shadowBox($content).'</div>';
 ?>

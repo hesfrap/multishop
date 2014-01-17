@@ -190,7 +190,7 @@ else
 					if ($this->ms['MODULES']['FLAT_DATABASE'])
 					{
 						// if the flat database module is enabled we have to sync the changes to the flat table
-						mslib_befe::convertProductToFlat($id_product);
+						mslib_befe::convertProductToFlat($id_product_new);
 					}						
 				}
 				else 

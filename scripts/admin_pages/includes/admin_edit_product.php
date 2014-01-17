@@ -4,7 +4,7 @@ if (!defined('TYPO3_MODE')) die ('Access denied.');
 $GLOBALS['TSFE']->additionalHeaderData[] = '
 <script type="text/javascript">
 window.onload = function() {
-  var text_input = document.getElementById (\'products_name_0\');
+  var text_input = jQuery(\'#products_name_0\');
   text_input.focus();
   text_input.select();
 }
@@ -213,31 +213,58 @@ if ($this->post) {
 		$updateArray['maximum_quantity']=$this->post['maximum_quantity'];	
 	}
 	if ($_REQUEST['action']=='edit_product' and $this->post['pid']) {
-		$updateArray['products_last_modified']		= time();		
-		// if product is originally coming from products importer we have to define that the merchant changed it
-		$str="select products_id from tx_multishop_products where imported_product=1 and lock_imported_product=0 and products_id='".$this->post['pid']."'";
-		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);			
-		if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0) {
-			$updateArray['lock_imported_product']=1;
-		}
-		$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products', 'products_id=\''.$this->post['pid'].'\'',$updateArray);			
-		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
-		$prodid=$this->post['pid'];
-		if (!$updateArray['products_status']) {
-			// call disable method cause that one also removes possible flat database record
-			mslib_befe::disableProduct($row['products_id']);			
-		}
-		if (is_numeric($this->post['categories_id'])) {
-			if (is_numeric($this->post['old_categories_id']) and ($this->post['old_categories_id'] <> $this->post['categories_id'])) {
-				$query = $GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_products_to_categories', 'products_id=\''.$this->post['pid'].'\' and categories_id=\''.$this->post['old_categories_id'].'\'');
-				$res = $GLOBALS['TYPO3_DB']->sql_query($query);						
-				$updateArray=array();
-				$updateArray['categories_id']				=$this->post['categories_id'];
-				$updateArray['products_id']					=$this->post['pid'];
-				$updateArray['sort_order']					=time();
-				$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_to_categories',$updateArray);
-				$res = $GLOBALS['TYPO3_DB']->sql_query($query);					
-			}			
+		if (isset($this->post['save_as_new'])) {
+			if (!$updateArray['products_image']) {
+				$product_original = mslib_fe::getProduct($this->post['pid']);
+				foreach ($product_original as $arr_key => $arr_val) {
+					if (strpos($arr_key, 'products_image') !== false) {
+						$updateArray[$arr_key] = $arr_val;
+					}
+				}
+			}
+			if ($updateArray['products_image']) {
+				$updateArray['contains_image'] = 1;
+			}
+			$updateArray['page_uid'] = $this->showCatalogFromPage;
+			$updateArray['cruser_id'] = $GLOBALS['TSFE']->fe_user->user['uid'];
+			
+			$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products',$updateArray);
+			
+			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+			$prodid=$GLOBALS['TYPO3_DB']->sql_insert_id();
+			$updateArray=array();
+			$updateArray['categories_id']				=$_REQUEST['categories_id'];
+			$updateArray['products_id']					=$prodid;
+			$updateArray['sort_order']					=time();
+			$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_to_categories',$updateArray);
+			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+		} else {
+			$updateArray['products_last_modified']		= time();
+			// if product is originally coming from products importer we have to define that the merchant changed it
+			$str="select products_id from tx_multishop_products where imported_product=1 and lock_imported_product=0 and products_id='".$this->post['pid']."'";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+			if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0) {
+				$updateArray['lock_imported_product']=1;
+			}
+			$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products', 'products_id=\''.$this->post['pid'].'\'',$updateArray);
+			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+			$prodid=$this->post['pid'];
+			if (!$updateArray['products_status']) {
+				// call disable method cause that one also removes possible flat database record
+				mslib_befe::disableProduct($row['products_id']);
+			}
+			if (is_numeric($this->post['categories_id'])) {
+				if (is_numeric($this->post['old_categories_id']) and ($this->post['old_categories_id'] <> $this->post['categories_id'])) {
+					$query = $GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_products_to_categories', 'products_id=\''.$this->post['pid'].'\' and categories_id=\''.$this->post['old_categories_id'].'\'');
+					$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+					$updateArray=array();
+					$updateArray['categories_id']				=$this->post['categories_id'];
+					$updateArray['products_id']					=$this->post['pid'];
+					$updateArray['sort_order']					=time();
+					$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_to_categories',$updateArray);
+					$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+				}
+			}	
 		}
 	} else {
 		$updateArray['page_uid'] = $this->showCatalogFromPage;
@@ -314,6 +341,17 @@ if ($this->post) {
 				$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products_description', 'products_id=\''.$prodid.'\' and language_id=\''.$key.'\'', $updateArray);
 				$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 			} else {
+				if (isset($this->post['save_as_new'])) {
+					if (strpos($updateArray['products_name'], '(copy') === false) {
+						$updateArray['products_name'] .= ' (copy '.$prodid.')';
+					} else {
+						if (strpos($updateArray['products_name'], '(copy '.$this->post['pid'].')') !== false) {
+							$updateArray['products_name'] = str_replace('(copy '.$this->post['pid'].')', ' (copy '.$prodid.')', $updateArray['products_name']);
+						} else {
+							$updateArray['products_name'] = str_replace('(copy)', ' (copy '.$prodid.')', $updateArray['products_name']);
+						}
+					}
+				}
 				$updateArray['products_id']				=$prodid;	
 				$updateArray['language_id']				=$key;					
 				$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_description', $updateArray);
@@ -504,6 +542,10 @@ if ($this->post) {
 				t3lib_div::callUserFunction($funcRef, $params, $this);
 			}
 		}
+		
+		// lets notify plugin that we have update action in product
+		tx_mslib_catalog::productsUpdateNotifierForPlugin($this->post, $prodid);
+		
 		// custom hook that can be controlled by third-party plugin eof		
 		if ($this->ms['MODULES']['FLAT_DATABASE']) {
 			// if the flat database module is enabled we have to sync the changes to the flat table
@@ -1438,9 +1480,19 @@ if ($this->post) {
 		$subpartArray['###VALUE_ADVANCED_OPTION###'] 			= ($_COOKIE['hide_advanced_options']==1 ? $this->pi_getLL('admin_show_options') : $this->pi_getLL('admin_hide_options'));
 		$subpartArray['###LABEL_BUTTON_CANCEL###'] 				= $this->pi_getLL('admin_cancel');
 		$subpartArray['###LABEL_BUTTON_SAVE###'] 				= $this->pi_getLL('admin_save');
+		
+		if ($_REQUEST['action']=='edit_product' && is_numeric($this->get['pid'])) {
+			$subpartArray['###BUTTON_SAVE_AS_NEW###'] 			= '<input name="save_as_new" type="submit" value="'.$this->pi_getLL('admin_save_as_new').'" class="submit" />';
+			$subpartArray['###FOOTER_BUTTON_SAVE_AS_NEW###'] 	= '<input name="save_as_new" type="submit" value="'.$this->pi_getLL('admin_save_as_new').'" class="submit" />';
+		} else {
+			$subpartArray['###BUTTON_SAVE_AS_NEW###'] 			= '';
+			$subpartArray['###FOOTER_BUTTON_SAVE_AS_NEW###'] 	= '';
+		}
+		
 		$subpartArray['###FOOTER_VALUE_ADVANCED_OPTION###'] 	= ($_COOKIE['hide_advanced_options']==1 ? $this->pi_getLL('admin_show_options') : $this->pi_getLL('admin_hide_options'));
 		$subpartArray['###FOOTER_LABEL_BUTTON_CANCEL###'] 		= $this->pi_getLL('admin_cancel');
 		$subpartArray['###FOOTER_LABEL_BUTTON_SAVE###'] 		= $this->pi_getLL('admin_save');
+		
 		$subpartArray['###PRODUCT_PID###'] 						= $product ['products_id'];
 		$subpartArray['###FORM_ACTION_URL###'] 					= mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&pid='.$this->get['pid']);
 		if ($_COOKIE['hide_advanced_options'] == 1) {

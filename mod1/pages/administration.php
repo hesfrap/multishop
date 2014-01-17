@@ -1,4 +1,61 @@
 <?php
+/*
+//QUICK LANGUAGE UID FIXER:
+
+$str='
+	tx_multishop_undo_products
+	tx_multishop_categories
+	tx_multishop_categories_description
+	tx_multishop_cms
+	tx_multishop_cms_description
+	tx_multishop_configuration_values
+	tx_multishop_manufacturers
+	tx_multishop_manufacturers_cms
+	tx_multishop_manufacturers_info
+	tx_multishop_orders
+	tx_multishop_orders_products
+	tx_multishop_orders_products_attributes
+	tx_multishop_orders_status_history
+	tx_multishop_payment_methods
+	tx_multishop_payment_shipping_mappings
+	tx_multishop_products
+	tx_multishop_products_attributes
+	tx_multishop_products_attributes_download
+	tx_multishop_products_attributes_extra
+	tx_multishop_products_description
+	tx_multishop_products_faq
+	tx_multishop_products_options
+	tx_multishop_products_options_values
+	tx_multishop_products_options_values_extra
+	tx_multishop_products_options_values_to_products_options
+	tx_multishop_products_to_categories
+	tx_multishop_products_to_extra_options
+	tx_multishop_products_to_relative_products
+	tx_multishop_product_wishlist
+	tx_multishop_reviews
+	tx_multishop_reviews_description
+	tx_multishop_shipping_countries
+	tx_multishop_countries_to_zones
+	tx_multishop_shipping_methods
+	tx_multishop_shipping_methods_costs
+	tx_multishop_shipping_options
+	tx_multishop_zones
+	tx_multishop_specials
+';
+$tables=explode("\n",$str);
+foreach ($tables as $table) {
+	$table=trim($table);
+	if ($table) {
+		$query='update '.$table.' set language_id=0 where language_id=6';
+		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+//		echo $query.'<br>';
+		$query='update '.$table.' set language_id=2 where language_id=8';
+		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+	}
+}
+//die();
+*/
+
 set_time_limit(86400); 
 ignore_user_abort(true);		
 switch ($_REQUEST['action'])
@@ -516,7 +573,7 @@ switch ($_REQUEST['action'])
 							foreach ($database[$table] as $key => $record) {
 								if (!$language_key and $database[$table][$key]['language_id'] == 6) 	$language_key=6;
 								elseif (!$language_key and $database[$table][$key]['language_id'] == 6) $language_key=6;
-								if ($database[$table][$key]['language_id']  == $language_key) {
+								if ($database[$table][$key]['language_id'] == $language_key) {
 									if ($database[$table][$key]['orders_status_name']) {
 										if (!mb_detect_encoding($database[$table][$key]['orders_status_name'], 'UTF-8', true)) {
 											$database[$table][$key]['orders_status_name']=mslib_befe::convToUtf8($database[$table][$key]['orders_status_name']);
@@ -693,7 +750,7 @@ switch ($_REQUEST['action'])
 								$row['shipping_method_label']=$shipping_method['name'];
 							}							
 							
-		//								$row['billing_name']=$record['last_modified'];
+							// $row['billing_name']=$record['last_modified'];
 							$row['crdate']=strtotime($record['date_purchased']);
 							if ($record['shipping_cost'])
 							{
@@ -733,8 +790,9 @@ switch ($_REQUEST['action'])
 						foreach ($records as $record) {
 							$final_database[$db_ms2bvb[$table]][$record_count]=$final_db[$db_ms2bvb[$table]];
 							$colcount=0;
-							foreach ($record as $col_key => $col_value) {		
-								if ($col_key=='language_id') $col_value=0;
+							foreach ($record as $col_key => $col_value) {
+								// disable this when u want to import multilanguage:		
+								//if ($col_key=='language_id') $col_value=0;
 								if (isset($final_database[$db_ms2bvb[$table]][$record_count][$col_key])) {
 									// we already mapped the same col name so lets add the value to it
 									$final_database[$db_ms2bvb[$table]][$record_count][$col_key]=$col_value;										

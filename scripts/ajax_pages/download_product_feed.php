@@ -106,8 +106,11 @@ if ($this->get['feed_hash']) {
 						break;
 						default:
 							// if key name is attribute option, print the option name. else print key name
-							if ($attributes[$field]) $content.=$attributes[$field];
-							else $content.=$field;
+							if ($attributes[$field]) {
+								$content.=$attributes[$field];
+							} else {
+								$content.=$field;
+							}
 						break;
 					}
 				} else {
@@ -116,7 +119,12 @@ if ($this->get['feed_hash']) {
 							$content.=$fields_headers[$counter];						
 						break;
 						default:
-							$content.=$field;
+							// if key name is attribute option, print the option name. else print key name
+							if ($attributes[$field]) {
+								$content.=$attributes[$field];
+							} else {
+								$content.=$field;
+							}
 						break;
 					}
 				}
@@ -286,6 +294,20 @@ if ($this->get['feed_hash']) {
 					foreach ($pageset['products'] as $row) {
 						$product=mslib_fe::getProduct($row['products_id']);
 						if ($product['products_id']) {
+							if (!$this->ms['MODULES']['FLAT_DATABASE']) {
+								// fetch the attributes manually
+								$attributes_data = array();
+								$sql_attributes = "select pa.options_id, pa.options_values_id, pov.products_options_values_name from tx_multishop_products_attributes pa, tx_multishop_products_options_values pov where pa.options_values_id = pov.products_options_values_id and pov.language_id = '".$this->sys_language_uid."' and pa.products_id = " . $product['products_id'];
+								$qry_attributes = $GLOBALS['TYPO3_DB']->sql_query($sql_attributes);
+								while ($row_attributes = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_attributes)) {
+									$attributes_data['attribute_option_name_' . $row_attributes['options_id']][] = $row_attributes['products_options_values_name'];
+								}
+								
+								foreach ($attributes_data as $attribute_key => $attribute_val) {
+									$row[$attribute_key] = implode(', ', $attributes_data[$attribute_key]);
+								}
+							}
+							
 							$cats = mslib_fe::Crumbar($product['categories_id']);
 							$cats = array_reverse($cats);	
 							$product['categories_crum']=$cats;
@@ -398,6 +420,26 @@ if ($this->get['feed_hash']) {
 					case 'products_model':
 						$tmpcontent .= $row['products_model'];
 					break;
+					case 'products_old_price':
+						$final_price = mslib_fe::final_products_price($row);
+						$old_product_price = $row['products_price'];
+						if ($row['tax_rate'] and ($this->ms['MODULES']['SHOW_PRICES_INCLUDING_VAT'] || $this->ms['MODULES']['SHOW_PRICES_WITH_AND_WITHOUT_VAT'])) {
+							// in this mode the stored prices in the tx_multishop_products are excluding VAT and we have to add it manually
+							if ($row['country_tax_rate'] && $row['region_tax_rate']) {
+								$country_tax_rate = mslib_fe::taxDecimalCrop($final_price * ($row['country_tax_rate']));
+								$region_tax_rate = mslib_fe::taxDecimalCrop($final_price * ($row['region_tax_rate']));
+								$old_product_price = $old_product_price + ($country_tax_rate + $region_tax_rate);
+							} else {
+								$tax_rate = mslib_fe::taxDecimalCrop($row['products_price'] * ($row['tax_rate']));
+								$old_product_price = $old_product_price + $tax_rate;
+							}
+						}
+						if ($old_product_price != $final_price) {
+							$tmpcontent .= $old_product_price;
+						} else {
+							$tmpcontent .= '';
+						}
+						break;
 					case 'products_price':
 						$tmpcontent .= mslib_fe::final_products_price($row);
 					break;
@@ -548,7 +590,11 @@ if ($this->get['feed_hash']) {
 						if ($field) {
 							if ($attributes[$field]) {
 								// print it from flat table
-								$field_name="a_".str_replace("-","_",mslib_fe::rewritenamein($attributes[$field]));
+								if (!$this->ms['MODULES']['FLAT_DATABASE']) {
+									$field_name = $field;
+								} else {
+									$field_name = "a_".str_replace("-","_",mslib_fe::rewritenamein($attributes[$field]));
+								}
 								$tmpcontent.= $row[$field_name];
 							}
 						}

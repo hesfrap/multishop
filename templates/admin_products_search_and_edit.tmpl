@@ -1,4 +1,5 @@
 <!-- ###TEMPLATE### begin -->
+###POST_MESSAGE###
 <table width="100%" cellpadding="2" cellspacing="2" id="msAdminSearchAndEditProductsForm">
 	<form name="search" method="get" action="index.php">	
 	<input name="id" type="hidden" value="###SHOP_PID###" />
@@ -136,6 +137,8 @@
 		jQuery(document).ready(function($) {		
 			$('#products_search_action').change(function() {
 				if ($(this).val()=='move') {
+					$("#target_categories_id").show();
+				} else if ($(this).val()=='duplicate') {
 					$("#target_categories_id").show();
 				} else {
 					$("#target_categories_id").hide();

@@ -8,6 +8,8 @@ if ($this->ADMIN_USER) {
 }
 $product=mslib_fe::getProduct($this->get['products_id'],$this->get['categories_id'],'',$include_disabled_products);
 if (!$product['products_id']) {
+	header('HTTP/1.0 404 Not Found');
+	$output_array['http_header']='HTTP/1.0 404 Not Found';
 	$content='<div class="main-title"><h1>The product is not existing</h1></div>';
 } else {
 	if ($product['minimum_quantity'] > 0) {

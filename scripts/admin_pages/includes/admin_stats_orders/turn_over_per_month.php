@@ -72,8 +72,8 @@ $content.='
 			$("#orders_stats_form").submit();
 		});
 	});
-</script>	
-';
+</script>';
+
 $dates=array();
 $content.='<h2>'.htmlspecialchars($this->pi_getLL('sales_volume_by_month')).'</h2>';
 for ($i=1;$i<13;$i++) {
@@ -136,6 +136,77 @@ if (!$tr_type or $tr_type=='even') {
 $content.='
 </table>';
 // LAST MONTHS EOF
+
+$dates=array();
+$content.='<h2>'.htmlspecialchars($this->pi_getLL('sales_average_by_month', 'Monthly sales average')).'</h2>';
+for ($i=1;$i<13;$i++) {
+	$time=strtotime(date($selected_year.$i."-01")." 00:00:00");
+	$dates[strftime("%B %Y",$time)]=date($selected_year . "m", $time);
+}
+$content.='<table width="100%" class="msZebraTable" cellspacing="0" cellpadding="0" border="0" id="product_import_table">';
+$content.='<tr class="odd">';
+foreach ($dates as $key => $value) {
+	$content.='<td align="right">'.ucfirst($key).'</td>';
+}
+$content.='<td align="right" nowrap>'.htmlspecialchars($this->pi_getLL('total')).'</td>';
+$content.='</tr>';
+$content.='<tr class="even">';
+$total_amount_avg = 0;
+$total_orders_avg = 0;
+foreach ($dates as $key => $value) {
+	$total_price_avrg=0;
+	$total_orders = 0;
+	$start_time	= strtotime($value."-01 00:00:00");
+	$end_time	= strtotime($value."-31 23:59:59");
+	$where=array();
+	if ($this->cookie['paid_orders_only']) {
+		$where[]='(o.paid=1)';
+	} else {
+		$where[]='(o.paid=1 or o.paid=0)';
+	}
+
+	$where[]='(o.deleted=0)';
+	$str="SELECT o.orders_id, o.grand_total  FROM tx_multishop_orders o WHERE (".implode(" AND ",$where).") and (o.crdate BETWEEN ".$start_time." and ".$end_time.")";
+	$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+	
+	$total_orders = $GLOBALS['TYPO3_DB']->sql_num_rows($qry);
+	
+	
+	
+	$total_orders_avg += $total_orders;
+	while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
+		$total_price_avrg = ($total_price_avrg+$row['grand_total']);
+	}
+	$content.='<td align="right">'.mslib_fe::amount2Cents($total_price_avrg/$total_orders,0).'</td>';
+	$total_amount_avg = $total_amount_avg + $total_price_avrg;
+}
+if ($this->cookie['stats_year_sb'] == date("Y") || !$this->cookie['stats_year_sb']) {
+	$month=date("m");
+	$currentDay=date("d");
+	$dayOfTheYear=date("z");
+	$currentYear=1;
+	if ($month==1) {
+		$currentMonth=1;
+	}
+} else {
+	$month=12;
+	$dayOfTheYear=365;
+	$currentDay=31;
+	$currentYear=0;
+	$currentMonth=0;
+}
+$content.='<td align="right" nowrap>'.mslib_fe::amount2Cents($total_amount_avg/$total_orders_avg,0).'</td>';
+$content.='</tr>';
+if (!$tr_type or $tr_type=='even') {
+	$tr_type='odd';
+} else {
+	$tr_type='even';
+}
+$content.='
+</table>';
+// LAST MONTHS EOF
+
+
 $tr_type='even';
 $dates=array();
 $content.='<h2>'.htmlspecialchars($this->pi_getLL('sales_volume_by_day')).'</h2>';
@@ -152,10 +223,11 @@ $content.='<table width="100%" class="msZebraTable" cellpadding="0" cellspacing=
 <tr>
 	<th width="100" align="right">'.htmlspecialchars($this->pi_getLL('day')).'</th>
 	<th width="100" align="right">'.htmlspecialchars($this->pi_getLL('amount')).'</th>
+	<th width="100" align="right">'.htmlspecialchars($this->pi_getLL('average', 'average')).'</th>
 	<th>'.htmlspecialchars($this->pi_getLL('orders_id')).'</th>	
-</tr>
-';
+</tr>';
 foreach ($dates as $key => $value) {
+	$total_daily_orders = 0;
 	if (!$tr_type or $tr_type=='even') {
 		$tr_type='odd';
 	} else {
@@ -183,8 +255,11 @@ foreach ($dates as $key => $value) {
 	while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
 		$total_price=($total_price+$row['grand_total']);
 		$uids[]='<a href="'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$row['orders_id'].'&action=edit_order').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 980, height: browser_height} )">'.$row['orders_id'].'</a>';
+		$total_daily_orders++;
 	}
 	$content.='<td align="right">'.mslib_fe::amount2Cents($total_price,0).'</td>';
+	$content.='<td align="right">'.mslib_fe::amount2Cents($total_price/$total_daily_orders,0).'</td>';
+	
 	if (count($uids)) {
 		$content.='<td>'.implode(", ",$uids).'</td>';
 	} else {

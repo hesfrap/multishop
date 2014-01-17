@@ -134,6 +134,9 @@
 #tx_multishop_pi1_core ul#tx_multishop_countries_checkboxes li:hover { background:#f6f6f6; }
 
 /* --- form --- */
+#msadmin_section #msadmin_content  #tx_multishop_pi1_core form.AdvancedForm label { width:120px; }
+#msadmin_section #msadmin_content  #tx_multishop_pi1_core form.AdvancedForm select { width:310px; }
+
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout { overflow:hidden; width:100%; margin:0 0 10px; padding:0; }
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout label.algemen { display:block; font:14px Arial, Helvetica, sans-serif; padding:0 0 10px; }
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout label.adresgegevens { display:block; font:14px Arial, Helvetica, sans-serif; padding:0 0 10px; }
@@ -143,6 +146,16 @@
 
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field .error-space { position:absolute; float:none; overflow:visible; background:#d5201e; width:auto; height:auto; font:11px Arial, Helvetica, sans-serif; color:#fff; margin-top:-24px; margin-left:140px; padding:5px 10px; text-transform:lowercase; border-radius:6px; } 
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field .error-space em { position:absolute; bottom:-5px; border-top:5px solid #d5201e; border-left:5px solid transparent; border-right:5px solid transparent; }
+
+#msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field #invalid-address_number.error-space,
+#msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field #invalid-city.error-space { left:494px; }
+#msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field #invalid-delivery_last_name.error-space { margin-top:6px; }
+#msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field #invalid-delivery_address_number.error-space,
+#msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field #invalid-delivery_city.error-space { left:494px; }
+#msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field #invalid-delivery_country.error-space { margin-top:6px; }
+
+#msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field #invalid-address_number.error-space,
+#msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field #invalid-city.error-space { left:494px; }
 
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field label { clear:none; display:block; float:left; width:130px; height:27px; font:12px Arial, Helvetica, sans-serif; color:#000; text-transform:uppercase; padding:3px 10px 0 0; }
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field label.account-lastname,
@@ -154,8 +167,7 @@
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field span#delivery_ValidRadio label { clear:none; width:auto; }
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field span#ValidRadio label#account-gender,
 #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field span#delivery_ValidRadio label#account-gender { width:130px; }
-#msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field #radio,
-#msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field #radio2 { float:left; margin:3px 4px 0 0; }
+#msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field input[type="radio"] { float:left; margin:3px 4px 0 0; }
 *:first-child+html #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#ms_checkout .account-field #radio { margin-top:0; }
 *:first-child+html #msadmin_section #msadmin_content  #tx_multishop_pi1_core form#cms_heckout .account-field #radio2 { margin-top:0; }
 

@@ -850,8 +850,10 @@ CREATE TABLE `tx_multishop_products` (
   KEY `import_job_id` (`import_job_id`),
   KEY `alert_quantity_threshold` (`alert_quantity_threshold`),
   KEY `cruser_id` (`cruser_id`),
-  KEY `starttime` (`starttime`),
-  KEY `endtime` (`endtime`)  
+  KEY `starttime` (`starttime`),  
+  KEY `products_date_added` (`products_date_added`),
+  KEY `products_last_modified` (`products_last_modified`),
+  KEY `products_date_available` (`products_date_available`)  
 ) ENGINE=MyISAM ;
 
 CREATE TABLE `tx_multishop_products_attributes` (

@@ -119,7 +119,9 @@ class tx_mslib_cart extends tslib_pibase {
 					$payment_tax 						= $this->cart['user']['payment_method_costs'] * $payment_tax_rate;						
 				}
 				// rounding was needed to fix 1 cents grand total difference
-				$this->cart['user']['shipping_method_costs']=round($this->cart['user']['shipping_method_costs'],2);
+				// adjusted 25/11/2014 14:02 CET
+				// shipping cost bugfix because of the fractions, changed from 2 decimal to 14
+				$this->cart['user']['shipping_method_costs']=round($this->cart['user']['shipping_method_costs'],14);
 				$this->cart['user']['payment_method_costs']=round($this->cart['user']['payment_method_costs'],2);				
 				$this->cart['user']['shipping_method_costs_including_vat']=round($this->cart['user']['shipping_method_costs']+($this->cart['user']['shipping_method_costs'] * $shipping_tax_rate),2);
 				$this->cart['user']['payment_method_costs_including_vat']=round($this->cart['user']['payment_method_costs']+($this->cart['user']['payment_method_costs'] * $payment_tax_rate),2);

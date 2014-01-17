@@ -581,6 +581,32 @@ class mslib_fe
 						}
 					} else {
 						foreach ($value as $$key => $$value) {
+							if (!is_array($$value)) {
+								if ((strlen($$value) > 0) && ($key != session_name()) && ($key != 'error')) {						
+									  if ($hidden_fields) {
+										  $get_url .= '<input name="'.$key . rawurlencode('['.$$key.']').'" type="hidden" value="'.rawurlencode($$value).'">'."\n";
+									  } else {
+										  $get_url .= $key . rawurlencode('['.$$key.']') . '=' . rawurlencode(htmlentities($$value)) . '&';					
+									  }
+								}
+							} else {
+								foreach ($$value as $k => $v) {
+										if (is_array($v)) {
+											foreach ($v as $final_key => $final_value) {
+												$get_url .= $key . rawurlencode('['.$$key.']') .rawurlencode('['.$k.']['.$final_key.']') . '=' . rawurlencode(htmlentities($final_value)) . '&';
+											}
+										} else {
+											if ((strlen($v) > 0) && ($key != session_name()) && ($key != 'error')) {
+												if ($hidden_fields) {
+													$get_url .= '<input name="'.$key . rawurlencode('['.$$$key.'][]').'" type="hidden" value="'.rawurlencode($v).'">'."\n";
+												} else {
+													$get_url .= $key . rawurlencode('['.$$key.']['.$k.']') . '=' . rawurlencode(htmlentities($v)) . '&';
+												}
+											}										
+										}
+									}
+								}							
+/*							
 							$string=$key.'['.$$key.']';		
 							if (!mslib_fe::tep_in_array($string, $exclude_array)) {
 								if (!is_array($$value)) {
@@ -592,7 +618,7 @@ class mslib_fe
 										}
 									}
 								} else {
-									foreach ($$value as $k => $v) {
+									foreach ($$value as $k => $v) {										
 										if ((strlen($v) > 0) && ($key != session_name()) && ($key != 'error')) {
 											if ($hidden_fields) {
 												$get_url .= '<input name="'.$key . rawurlencode('['.$$key.'][]').'" type="hidden" value="'.rawurlencode($v).'">'."\n";
@@ -603,6 +629,7 @@ class mslib_fe
 									}
 								}
 							}
+*/							
 						}
 					}
 				}
@@ -769,7 +796,7 @@ class mslib_fe
 			return 0;
 		}
 	}
-	function rewritenamein($input,$id='') {
+	function rewritenamein($input,$id='',$replaceDashByUnderscore=0) {
 		$input=self::normaliza($input);
 		if (mb_detect_encoding($input, 'UTF-8', true)=='UTF-8') {
 			$input=utf8_decode($input);
@@ -789,6 +816,9 @@ class mslib_fe
 			$final_file=$input;
 		}
 		$final_file=rtrim($final_file,'-');
+		if ($replaceDashByUnderscore) {
+			$final_file = str_replace('-','_',$final_file);	
+		}
 		return urlencode($final_file);
 	}
 	function normaliza ($string){    
@@ -1781,7 +1811,9 @@ class mslib_fe
 		$query_elements['from']=&$from;
 		$query_elements['where']=&$where;
 		$params = array (
-			'query_elements' => &$query_elements
+			'query_elements' => &$query_elements,
+			'skipFlatDatabase' => &$skipFlatDatabase,
+			'include_disabled_products' => &$include_disabled_products,			
 		);
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getProductPreProc'])) {
 			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getProductPreProc'] as $funcRef) {
@@ -3168,6 +3200,7 @@ class mslib_fe
 				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getShippingCosts'] as $funcRef) {
 					$params['row3']=&$row3;
 					$params['shipping_method']=&$shipping_method;
+					$params['countries_id']=&$countries_id;
 					t3lib_div::callUserFunction($funcRef, $params, $this);
 				}
 			}
@@ -3201,6 +3234,7 @@ class mslib_fe
 				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getShippingCostsCustomType'])) {
 					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getShippingCostsCustomType'] as $funcRef) {
 						$params['row3']=&$row3;
+						$params['countries_id']=&$countries_id;
 						$params['shipping_method']=&$shipping_method;
 						$params['shipping_method_id'] = &$shipping_method_id;
 						$params['shipping_cost'] = &$shipping_cost;
@@ -3214,7 +3248,7 @@ class mslib_fe
 			if (strstr($shipping_cost,",")) {
 				$steps=explode(",",$shipping_cost);
 				// calculate total costs
-				$subtotal=mslib_fe::countCartTotalPrice();							
+				$subtotal=mslib_fe::countCartTotalPrice(1, 0, $countries_id);							
 				$count=0;
 				foreach ($steps as $step) {							
 					// example: the value 200:15 means below 200 euro the shipping costs are 15 euro, above and equal 200 euro the shipping costs are 0 euro
@@ -4991,25 +5025,21 @@ class mslib_fe
 			// hook oef
 			return $invoice_id; 
 		} else {
-			$sql	= "select invoice_id from tx_multishop_invoices where page_uid='".$this->shop_pid."' order by id desc limit 1";
+			//$sql	= "select invoice_id from tx_multishop_invoices where page_uid='".$this->shop_pid."' order by id desc limit 1";
+			$sql	= "select invoice_id from tx_multishop_invoices where page_uid='".$this->showCatalogFromPage."' order by id desc limit 1";
 			$query	= $GLOBALS['TYPO3_DB']->sql_query($sql);
 			$rs_inv	= $GLOBALS['TYPO3_DB']->sql_fetch_assoc($query);
 			$prefix = $this->ms['MODULES']['INVOICE_PREFIX'] . date("Y");
 			if (preg_match("/^".$prefix."/",$rs_inv['invoice_id'])) {
 				//$invoice_id = ((int) $rs_inv['invoice_id'] + 1);
-				
 				if ($this->ms['MODULES']['INVOICE_PREFIX']) {
 					$rs_inv['invoice_id'] = str_replace($this->ms['MODULES']['INVOICE_PREFIX'], '', $rs_inv['invoice_id']);
 				}
-				
 				// if prefix not empty, the (int) will convert the whole invoice id to 1
-				
 				$invoice_id = ((int) $rs_inv['invoice_id'] + 1);
-				
 				if ($this->ms['MODULES']['INVOICE_PREFIX']) {
 					$invoice_id = $this->ms['MODULES']['INVOICE_PREFIX'] . $invoice_id;
 				}
-				
 			} else {
 				$invoice_id = $this->ms['MODULES']['INVOICE_PREFIX'] . date("Y").'00001';
 			}
@@ -5022,6 +5052,10 @@ class mslib_fe
 		}
 		if (is_numeric($orders_id)) {
 			$order=mslib_fe::getOrder($orders_id);
+			if ($order['total_amount']==0) {
+				// it does not make sense to create an invoice without an amount
+				return false;
+			}			
 			if (($order['orders_id'] and $order['bill']) or ($order['orders_id'] and $force)) {
 				$invoice_id=mslib_fe::generateInvoiceId();
 				if ($invoice_id) {
@@ -6063,7 +6097,7 @@ class mslib_fe
 		$amount = urlencode($amount);
 		$from_Currency = urlencode($from_Currency);
 		$to_Currency = urlencode($to_Currency);
-		$url = "http://www.google.com/ig/calculator?hl=en&q=$amount$from_Currency=?$to_Currency";
+		$url = 'http://www.google.com/finance/converter?a='.$amount.'&from='.strtoupper($from_Currency).'&to='.strtoupper($to_Currency);
 		$ch = curl_init();
 		$timeout = 0;
 		curl_setopt ($ch, CURLOPT_URL, $url);
@@ -6072,10 +6106,15 @@ class mslib_fe
 		curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
 		$rawdata = curl_exec($ch);
 		curl_close($ch);
-		$data =  json_decode($rawdata);
-		$data = explode('"', $rawdata);
-		$data = explode(' ', $data['3']);
-		$var = $data['0'];
+		
+		$pattern = '/<span class=bld>(.*)<\/span>/isUm';
+		preg_match_all($pattern, $rawdata, $matches);
+		
+		$res = '';
+		if (isset($matches[1][0]) && !empty($matches[1][0])) {
+			$res = str_replace(' ' . strtoupper($to_Currency), '', $matches[1][0]);
+		}
+		$var = $res;
 		return round($var,3);
 	}
 	function setCookie($name, $value, $lifetime,$path='/',$domain='',$secure=0) { 

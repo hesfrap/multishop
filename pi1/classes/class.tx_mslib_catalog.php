@@ -199,6 +199,21 @@ class tx_mslib_catalog {
 		}
 		return $content;
 	}
+	
+	// universal hook method for giving plugin information about update/insert action of the product 
+	function productsUpdateNotifierForPlugin($data, $product_id = 0) {
+		// handle with care, the $data is just direct information injected from $this->post/$item
+		// custom hook that can be controlled by third-party plugin
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['pi1/classes/class.tx_mslib_catalog.php']['productsUpdateNotifierForPlugin'])) {
+			$params = array (
+					'data' => &$data,
+					'product_id' => &$product_id
+			);
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['pi1/classes/class.tx_mslib_catalog.php']['productsUpdateNotifierForPlugin'] as $funcRef) {
+				t3lib_div::callUserFunction($funcRef, $params, $this);
+			}
+		}
+	}
 }
 if (defined("TYPO3_MODE") && $TYPO3_CONF_VARS[TYPO3_MODE]["XCLASS"]["ext/multishop/pi1/classes/class.tx_mslib_catalog.php"]) {
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]["XCLASS"]["ext/multishop/pi1/classes/class.tx_mslib_catalog.php"]);

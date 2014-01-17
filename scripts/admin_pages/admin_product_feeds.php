@@ -26,6 +26,7 @@ $array['products_image_normal'] ='Products image (enlarged)';
 $array['products_ean'] ='Products EAN code';
 $array['products_sku'] ='Products SKU code';
 $array['products_quantity'] ='Products quantity';
+$array['products_old_price'] ='Products old price';
 $array['products_price'] ='Products price';
 $array['products_price_excluding_vat'] ='Products price excluding vat';
 

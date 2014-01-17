@@ -15,7 +15,7 @@ if (count($products) < 0) {
 			<h1>Bestelling plaatsen</h1>
 		</div>';
 	}
-	$customers = mslib_fe::getUsers($this->conf['fe_customer_usergroup'],'name');
+	$customers = mslib_fe::getUsers($this->conf['fe_customer_usergroup'],'company, name, email');
 	if (is_array($customers) and count($customers)) {	
 		$content .= '<form action="'.mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]='.$this->ms['page'].'&tx_multishop_pi1[page_section]=admin_proced_manual_order').'" method="post" name="checkout" class="AdvancedForm" id="ms_checkout_direct">';
 		if ($this->get['tx_multishop_pi1']['is_proposal']) {
@@ -23,10 +23,14 @@ if (count($products) < 0) {
 		}	
 		$content .= '<div class="account-field">	
 			<label>'.$this->pi_getLL('admin_customer').'</label>
-			<select id="manual_order_customer_id" name="customer_id"><option value="">'.htmlspecialchars($this->pi_getLL('new_customer')).'</option>';
+			<select id="manual_order_customer_id" name="customer_id" width="300px"><option value="">'.htmlspecialchars($this->pi_getLL('existing_customer', 'Existing customers')).'</option>';
 		foreach ($customers as $customer) {
 			if ($customer['email']) {
-				$content.='<option value="'.$customer['uid'].'">'.htmlspecialchars($customer['name'].' ('.$customer['email'].')').'</option>';
+				if ($customer['company']) {
+					$content.='<option value="'.$customer['uid'].'">' . $customer['company'] . ' - '.htmlspecialchars($customer['name'].' ('.$customer['email'].')').'</option>';
+				} else {
+					$content.='<option value="'.$customer['uid'].'">'.htmlspecialchars($customer['name'].' ('.$customer['email'].')').'</option>';
+				}
 			}
 		}
 		$content.='</select>';
@@ -115,6 +119,8 @@ if (count($products) < 0) {
 		<div class="account-field">
 			<label for="company" id="account-company">'.ucfirst($this->pi_getLL('company')).'</label>
 			<input type="text" name="company" class="company" id="company" value="'.htmlspecialchars($user['company']).'"/>
+			<label for="tx_multishop_vat_id" id="account-tx_multishop_vat_id">'.ucfirst($this->pi_getLL('vat_id','VAT ID')).'</label>
+			<input type="text" name="tx_multishop_vat_id" class="tx_multishop_vat_id" id="tx_multishop_vat_id" value="'.htmlspecialchars($user['tx_multishop_vat_id']).'" />
 		</div>
 		<div class="account-field">
 			<label class="account-firstname" for="first_name">'.ucfirst($this->pi_getLL('first_name')).'*</label>
@@ -206,12 +212,16 @@ if (count($products) < 0) {
 		
 		$tmpcontent .='<script type="text/javascript">
 			jQuery(document).ready(function($) {
+				$(\'#manual_order_customer_id\').select2({
+					width:\'310px\'
+				});
+				
 				$(\'#manual_order_customer_id\').change(function() {
 					if ($(this).val() == \'\') {
 						$("#customer_details_form").show();
 					} else {
 						$("#customer_details_form").hide();
-						$("#ms_checkout").submit();
+						$("#ms_checkout_direct").submit();
 					}
 				});			
 				if (jQuery("#checkboxdifferent_delivery_address").is(\':checked\')) {

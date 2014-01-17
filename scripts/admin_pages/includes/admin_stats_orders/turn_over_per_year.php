@@ -44,6 +44,7 @@ $content.='
 ';
 
 $year_total_amount = array();
+$year_total_order = array();
 for ($yr = $current_year; $yr >= $oldest_year; $yr--) {
 	$dates=array();
 	for ($i=1;$i<13;$i++) {
@@ -52,9 +53,11 @@ for ($yr = $current_year; $yr >= $oldest_year; $yr--) {
 	}
 	
 	$total_amount=0;
+	$total_orders_per_year = 0;
 	foreach ($dates as $key => $value)
 	{
 		$total_price=0;
+		$total_orders = 0;
 		$start_time	= strtotime($value."-01 00:00:00");
 		$end_time	= strtotime($value."-31 23:59:59");
 		$where=array();	
@@ -69,11 +72,14 @@ for ($yr = $current_year; $yr >= $oldest_year; $yr--) {
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
 			$total_price=($total_price+$row['grand_total']);
+			$total_orders++;
 		}
 		$total_amount = $total_amount+$total_price;
+		$total_orders_per_year = $total_orders_per_year+$total_orders;
 	}
 	
 	$year_total_amount[$yr] = mslib_fe::amount2Cents($total_amount,0);
+	$year_total_order[$yr] = mslib_fe::amount2Cents($total_amount/$total_orders_per_year, 0);
 }
 
 if (!$tr_type or $tr_type=='even') {
@@ -88,14 +94,15 @@ $content.='<table width="100%" class="msZebraTable" cellpadding="0" cellspacing=
 <tr>
 	<th width="50" align="right">'.htmlspecialchars($this->pi_getLL('year', 'Year')).'</th>
 	<th align="right">'.htmlspecialchars($this->pi_getLL('amount', 'Amount')).'</th>
-</tr>
-';
+	<th align="right">'.htmlspecialchars($this->pi_getLL('average', 'Average')).'</th>
+</tr>';
 foreach ($year_total_amount as $years => $year_total) {
 	if (!$tr_type or $tr_type=='even') 	$tr_type='odd';
 	else								$tr_type='even';	
 	$content.='<tr class="'.$tr_type.'">';
 	$content.='<td align="right">'.$years.'</td>';
 	$content.='<td align="right">'.$year_total.'</td>';
+	$content.='<td align="right">'.($year_total_order[$years]).'</td>';
 	$content.='</tr>';
 }
 $content.='</table>';

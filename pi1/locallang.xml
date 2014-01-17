@@ -220,6 +220,7 @@
       <label index="admin_edit_product">EDIT PRODUCT</label>
       <label index="admin_edit_product_description">Edit current product</label>
       <label index="admin_save">SAVE</label>
+      <label index="admin_save_as_new">SAVE AS NEW</label>
       <label index="admin_cancel">CANCEL</label>
       <label index="admin_name">NAME</label>
       <label index="admin_model">MODEL</label>
@@ -548,6 +549,7 @@
       <label index="create_reversal_invoice_for_selected_invoices">Create reversal invoice for selected invoices</label>
       <label index="mail_selected_invoices">Mail selected invoices</label>
       <label index="move_selected_products_to">Move selected products to</label>
+      <label index="duplicate_selected_products_to">Duplicate selected products to</label>
       <label index="delete_selected_products">Delete selected products</label>
       <label index="choose_action">Choose action</label>
       <label index="update_selected_invoices_to_not_paid">Update selected invoices to not paid</label>
@@ -902,6 +904,7 @@
       <label index="admin_edit_product">PRODUCT BEWERKEN</label>
       <label index="admin_edit_product_description">Bewerk huidig product</label>
       <label index="admin_save">OPSLAAN</label>
+      <label index="admin_save_as_new">OPSLAAN ALS NIEUW</label>
       <label index="admin_cancel">ANNULEREN</label>
       <label index="admin_name">NAAM</label>
       <label index="admin_model">MODEL</label>
@@ -1227,6 +1230,7 @@
       <label index="create_reversal_invoice_for_selected_invoices">Creeër creditfactuur voor geselecteerde facturen</label>
       <label index="mail_selected_invoices">E-mail geselecteerde facturen</label>
       <label index="move_selected_products_to">Verplaats geselecteerde producten naar</label>
+      <label index="duplicate_selected_products_to">Dupliceer geselecteerde producten naar</label>
       <label index="delete_selected_products">Verwijder geselecteerde producten</label>
       <label index="choose_action">Selecteer actie</label>
       <label index="update_selected_invoices_to_not_paid">Zet geselecteerde facturen op niet betaald</label>

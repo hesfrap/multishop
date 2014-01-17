@@ -155,7 +155,8 @@ if ($this->post) {
 				$updateArray['page_uid']=$this->post['page_uid'];
 			} else {
 				$updateArray['page_uid'] = $this->shop_pid;
-			}			
+			}
+			$updateArray['tx_multishop_vat_id']=$this->post['tx_multishop_vat_id'];
 //			$updateArray['tx_multishop_newsletter']			=	$address['tx_multishop_newsletter'];			
 			$updateArray['cruser_id'] =	$GLOBALS['TSFE']->fe_user->user['uid'];
 			// custom hook that can be controlled by third-party plugin

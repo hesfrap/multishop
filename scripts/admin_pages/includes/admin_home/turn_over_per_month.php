@@ -28,7 +28,7 @@ foreach ($dates as $key => $value) {
 	$libaryWidgets['turnoverPerMonth']['content'].='<td align="right">'.ucfirst($key).'</td>';
 }
 $libaryWidgets['turnoverPerMonth']['content'].='<td align="right" nowrap>'.htmlspecialchars($this->pi_getLL('total')).'</td>';
-$libaryWidgets['turnoverPerMonth']['content'].='<td align="right" nowrap>'.htmlspecialchars($this->pi_getLL('cumulative')).'</td>';
+$libaryWidgets['turnoverPerMonth']['content'].='<td align="right" nowrap>'.htmlspecialchars($this->pi_getLL('cumulative')).' '.date("Y").'</td>';
 $libaryWidgets['turnoverPerMonth']['content'].='</tr>';
 $libaryWidgets['turnoverPerMonth']['content'].='<tr class="even">';
 $total_amount=0;
@@ -51,6 +51,9 @@ foreach ($dates as $key => $value) {
 	}
 	$libaryWidgets['turnoverPerMonth']['content'].='<td align="right">'.mslib_fe::amount2Cents($total_price,0).'</td>';
 	$total_amount=$total_amount+$total_price;
+	if (date("Y",$start_time) == date("Y")) {
+		$total_amount_cumulative=$total_amount_cumulative+$total_price;
+	}
 }
 if ($this->cookie['stats_year_sb'] == date("Y") || !$this->cookie['stats_year_sb']) {
 	$month=date("m");
@@ -68,7 +71,7 @@ if ($this->cookie['stats_year_sb'] == date("Y") || !$this->cookie['stats_year_sb
 	$currentMonth=0;
 }
 $libaryWidgets['turnoverPerMonth']['content'].='<td align="right" nowrap>'.mslib_fe::amount2Cents($total_amount,0).'</td>';
-$libaryWidgets['turnoverPerMonth']['content'].='<td align="right" nowrap>'.mslib_fe::amount2Cents(($total_amount/$dayOfTheYear)*365,0).'</td>';
+$libaryWidgets['turnoverPerMonth']['content'].='<td align="right" nowrap>'.mslib_fe::amount2Cents(($total_amount_cumulative/$dayOfTheYear)*365,0).'</td>';
 $libaryWidgets['turnoverPerMonth']['content'].='</tr>';
 if (!$tr_type or $tr_type=='even') {
 	$tr_type='odd';

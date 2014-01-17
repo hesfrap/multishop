@@ -96,7 +96,13 @@ foreach ($products as $current_product) {
 	// custom hook that can be controlled by third-party plugin eof		
 	$contentItem .= $this->cObj->substituteMarkerArray($subparts['item'], $markerArray,'###|###');
 }
+
 // fill the row marker with the expanded rows
+if ($current['content']) {
+	$subpartArray['###CURRENT_CATEGORIES_TOP_DESCRIPTION###'] 					= trim($current['content']);
+} else {
+	$subpartArray['###CURRENT_CATEGORIES_TOP_DESCRIPTION###'] 					= '';
+}
 $subpartArray['###CURRENT_CATEGORIES_NAME###'] 					= trim($current['categories_name']);
 $subpartArray['###ITEM###'] 									= $contentItem;
 // completed the template expansion by replacing the "item" marker in the template 

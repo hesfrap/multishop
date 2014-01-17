@@ -6,10 +6,10 @@
 	</meta>
 	<data type="array">
 		<languageKey index="default" type="array">
-			<label index="tt_content.list_type_pi1">multishop</label>
+			<label index="tt_content.list_type_pi1">Multishop</label>
 		</languageKey>
 		<languageKey index="nl" type="array">
-			<label index="tt_content.list_type_pi1">multishop</label>
+			<label index="tt_content.list_type_pi1">Multishop</label>
 		</languageKey>
 	</data>
 </T3locallang>

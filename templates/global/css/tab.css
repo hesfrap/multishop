@@ -174,6 +174,7 @@ form#admin_categories_edit_ .account-field option { padding:0 10px 0 0; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content legend { background:#c50000; font:bold 12px Arial, Helvetica, sans-serif; color:#fff; margin:0; padding:5px 10px; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content input[type="text"],
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content textarea { border:1px solid #999; background:#fff5f5; font:12px Arial, Helvetica, sans-serif; padding:3px 4px; }
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content textarea#categories_name { width:658px; }
 /* #tx_multishop_pi1_core #tab-container .tab_container .tab_content input[type="text"].text { width:610px; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content textarea { width:610px; } */
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content textarea.mceEditor { width:300px; border:none; padding:0; overflow:hidden; }
@@ -662,3 +663,16 @@ span.viewfront a:hover { background:#e2e2e2; }
 
 #tx_multishop_pi1_core #tab-container .error-space { position:absolute; background:#d5201e; width:auto; height:auto; font:11px Arial, Helvetica, sans-serif; color:#fff; margin-top:-24px; margin-left:150px; padding:5px 10px; text-transform:lowercase; border-radius:6px; } 
 #tx_multishop_pi1_core #tab-container .error-space em { position:absolute; bottom:-5px; border-top:5px solid #d5201e; border-left:5px solid transparent; border-right:5px solid transparent; }
+
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content #edit_delivery_details_container .error-space { position:relative; background:none; margin:0; padding:0; border-radius:0; }
+
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content form#edit_customer .error-space { float:left; display:block; left:161px; margin:-24px 0 0; }
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content form#edit_customer #invalid-last_name.error-space,
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content form#edit_customer #invalid-country.error-space { left:161px; margin:6px 0 0; }
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content form#edit_customer #invalid-address_number.error-space,
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content form#edit_customer #invalid-city.error-space { left:616px; }
+
+#tx_multishop_pi1_core #tab-container .tab_container #Order_Details.tab_content #edit_billing_details_container .error-space { display:none; }
+
+#tx_multishop_pi1_core #tab-container .tab_container #product_shippingcost.tab_content fieldset fieldset { margin-top:10px; }
+#tx_multishop_pi1_core #tab-container .tab_container #product_shippingcost.tab_content fieldset fieldset table { margin-top:10px; }

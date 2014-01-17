@@ -309,7 +309,7 @@ switch ($this->ms['page'])
 					// relative mode
 					require($this->DOCUMENT_ROOT.$this->ms['MODULES']['DOWNLOAD_INVOICE_TYPE'].'.php');	
 				} else {
-					require(t3lib_extMgm::extPath('multishop').'scripts/ajax_pages/download_invoice.php');	
+					require(t3lib_extMgm::extPath('multishop').'scripts/ajax_pages/download_invoice_b2c.php');	
 				}
 			}		
 		}
@@ -780,6 +780,8 @@ switch ($this->ms['page'])
 				$keys[] 		= 'telephone';
 				$keys[] 		= 'mobile';
 				$keys[] 		= 'fax';
+				$keys[] 		= 'vat_id';
+				
 				
 				$updateArray 	= array();
 				switch ($details_type) {

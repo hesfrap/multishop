@@ -2,33 +2,26 @@
 if (!defined('TYPO3_MODE')) die ('Access denied.');
 
 //add order 
-if ($this->post['proced_order'])
-{
-	
+if ($this->post['proced_order']) {
 	$unique_id = md5($this->post['first_name'] . $this->post['last_name'] . $this->post['company'] . $this->post['tx_multishop_pi1']['telephone']);
 	
-	if ($this->post['customer_id'])
-	{
+	if ($this->post['customer_id']) {
 		$user=mslib_fe::getUser($this->post['customer_id']);
-		if ($user['uid'])
-		{
+		if ($user['uid']) {
 			$customer_id=$user['uid'];
-			$this->post=array_merge($this->post,$user);	
+			$this->post=array_merge($this->post,$user);
+			$this->post['tx_multishop_pi1']['telephone'] = $this->post['telephone'];
 		}
-	}
-	else
-	{
+	} else {
 		$str="SELECT uid from fe_users where (username='".addslashes($unique_id)."')";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);		
-		if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0)
-		{
+		if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0) {
 			// use current account
 			$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
 			$customer_id=$row['uid'];
 		}			
 	}
-	if (!$customer_id)
-	{		
+	if (!$customer_id) {		
 		$insertArray=array();	
 		$insertArray['page_uid']			=	$this->shop_pid;
 		$insertArray['company']				=	$this->post['company'];
@@ -54,16 +47,15 @@ if ($this->post['proced_order'])
 		$insertArray['usergroup']			=	$this->conf['fe_customer_usergroup'];
 		$insertArray['pid']					=	$this->conf['fe_customer_pid'];		
 		$insertArray['password'] 			=	mslib_befe::getHashedPassword(rand(1000000,9000000));
+		$insertArray['tx_multishop_vat_id']	=	$this->post['tx_multishop_vat_id'];
 		$query = $GLOBALS['TYPO3_DB']->INSERTquery('fe_users', $insertArray);
 		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
-		if ($res)
-		{
+		if ($res) {
 			$customer_id=$GLOBALS['TYPO3_DB']->sql_insert_id();
 		}
 	}
 	//add to orders
-	if ($customer_id)
-	{
+	if ($customer_id) {
 		// now add the order
 		$insertArray=array();	
 		$insertArray['customer_id']				=	$customer_id;
@@ -89,7 +81,7 @@ if ($this->post['proced_order'])
 		$insertArray['billing_telephone']		=	$this->post['tx_multishop_pi1']['telephone'];
 		$insertArray['billing_mobile']			=	$this->post['mobile'];	
 		$insertArray['billing_fax']				=	'';		
-		$insertArray['billing_vat_id']			=	'';				
+		$insertArray['billing_vat_id']			=	$this->post['tx_multishop_vat_id'];
 		$insertArray['delivery_company']		=	$this->post['delivery_company'];	
 		$insertArray['delivery_first_name']		=	$this->post['delivery_first_name'];
 		$insertArray['delivery_middle_name']	=	$this->post['delivery_middle_name'];		
@@ -118,8 +110,7 @@ if ($this->post['proced_order'])
 		$insertArray['payment_method_costs']	=	$this->post['payment_method_costs'];
 		$insertArray['cruser_id']				=	$GLOBALS['TSFE']->fe_user->user['uid'];
 		
-		if (!$this->post['different_delivery_address'])
-		{
+		if (!$this->post['different_delivery_address']) {
 			$insertArray['delivery_email']					=$insertArray['billing_email'];
 			$insertArray['delivery_company']				=$insertArray['billing_company'];
 			$insertArray['delivery_first_name']				=$insertArray['billing_first_name'];
@@ -138,9 +129,7 @@ if ($this->post['proced_order'])
 			$insertArray['delivery_telephone']				=$insertArray['billing_telephone'];
 			$insertArray['delivery_region']					=$insertArray['billing_region'];
 			$insertArray['delivery_name']					=$insertArray['billing_name'];				
-		}
-		else
-		{
+		} else {
 			$insertArray['delivery_email']					=$this->post['delivery_email'];
 			$insertArray['delivery_company']				=$this->post['delivery_company'];
 			$insertArray['delivery_first_name']				=$this->post['delivery_first_name'];
@@ -161,17 +150,18 @@ if ($this->post['proced_order'])
 			$insertArray['delivery_state']					=$this->post['delivery_state'];		
 			$insertArray['delivery_name']					=preg_replace('/ +/', ' ', $this->post['delivery_first_name'].' '.$this->post['delivery_middle_name'].' '.$this->post['delivery_last_name']);
 		}
-		if ($this->post['tx_multishop_pi1']['is_proposal']) $insertArray['is_proposal']=1;
-		else $insertArray['by_phone']=1;
-		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1']['insertOrderPreHook']))
-		{
+		if ($this->post['tx_multishop_pi1']['is_proposal']) {
+			$insertArray['is_proposal']=1;
+		} else {
+			$insertArray['by_phone']=1;
+		}
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1']['insertOrderPreHook'])) {
 			// hook
 			$params = array(
 				'ms' => $ms,
 				'insertArray' => &$insertArray
 			);
-			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1']['insertOrderPreHook'] as $funcRef)
-			{
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1']['insertOrderPreHook'] as $funcRef) {
 				t3lib_div::callUserFunction($funcRef, $params, $this);
 			}
 			// hook eof
@@ -192,6 +182,5 @@ if ($this->post['proced_order'])
 		</script>
 		';
 	} //add to orders eof
-	
 }
 ?>

@@ -207,6 +207,8 @@ if ($cms['id'] or $_REQUEST['action']=='edit_cms') {
 	$markers['TRACK_AND_TRACE_CODE'] 	= 'Track and Trace code';
 	$markers['CONFIRMATION_LINK'] 		= 'Create account confirmation link';
 	$markers['CUSTOMER_COMMENTS'] 		= 'Customer comments';
+	$markers['PAYMENT_PAGE_LINK'] 		= 'Payment link (for payment reminder mail template)';
+	
 	//hook to let other plugins further manipulate the markers
 	if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin/admin_edit_cms.php']['CmsMarkersPostProc'])) {
 		$params = array (

@@ -191,9 +191,9 @@ class tx_multishop_pi1 extends tslib_pibase {
 			require(t3lib_extMgm::extPath('multishop').'scripts/application_top_once.php');
 		}
 		require(t3lib_extMgm::extPath('multishop').'scripts/application_top_always.php');
-		require(t3lib_extMgm::extPath('multishop').'scripts/ajax_pages/core.php');		
-		return $this->pi_wrapInBaseClass($content);		
-	}	
+		require(t3lib_extMgm::extPath('multishop').'scripts/ajax_pages/core.php');				
+		return $this->pi_wrapInBaseClass($content);
+	}
 	function main($content, $conf) {		
 		self::construct($conf);
 		if (!defined('MsApplicationTopOnceIsLoaded')) {

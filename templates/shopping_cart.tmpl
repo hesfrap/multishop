@@ -77,14 +77,18 @@ jQuery(document).ready(function($){
 		if (qty > 1) {
 			var new_val = parseInt(qty - 1);
 			$(qty_id).val(new_val);
-		}		
+		}
+		
+		$("#shopping_cart_form").submit();		
 	});
 	
 	$(".qty_plus").click(function() {
 		var qty_id = "#" + $(this).attr("rel");
 		var qty = parseInt($(qty_id).val());
 		var new_val = parseInt(qty + 1);
-		$(qty_id).val(new_val);		
+		$(qty_id).val(new_val);
+		
+		$("#shopping_cart_form").submit();
 	});
 });	
 </script>
