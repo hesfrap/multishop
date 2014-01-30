@@ -160,7 +160,6 @@ if ($this->post) {
 		$manufacturer=mslib_fe::getManufacturer($this->post['manufacturers_name'],'manufacturers_name');
 		if ($manufacturer['manufacturers_id']) {
 			$updateArray['manufacturers_id']=$manufacturer['manufacturers_id'];
-		
 		} else {
 			$updateArray2=array();		
 			$updateArray2['manufacturers_name']		=$this->post['manufacturers_name'];
@@ -717,12 +716,6 @@ if ($this->post) {
 		/*
 		 * options tab
 		 */
-		if ($product['products_date_added']) 		$product['products_date_added']=date("Y-m-d",$product['products_date_added']);
-		if ($product['products_date_available']) 	$product['products_date_available']=date("Y-m-d",$product['products_date_available']);
-			
-		if ($product['products_date_added']==0) 	$product['products_date_added']='';
-		if ($product['products_date_available']==0) $product['products_date_available']='';
-		
 		$input_vat_rate = '<select name="tax_id" id="tax_id"><option value="0">No TAX</option>';
 		$str="SELECT * FROM `tx_multishop_tax_rule_groups`";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
@@ -741,17 +734,9 @@ if ($this->post) {
 			$specials_price=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
 				
 			if ($specials_price['specials_new_products_price']) {
-				if ($specials_price['start_date'] > 0) {
-					$product['specials_start_date'] 			= date('d-m-Y', $specials_price['start_date']);
-				} else {
-					$product['specials_start_date'] 			= '';
-				}
-				if ($specials_price['expires_date'] > 0) {
-					$product['specials_expired_date'] 			= date('d-m-Y', $specials_price['expires_date']);
-				} else {
-					$product['specials_expired_date'] 			= '';
-				}
-				$product['specials_new_products_price']		= $specials_price['specials_new_products_price'];
+				$product['specials_new_products_price'] = $specials_price['specials_new_products_price'];
+				$product['specials_start_date'] = $specials_price['start_date'];
+				$product['specials_expired_date'] = $specials_price['expires_date'];
 			}
 		}
 			
@@ -1482,8 +1467,8 @@ if ($this->post) {
 		$subpartArray['###LABEL_BUTTON_SAVE###'] 				= $this->pi_getLL('admin_save');
 		
 		if ($_REQUEST['action']=='edit_product' && is_numeric($this->get['pid'])) {
-			$subpartArray['###BUTTON_SAVE_AS_NEW###'] 			= '<input name="save_as_new" type="submit" value="'.$this->pi_getLL('admin_save_as_new').'" class="submit" />';
-			$subpartArray['###FOOTER_BUTTON_SAVE_AS_NEW###'] 	= '<input name="save_as_new" type="submit" value="'.$this->pi_getLL('admin_save_as_new').'" class="submit" />';
+			$subpartArray['###BUTTON_SAVE_AS_NEW###'] 			= '<input name="save_as_new" type="submit" value="'.$this->pi_getLL('admin_save_as_new').'" class="submit save_as_new" />';
+			$subpartArray['###FOOTER_BUTTON_SAVE_AS_NEW###'] 	= '<input name="save_as_new" type="submit" value="'.$this->pi_getLL('admin_save_as_new').'" class="submit save_as_new" />';
 		} else {
 			$subpartArray['###BUTTON_SAVE_AS_NEW###'] 			= '';
 			$subpartArray['###FOOTER_BUTTON_SAVE_AS_NEW###'] 	= '';
@@ -1514,6 +1499,20 @@ if ($this->post) {
 		/*
 		 * options tab marker
 		 */
+		if ($product['specials_start_date']==0 || empty($product['specials_start_date'])) {
+			$product['specials_start_date_sys']='';
+			$product['specials_start_date_visual']='';
+		} else {
+			$product['specials_start_date_visual']=date($this->pi_getLL('locale_date_format'),$product['specials_start_date']);
+			$product['specials_start_date_sys']=date("Y-m-d",$product['specials_start_date']);
+		}
+		if ($product['specials_expired_date']==0 || empty($product['specials_expired_date'])) {
+			$product['specials_expired_date_sys']='';
+			$product['specials_expired_date_visual']='';
+		} else {
+			$product['specials_expired_date_visual']=date($this->pi_getLL('locale_date_format'),$product['specials_expired_date']);
+			$product['specials_expired_date_sys']=date("Y-m-d",$product['specials_expired_date']);
+		}
 		$subpartArray['###LABEL_HEADING_TAB_OPTION###'] 				= $this->pi_getLL('admin_product_options');
 		$subpartArray['###LABEL_VAT_RATE###'] 							= $this->pi_getLL('admin_vat_rate');
 		$subpartArray['###INPUT_VATE_RATE###'] 							= $input_vat_rate;
@@ -1533,9 +1532,11 @@ if ($this->post) {
 		$subpartArray['###VALUE_INCL_VAT_SPECIAL_PRICE###'] 			= htmlspecialchars($special_price_incl_vat_display);
 		$subpartArray['###VALUE_ORIGINAL_SPECIAL_PRICE###'] 			= htmlspecialchars($product['specials_new_products_price']);
 		$subpartArray['###LABEL_SPECIAL_PRICE_START###'] 				= t3lib_div::strtoupper($this->pi_getLL('special_price_start'));
-		$subpartArray['###VALUE_SPECIAL_PRICE_START###'] 				= $product['specials_start_date'];
+		$subpartArray['###VALUE_SPECIAL_PRICE_START_VISUAL###'] 		= $product['specials_start_date_visual'];
+		$subpartArray['###VALUE_SPECIAL_PRICE_START_SYS###'] 			= $product['specials_start_date_sys'];
 		$subpartArray['###LABEL_SPECIAL_PRICE_EXPIRED###'] 				= t3lib_div::strtoupper($this->pi_getLL('special_price_expired'));
-		$subpartArray['###VALUE_SPECIAL_PRICE_EXPIRED###'] 				= $product['specials_expired_date'];
+		$subpartArray['###VALUE_SPECIAL_PRICE_EXPIRED_VISUAL###'] 		= $product['specials_expired_date_visual'];
+		$subpartArray['###VALUE_SPECIAL_PRICE_EXPIRED_SYS###'] 			= $product['specials_expired_date_sys'];
 		$subpartArray['###LABEL_CAPITAL_PRICE###'] 						= $this->pi_getLL('capital_price');
 		$subpartArray['###VALUE_EXCL_VAT_CAPITAL_PRICE###'] 			= htmlspecialchars($capital_price_excl_vat_display);
 		$subpartArray['###VALUE_INCL_VAT_CAPITAL_PRICE###'] 			= htmlspecialchars($capital_price_incl_vat_display);
@@ -1547,6 +1548,20 @@ if ($this->post) {
 		$subpartArray['###VALUE_THRESHOLD_QTY###'] 						= $product['alert_quantity_threshold'];
 		$subpartArray['###LABEL_DATE_AVAILABLE###'] 					= t3lib_div::strtoupper($this->pi_getLL('products_date_available'));
 		
+		if ($product['products_date_available']==0 || empty($product['products_date_available'])) {
+			$product['products_date_available_sys']='';
+			$product['products_date_available_visual']='';
+		} else {
+			$product['products_date_available_visual']=date($this->pi_getLL('locale_date_format'),$product['products_date_available']);
+			$product['products_date_available_sys']=date("Y-m-d",$product['products_date_available']);
+		}
+		if ($product['products_date_added']==0 || empty($product['products_date_added'])) {
+			$product['products_date_added_sys']='';
+			$product['products_date_added_visual']='';
+		} else {
+			$product['products_date_added_visual']=date($this->pi_getLL('locale_date_format'),$product['products_date_added']);
+			$product['products_date_added_sys']=date("Y-m-d",$product['products_date_added']);
+		}
 		if ($product['starttime']==0) {
 			$product['endtime_sys']='';
 			$product['endtime_visual']='';
@@ -1561,16 +1576,16 @@ if ($this->post) {
 			$product['endtime_visual']=date($this->pi_getLL('locale_datetime_format'),$product['endtime']);			
 			$product['endtime_sys']=date("Y-m-d H:i:s",$product['endtime']);
 		}
-		$subpartArray['###VALUE_DATE_AVAILABLE_VISUAL###'] 				= $product['products_date_available'];
-		$subpartArray['###VALUE_DATE_AVAILABLE_SYS###'] 				= $product['products_date_available'];
+		$subpartArray['###VALUE_DATE_AVAILABLE_VISUAL###'] 				= $product['products_date_available_visual'];
+		$subpartArray['###VALUE_DATE_AVAILABLE_SYS###'] 				= $product['products_date_available_sys'];
 		$subpartArray['###VALUE_STARTTIME_VISUAL###'] 					= $product['starttime_visual'];
 		$subpartArray['###VALUE_STARTTIME_SYS###'] 						= $product['starttime_sys'];
 		$subpartArray['###VALUE_ENDTIME_VISUAL###'] 					= $product['endtime_visual'];
 		$subpartArray['###VALUE_ENDTIME_SYS###'] 						= $product['endtime_sys'];
 		
 		$subpartArray['###LABEL_DATE_ADDED###'] 						= t3lib_div::strtoupper($this->pi_getLL('date_added'));
-		$subpartArray['###VALUE_DATE_ADDED_VISUAL###'] 					= $product['products_date_added'];
-		$subpartArray['###VALUE_DATE_ADDED_SYS###'] 					= $product['products_date_added'];
+		$subpartArray['###VALUE_DATE_ADDED_VISUAL###'] 					= $product['products_date_added_visual'];
+		$subpartArray['###VALUE_DATE_ADDED_SYS###'] 					= $product['products_date_added_sys'];
 		$subpartArray['###LABEL_PRODUCT_MODEL###'] 						= $this->pi_getLL('admin_model');
 		$subpartArray['###VALUE_PRODUCT_MODEL###'] 						= htmlspecialchars($product['products_model']);
 		$subpartArray['###LABEL_PRODUCT_MANUFACTURER###'] 				= $this->pi_getLL('admin_manufacturer');

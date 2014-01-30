@@ -2,6 +2,13 @@
 <h1>###CURRENT_CATEGORIES_NAME###</h1>
 <div class="categories_top_description">###CURRENT_CATEGORIES_TOP_DESCRIPTION###</div>
 <div class="products_listing_wrapper">
+	<!-- ###LISTING_SORTING### begin -->
+	<div class="sorting_form">
+		<form name="sorting_products_listing" id="sorting_products_listing" method="get" action="###PRODUCTS_LISTING_FILTER_FORM_URL###">
+			###PRODUCTS_LISTING_FORM_CONTENT###
+		</form>
+	</div>
+	<!-- ###LISTING_SORTING### end -->
 	<ul id="product_listing">
 		<!-- ###ITEM### begin -->
 		<li id="productlisting_###PRODUCTS_ID###" class="###ITEM_CLASS###">

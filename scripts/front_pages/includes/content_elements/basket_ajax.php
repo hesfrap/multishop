@@ -47,6 +47,11 @@ $(".ajax_add_to_cart").live("click", function(e) {
 		e.preventDefault();
 		var products_id=$(this).attr("rel");
 		var quantity=$(this).parent().parent().find(".relation_cart_quantity").val();
+		
+		if (typeof quantity == "undefined") {
+			quantity = 1;
+		}
+		
 		$.ajax({ 
 				type:   "POST", 
 				url:    "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=products_to_basket').'", 

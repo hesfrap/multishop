@@ -20,14 +20,14 @@ if($p > 0) {
 	$tmp.='&nbsp;';
 }
 $tmp.='</td></tr></table></td><td class="pagenav_next"><table><tr><td>';
-if((($p+1)*$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']) < $pageset['total_rows']) {
+if((($p+1)*$limit_per_page) < $pageset['total_rows']) {
 	$tmp.=mslib_fe::flexibutton('<a class="ajax_link pagination_button" href="'.mslib_fe::typolink('','p='.($p+1).'&'.mslib_fe::tep_get_all_get_params(array('p','Submit','page','mini_foto','clearcache'))).'">'.$this->pi_getLL('next').'</a>','pagenav_next');
 } else {
 	$tmp.='&nbsp;';	
 }
 $tmp.='</td></tr></table></td><td class="pagenav_last"><table><tr><td>';
-if((($p+1)*$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']) < $pageset['total_rows']) {
-	$times=($pageset['total_rows']/$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']);
+if((($p+1)*$limit_per_page) < $pageset['total_rows']) {
+	$times=($pageset['total_rows']/$limit_per_page);
 	$lastpage=floor($times);
 	if ($lastpage==$times) {
 		$lastpage--;

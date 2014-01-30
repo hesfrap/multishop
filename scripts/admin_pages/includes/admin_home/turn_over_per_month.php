@@ -1,19 +1,16 @@
 <?php
-if (!defined('TYPO3_MODE')) die ('Access denied.');
-
-
+if (!defined('TYPO3_MODE')) {
+	die('Access denied.');
+}
 $sql_year 		= "select crdate from tx_multishop_orders where deleted=0 order by orders_id asc limit 1";
 $qry_year 		= $GLOBALS['TYPO3_DB']->sql_query($sql_year);
 $row_year 		= $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_year);
-
 if ($row_year['crdate'] > 0) {
 	$oldest_year 	= date("Y", $row_year['crdate']);
 } else {
 	$oldest_year 	= date("Y");
 }
 $current_year 	= date("Y");
-
-
 $dates=array();
 //$libaryWidgets['turnoverPerMonth']['content'].='<h2>'.htmlspecialchars($this->pi_getLL('sales_volume_by_month')).'</h2>';
 for ($i=3;$i>=0;$i--) {
@@ -42,7 +39,6 @@ foreach ($dates as $key => $value) {
 	} else {
 		$where[]='(o.paid=1 or o.paid=0)';
 	}
-	
 	$where[]='(o.deleted=0)';
 	$str="SELECT o.orders_id, o.grand_total  FROM tx_multishop_orders o WHERE (".implode(" AND ",$where).") and (o.crdate BETWEEN ".$start_time." and ".$end_time.")";
 	$qry=$GLOBALS['TYPO3_DB']->sql_query($str);

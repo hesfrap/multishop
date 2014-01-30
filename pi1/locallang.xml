@@ -564,11 +564,11 @@
       <label index="update_selected_orders_to_not_paid">Update selected orders to not paid</label>
       <label index="delete_selected_orders">Delete selected orders</label>
       <label index="locale_all">en_US.utf8</label>
-      <label index="locale_date_format">m/d/yy</label>
+      <label index="locale_date_format">m/d/Y</label>
       <label index="locale_time_format">H:i:s</label>
       <label index="locale_datetime_format">m/d/Y H:i:s</label>
-      <label index="locale_date_format_js">yy-mm-dd</label>	  
-      <label index="locale_datetime_format_js">yy-mm-dd HH:mm:ss</label>	  
+      <label index="locale_date_format_js">yy/mm/dd</label>	  
+      <label index="locale_datetime_format_js">yy/mm/dd HH:mm:ss</label>	  
       <label index="click_to_pay">Click to Pay</label>
       <label index="admin_new_order">New order</label>
       <label index="admin_orders_overview">Orders overview</label>
@@ -692,6 +692,14 @@
 	  <label index="gender_is_required">Title is required</label>
 	  <label index="special_price_start">start date</label>
 	  <label index="special_price_expired">expire date</label>
+	  <label index="products_per_page">Products per page</label>
+	  <label index="sort_by">Sort by</label>
+	  <label index="sortby_options_label_bestselling_asc">Best selling (asc)</label>
+	  <label index="sortby_options_label_bestselling_desc">Best selling (desc)</label>
+	  <label index="sortby_options_label_price_asc">Price (asc)</label>
+	  <label index="sortby_options_label_price_desc">Price (desc)</label>
+	  <label index="sortby_options_label_new_asc">New (asc)</label>
+	  <label index="sortby_options_label_new_desc">New (desc)</label>
     </languageKey>
     <languageKey index="nl" type="array">
       <label index="vat_id">BTW nummer:</label>
@@ -1245,7 +1253,7 @@
       <label index="update_selected_orders_to_not_paid">Zet geselecteerde bestellingen op niet betaald</label>
       <label index="delete_selected_orders">Verwijder geselecteerde bestellingen</label>
       <label index="locale_all">nl_NL.utf8</label>
-      <label index="locale_date_format">d-m-yy</label>
+      <label index="locale_date_format">d-m-Y</label>
       <label index="locale_time_format">H:i:s</label>
       <label index="locale_datetime_format">d-m-Y H:i:s</label>
       <label index="locale_date_format_js">dd-mm-yy</label>	  
@@ -1311,7 +1319,7 @@
 	  <label index="grid">Raster</label>		  
 	  <label index="admin_product_units">PRODUCT EENHEDEN</label>
 	  <label index="admin_order_unit">BESTELEENHEID</label>
-	  <label index="default">standaard</label>	  
+	  <label index="default">Standaard</label>	  
       <label index="admin_normal_price">Normale prijs</label>
 	  <label index="included_vat">Waarvan BTW</label>	
 	  <label index="categories">Rubrieken</label>
@@ -1371,7 +1379,15 @@
 	  <label index="admin_user_agent_statistics_description">Tonen apparaat / browser bezoeker gebruikt om toegang te krijgen tot de winkel</label>
 	  <label index="gender_is_required">Titel nodig</label>
 	  <label index="special_price_start">startdatum</label>
-	  <label index="special_price_expired">vervaldatum</label>	  	  
+	  <label index="special_price_expired">vervaldatum</label>
+	  <label index="products_per_page">Producten per pagina</label>
+	  <label index="sort_by">Sorteer op</label>
+	  <label index="sortby_options_label_bestselling_asc">Meest verkocht (opvolgend)</label>
+	  <label index="sortby_options_label_bestselling_desc">Meest verkocht (aflopend)</label>
+	  <label index="sortby_options_label_price_asc">Prijs (opvolgend)</label>
+	  <label index="sortby_options_label_price_desc">Prijs (aflopend)</label>
+	  <label index="sortby_options_label_new_asc">Nieuw (opvolgend)</label>
+	  <label index="sortby_options_label_new_desc">Nieuw (aflopend)</label>
     </languageKey>
     <languageKey index="fi" type="array">
       <label index="list_mode_1">Malli 1</label>
@@ -2322,7 +2338,7 @@
       <label index="update_selected_orders_to_not_paid">Perbarui perintah dipilih untuk tidak dibayar</label>
       <label index="delete_selected_orders">Hapus perintah terpilih</label>
       <label index="locale_all">id_ID.utf8</label>
-      <label index="locale_date_format">d/m/yy</label>
+      <label index="locale_date_format">d/m/Y</label>
       <label index="locale_time_format">H:i:s</label>
       <label index="locale_datetime_format">d/m/Y H:i:s</label>
     </languageKey>
@@ -2862,7 +2878,7 @@
       <label index="update_selected_orders_to_not_paid">Ausgewählte Bestellungen als nicht bezahlt markieren</label>
       <label index="delete_selected_orders">Ausgewählte Bestellungen löschen</label>
       <label index="locale_all">de_DE.utf8</label>
-      <label index="locale_date_format">d.m.yy</label>
+      <label index="locale_date_format">d.m.Y</label>
       <label index="locale_time_format">H:i:s</label>
       <label index="locale_datetime_format">d.m.Y H:i:s</label>
       <label index="click_to_pay">Klicken um zu bezahlen</label>

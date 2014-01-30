@@ -149,6 +149,12 @@ function getSpecialsSections(products_id) {
 	});
 }
 jQuery(document).ready(function($) {
+	$('input').keypress(function(event) {
+	    if (event.keyCode == 13) {
+	    	jQuery('.save_as_new').attr('name', 'Submit');
+	    }
+	});
+
 	jQuery(".msPriceExcludingVat").keyup(function() {
 		productPrice(true, jQuery(this));
 	});
@@ -163,6 +169,7 @@ jQuery(document).ready(function($) {
 		productPrice(false, jQuery(this));
 	});
 	jQuery("#specials_sections").hide();
+	getSpecialsSections(###AJAX_PID###);
 	
 	jQuery(".tab_content").hide();
 	jQuery("ul.tabs li:first").addClass("active").show();
@@ -176,7 +183,23 @@ jQuery(document).ready(function($) {
 		return false;
 	});
 	###AJAX_REQUEST_SPECIAL_PRICE###
-	jQuery('#specials_new_products_price').keyup(function () {
+	jQuery('#specials_new_products_price_excl_vat').keyup(function () {
+		var value = this.value;
+		if (this.value != this.lastValue) {
+			if (this.timer) {
+				clearTimeout(this.timer);
+			}
+			this.timer = setTimeout(function () {
+				if (value != '') {
+					getSpecialsSections(###AJAX_PID###);
+				} else {
+					jQuery("#specials_sections").slideUp("fast");
+				}
+			}, 200);
+			this.lastValue = value;
+		}
+	});
+	jQuery('#specials_new_products_price_incl_vat').keyup(function () {
 		var value = this.value;
 		if (this.value != this.lastValue) {
 			if (this.timer) {
@@ -234,18 +257,22 @@ jQuery(document).ready(function($) {
 		altFormat: "yy-mm-dd",
 		altTimeFormat: "HH:mm:ss"	
 	});
-	jQuery("#specials_price_start").datepicker({ 
-		dateFormat: "dd-mm-yy",
+	jQuery("#specials_price_start_visitor").datepicker({ 
+		dateFormat: "###DATE_FORMAT###",
+		altField: "#specials_price_start",
+		altFormat: "yy-mm-dd",
 		changeMonth: true,
 		changeYear: true,
-		showOtherMonths: true,  
+		showOtherMonths: true,
 		yearRange: "###YEAR_RANGE###"
 	});
-	jQuery("#specials_price_expired").datepicker({ 
-		dateFormat: "dd-mm-yy",
+	jQuery("#specials_price_expired_visitor").datepicker({ 
+		dateFormat: "###DATE_FORMAT###",
+		altField: "#specials_price_expired",
+		altFormat: "yy-mm-dd",
 		changeMonth: true,
 		changeYear: true,
-		showOtherMonths: true,  
+		showOtherMonths: true,
 		yearRange: "###YEAR_RANGE###"
 	});
 	// related product ajax server
@@ -422,9 +449,11 @@ jQuery(document).ready(function($) {
 						<div class="msAttributesField hidden"><input type="hidden" class="msFinalPriceExcludingVat" name="specials_new_products_price" value="###VALUE_ORIGINAL_SPECIAL_PRICE###" /></div>
 						<div class="special_price_timer">
 							<label for="specials_price_start">###LABEL_SPECIAL_PRICE_START###</label>
-							<input type="text" name="specials_price_start" class="price small_input" id="specials_price_start" value="###VALUE_SPECIAL_PRICE_START###"> 
+							<input type="text" name="specials_price_start_visitor" class="price small_input" id="specials_price_start_visitor" value="###VALUE_SPECIAL_PRICE_START_VISUAL###">
+							<input type="hidden" name="specials_price_start" class="price small_input" id="specials_price_start" value="###VALUE_SPECIAL_PRICE_START_SYS###" > 
 							<label for="specials_price_expired">###LABEL_SPECIAL_PRICE_EXPIRED###</label>
-							<input type="text" name="specials_price_expired" class="price small_input" id="specials_price_expired" value="###VALUE_SPECIAL_PRICE_EXPIRED###">
+							<input type="text" name="specials_price_expired_visitor" class="price small_input" id="specials_price_expired_visitor" value="###VALUE_SPECIAL_PRICE_EXPIRED_VISUAL###">
+							<input type="hidden" name="specials_price_expired" class="price small_input" id="specials_price_expired" value="###VALUE_SPECIAL_PRICE_EXPIRED_SYS###" > 
 						</div>	
 					</div>
 					<div class="msAdminFormFieldValueFloatContainer" id="msEditProductInputCapitalPrice">

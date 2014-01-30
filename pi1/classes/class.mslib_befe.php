@@ -2663,26 +2663,23 @@ class mslib_befe {
 		}
 	}
 	function getCount($value='',$table,$field='',$additional_where=array()) {
-		if (is_array($additional_where) and count(is_array($additional_where)) and $table and $value == '' and $field == '') {
-			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
-				'count(1) as total',         // SELECT ...
-				$table,     // FROM ...
-				implode(' AND ',$additional_where),    // WHERE...
-				'',            // GROUP BY...
-				'',    // ORDER BY...
-				''            // LIMIT ...
-			);
-			if ($this->msDebug) {
-				return $query;
+		if ($table) {
+			$queryArray=array();
+			$queryArray['from']=$table;
+			if ($value and $field) {
+				$queryArray['where'][]=$field.'=\''.addslashes($value).'\'';
 			}
-			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
-			$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
-			return $row['total'];			
-		} elseif (isset($value) and $table and $field) {
+			if (count($additional_where)) {
+				foreach ($additional_where as $where) {
+					if ($where) {
+						$queryArray['where'][]=$where;
+					}
+				}
+			}
 			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
 				'count(1) as total',         // SELECT ...
-				$table,     // FROM ...
-				$field.'="'.addslashes($value).'"'.(count($additional_where) ? ' AND '.implode(' AND ',$additional_where):''),    // WHERE...
+				$queryArray['from'],     // FROM ...
+				implode(' AND ',$queryArray['where']),    // WHERE...
 				'',            // GROUP BY...
 				'',    // ORDER BY...
 				''            // LIMIT ...
@@ -2692,7 +2689,7 @@ class mslib_befe {
 			}			
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 			$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
-			return $row['total'];
+			return $row['total'];				
 		} else {
 			return 0;
 		}

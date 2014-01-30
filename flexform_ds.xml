@@ -415,7 +415,6 @@
 						<label>Content type</label>
 						<config>
 							<type>select</type>
-							<type>select</type>
 							<itemsProcFunc>tx_multishop_addMiscFieldsToFlexForm->addMiscFields</itemsProcFunc>
 							<maxitems>1</maxitems>
 							<size>10</size>

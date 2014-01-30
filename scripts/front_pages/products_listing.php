@@ -134,22 +134,52 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 					} 
 				});
 				});
-				</script>				  
-			';
+				</script>';
 		}	
-	} else {	
+	} else {
+		if ($this->productsLimit) {
+			$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']=$this->productsLimit;
+		}
+		$default_limit_page = $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'];
+		if ($this->get['tx_multishop_pi1']['limitsb']) {
+			if ($this->get['tx_multishop_pi1']['limitsb'] and $this->get['tx_multishop_pi1']['limitsb'] != $this->cookie['limitsb']) {
+				$this->cookie['limitsb'] = $this->get['tx_multishop_pi1']['limitsb'];
+				$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'] = $this->cookie['limitsb'];
+		
+				$GLOBALS['TSFE']->fe_user->setKey('ses', 'tx_multishop_cookie', $this->cookie);
+				$GLOBALS['TSFE']->storeSessionData();
+			}
+		}
+		if ($this->get['tx_multishop_pi1']['sortbysb']) {
+			if ($this->get['tx_multishop_pi1']['sortbysb'] and $this->get['tx_multishop_pi1']['sortbysb'] != $this->cookie['sortbysb']) {
+				$this->cookie['sortbysb'] = $this->get['tx_multishop_pi1']['sortbysb'];
+		
+				$GLOBALS['TSFE']->fe_user->setKey('ses', 'tx_multishop_cookie', $this->cookie);
+				$GLOBALS['TSFE']->storeSessionData();
+			}
+		} else {
+			$this->cookie['sortbysb'] = '';
+			
+			$GLOBALS['TSFE']->fe_user->setKey('ses', 'tx_multishop_cookie', $this->cookie);
+			$GLOBALS['TSFE']->storeSessionData();
+		}
 		if ($this->ADMIN_USER) {
 			$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']=150;
 		}
 		// product listing
+		if (isset($this->cookie['limitsb']) && $this->cookie['limitsb'] > 0) {
+			$limit_per_page = $this->cookie['limitsb'];
+			if ($this->ADMIN_USER) {
+				$limit_per_page = 150;
+			}
+		} else {
+			$limit_per_page = $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'];
+		}
 		if ($p >0) {
-			$offset=(((($p)*$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'])));
+			$offset=(((($p)*$limit_per_page)));
 		} else {
 			$p=0;
 			$offset=0;
-		}
-		if ($this->productsLimit) {
-			$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT']=$this->productsLimit;
 		}
 		if ($this->ADMIN_USER and $this->get['sort_by']) {
 			switch ($this->get['sort_by']) {
@@ -172,43 +202,60 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 		} else {
 			$tbl='p2c.';
 		}
-		$pageset=mslib_fe::getProductsPageSet($tbl.'categories_id='.$this->get['categories_id'],$offset,$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'],array(),array(),array(),array(),0,array(),array(),'products_listing');
-		$products=$pageset['products'];	
+		$filter = array();
+		$filter[] = $tbl.'categories_id='.$this->get['categories_id'];
 		
-		// create the meta tags	
-		/*
-		// first check if the meta_title exists
-		if ($current['meta_title'])	$meta_title=$current['meta_title'];
-		else						$meta_title=$current['categories_name'];
-		if ($meta_title) $meta_title.=$this->ms['MODULES']['PAGE_TITLE_DELIMETER'];
-		$meta_title.=$this->ms['MODULES']['STORE_NAME'];		
-		if ($current['meta_description'])	$meta_description=$current['meta_description'];
-		else								$meta_description='Productlisting: '.htmlspecialchars($current['categories_name']);		
-		
-		$output_array['meta']['title'] 			= '<title>'.htmlspecialchars($meta_title).'</title>';		
-		$output_array['meta']['description'] 	= '<meta name="description" content="'.htmlspecialchars($meta_description).'" />';	
-		if ($current['meta_keywords'])			$output_array['meta']['keywords'] = '<meta name="keywords" content="'.htmlspecialchars($current['meta_keywords']).'" />';			
-		// create the meta tags eof
-		*/
-		// load optional cms content and show the current category name
-		/* $show_default_header=0;
-		if ($current['content'] and !$p) {
-			$hide_no_products_message=1;
-			if ($current['content']) {
-				$content.=mslib_fe::htmlBox($current['categories_name'],$current['content'],1);
+		$orderby = array();
+		$select = array();
+		$where = array();
+		$extra_from = array();
+		$extra_join = array();
+		if (isset($this->cookie['sortbysb']) && !empty($this->cookie['sortbysb']) && isset($this->get['tx_multishop_pi1']['sortbysb']) && !empty($this->get['tx_multishop_pi1']['sortbysb'])) {
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$tbl='pf.';
 			} else {
-				$show_default_header=1;
+				$tbl='p.';
+			}
+			switch ($this->cookie['sortbysb']) {
+				case 'best_selling_asc':
+					$select[] = 'SUM(op.qty) as order_total_qty';
+					$extra_join[] = 'LEFT JOIN tx_multishop_orders_products op ON '.$tbl.'products_id=op.products_id';
+					$orderby[]	="order_total_qty asc";
+					break;
+				case 'best_selling_desc':
+					$select[] = 'SUM(op.qty) as order_total_qty';
+					$extra_join[] = 'LEFT JOIN tx_multishop_orders_products op ON '.$tbl.'products_id=op.products_id';
+					$orderby[]	= "order_total_qty desc";
+					break;
+				case 'price_asc':
+					$orderby[]	="final_price asc";
+					break;
+				case 'price_desc':
+					$orderby[]	="final_price desc";
+					break;
+				case 'new_asc':
+					$orderby[]	=$tbl."products_date_added desc";
+					break;
+				case 'new_desc':
+					$orderby[]	=$tbl."products_date_added asc";
+					break;
 			}
 		}
-		else {
-			$show_default_header=1;
-		}
-		// load optional cms content and show the current category name eof */
+		$pageset=mslib_fe::getProductsPageSet($filter,$offset,$limit_per_page,$orderby,array(),$select,$where,0,$extra_from,array(),'products_listing','',0,1,$extra_join);
+		$products=$pageset['products'];
 		// load products listing	
 		
 		$products_compare = true;
 		if (!count($products)) {
-			if (!$hide_no_products_message) {
+			if ($current['content'] and !$p) {
+				$hide_no_products_message=1;
+				if ($current['content']) {
+					$content.=mslib_fe::htmlBox($current['categories_name'],$current['content'],1);
+				} else {
+					$show_default_header=1;
+				}
+			}			
+			if (!$hide_no_products_message) {				
 				$content.=$this->pi_getLL('no_products_available');
 			}
 		} else {

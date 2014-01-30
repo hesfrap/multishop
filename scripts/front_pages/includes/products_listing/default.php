@@ -17,7 +17,15 @@ if ($this->conf['products_listing_tmpl_path']) {
 $subparts=array();
 $subparts['template'] 	= $this->cObj->getSubpart($template, '###TEMPLATE###');
 $subparts['item']		= $this->cObj->getSubpart($subparts['template'], '###ITEM###');
-
+if (!$this->ms['MODULES']['PRODUCTS_LISTING_DISPLAY_PAGINATION_FORM'] && !$this->ms['MODULES']['PRODUCTS_LISTING_DISPLAY_ORDERBY_FORM']) {
+	// clear coupon html
+	// because the DISCOUNT_MODULE_WRAPPER is inside the CART_FOOTER wrapper we have to substitute it on the footer
+	$subHeaderparts=array();
+	$subHeaderparts['listing_sorting']		= $this->cObj->getSubpart($subparts['template'], '###LISTING_SORTING###');
+	$subpartHeader=array();
+	$subpartHeader['###LISTING_SORTING###'] = '';
+	$subparts['template']=$this->cObj->substituteMarkerArrayCached($subparts['template'], array(), $subpartHeader);
+}
 $contentItem='';
 foreach ($products as $current_product) {
 	$output=array();		
@@ -105,6 +113,108 @@ if ($current['content']) {
 }
 $subpartArray['###CURRENT_CATEGORIES_NAME###'] 					= trim($current['categories_name']);
 $subpartArray['###ITEM###'] 									= $contentItem;
+
+$product_listing_form_content = '';
+if ($this->ms['MODULES']['PRODUCTS_LISTING_DISPLAY_PAGINATION_FORM']) {
+	$limit_options = array();
+	$limit_options[] = 5;
+	$limit_options[] = 10;
+	$limit_options[] = 20;
+	$limit_options[] = 30;
+	$limit_options[] = 50;
+	$limit_options[] = 100;
+	
+	$product_listing_form_content .= '<div class="listing_limit_selectbox">';
+	$product_listing_form_content .= '<label for="limitsb">'.$this->pi_getLL('products_per_page', 'Products per page').':</label>';
+	$product_listing_form_content .= '<select name="tx_multishop_pi1[limitsb]" id="limitsb" class="products_listing_filter">';
+	if (!in_array($default_limit_page, $limit_options)) {
+		$product_listing_form_content .= '<option value="'.$default_limit_page.'">'.$default_limit_page.'</option>';
+	}
+	foreach ($limit_options as $limit_option) {
+		if (isset($this->cookie['limitsb']) && !empty($this->cookie['limitsb']) && $limit_option == $this->cookie['limitsb']) {
+			$product_listing_form_content .= '<option value="'.$limit_option.'" selected="selected">'.$limit_option.'</option>';
+		} else {
+			if ($limit_option == $default_limit_page && !isset($this->cookie['limitsb']) && empty($this->cookie['limitsb'])) {
+				$product_listing_form_content .= '<option value="'.$limit_option.'" selected="selected">'.$limit_option.'</option>';
+			} else {
+				$product_listing_form_content .= '<option value="'.$limit_option.'">'.$limit_option.'</option>';
+			}
+		}
+	}
+	$product_listing_form_content .= '</select>';
+	$product_listing_form_content .= '</div>';
+}
+if ($this->ms['MODULES']['PRODUCTS_LISTING_DISPLAY_ORDERBY_FORM']) {
+	$sortby_options = array();
+	$sortby_options['best_selling_asc'] = $this->pi_getLL('sortby_options_label_bestselling_asc', 'Best selling (asc)');
+	$sortby_options['best_selling_desc'] = $this->pi_getLL('sortby_options_label_bestselling_desc', 'Best selling (desc)');
+	$sortby_options['price_asc'] = $this->pi_getLL('sortby_options_label_price_asc', 'Price (asc)');
+	$sortby_options['price_desc'] = $this->pi_getLL('sortby_options_label_price_desc', 'Price (desc)');
+	$sortby_options['new_asc'] = $this->pi_getLL('sortby_options_label_new_asc', 'New (asc)');
+	$sortby_options['new_desc'] = $this->pi_getLL('sortby_options_label_new_desc', 'New (desc)');
+	
+	$product_listing_form_content .= '<div class="listing_sortby_selectbox">';
+	$product_listing_form_content .= '<label for="sortbysb">'.$this->pi_getLL('sort_by', 'Sort by').':</label>';
+	$product_listing_form_content .= '<select name="tx_multishop_pi1[sortbysb]" id="sortbysb" class="products_listing_filter">';
+	$product_listing_form_content .= '<option value="">'.$this->pi_getLL('default').'</option>';
+	foreach ($sortby_options as $sortby_key => $sortby_label) {
+		if ($sortby_key == $this->cookie['sortbysb']) {
+			$product_listing_form_content .= '<option value="'.$sortby_key.'" selected="selected">'.$sortby_label.'</option>';
+		} else {
+			$product_listing_form_content .= '<option value="'.$sortby_key.'">'.$sortby_label.'</option>';
+		}
+	}
+	$product_listing_form_content .= '</select>';
+	$product_listing_form_content .= '</div>';
+}
+if (!empty($product_listing_form_content)) {
+	$product_listing_form_content .= '<input type="hidden" name="id" value="'.$this->get['id'].'">';
+	if ($this->get['tx_multishop_pi1']['page_section'] == 'products_listing') {
+		$product_listing_form_content .= '<input type="hidden" name="categories_id" value="'.$this->get['categories_id'].'">';
+	}
+	if ($this->get['tx_multishop_pi1']['page_section'] == 'products_search') {
+		$product_listing_form_content .= '<input type="hidden" name="skeyword" value="'.$this->get['skeyword'].'">';
+		$product_listing_form_content .= '<input type="hidden" name="Submit" value="Zoeken">';
+	}
+	$product_listing_form_content .= '<input type="hidden" name="tx_multishop_pi1[page_section]" value="'.$this->get['tx_multishop_pi1']['page_section'].'">';
+	if ($p > 0) {
+		if ($this->get['tx_multishop_pi1']['page_section'] == 'products_listing') {
+			$product_listing_form_content .= '<input type="hidden" name="p" value="'.$p.'">';
+		}
+		if ($this->get['tx_multishop_pi1']['page_section'] == 'products_search') {
+			$product_listing_form_content .= '<input type="hidden" name="page" value="'.$this->get['page'].'">';
+		}
+	}
+	$product_listing_form_content .= '<script type="text/javascript">
+	  jQuery(document).ready(function($) {
+			$(".products_listing_filter").change(function(){
+				$("#sorting_products_listing").submit();
+			});
+	  });
+	  </script>';
+	
+	// get all cats to generate multilevel fake url
+	$level=0;
+	$cats=mslib_fe::Crumbar($this->get['categories_id']);
+	$cats=array_reverse($cats);
+	$where='';
+	if (count($cats) > 0) {
+		foreach ($cats as $item) {
+			$where.="categories_id[".$level."]=".$item['id']."&";
+			$level++;
+		}
+		$where=substr($where,0,(strlen($where)-1));
+	}
+	// get all cats to generate multilevel fake url eof
+	
+	$form_action_url = mslib_fe::typolink($this->conf['products_listing_page_pid'],$where.'&tx_multishop_pi1[page_section]=products_listing');
+	
+	$subpartArray['###PRODUCTS_LISTING_FILTER_FORM_URL###'] = '';
+	$subpartArray['###PRODUCTS_LISTING_FORM_CONTENT###'] = $product_listing_form_content;
+} else {
+	$subpartArray['###PRODUCTS_LISTING_FILTER_FORM_URL###'] = '';
+	$subpartArray['###PRODUCTS_LISTING_FORM_CONTENT###'] = '';
+}
 // completed the template expansion by replacing the "item" marker in the template 
 // custom hook that can be controlled by third-party plugin
 if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/front_pages/products_listing.php']['productsListingPagePostHook'])) {

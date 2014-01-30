@@ -1138,7 +1138,9 @@ $tmpcontent.='
 					if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0) {
 						$tmpcontent.='<td align="center" class="cell_products_status">';
 						//<div class="orders_status_button_gray" title="'.htmlspecialchars($order['orders_status']).'">'.$order['orders_status'].'</div>
-						$tmpcontent.='<select name="order_product_status" class="change_order_product_status" rel="'.$order['orders_products_id'].'" id="orders_'.$order['orders_products_id'].'">';
+						$tmpcontent.='<select name="order_product_status" class="change_order_product_status" rel="'.$order['orders_products_id'].'" id="orders_'.$order['orders_products_id'].'">
+							<option value="">'.$this->pi_getLL('choose').'</option>						
+						';
 						if (is_array($all_orders_status)) {
 							foreach ($all_orders_status as $item) {
 								$tmpcontent.='<option value="'.$item['id'].'"'.($item['id']==$order['status']?' selected':'').'>'.$item['name'].'</option>'."\n";
@@ -1200,7 +1202,9 @@ $tmpcontent.='
 					if ($this->ms['MODULES']['ADMIN_EDIT_ORDER_DISPLAY_ORDERS_PRODUCTS_STATUS'] > 0) {
 						$tmpcontent.='<td align="center" class="cell_products_status">';
 						//<div class="orders_status_button_gray" title="'.htmlspecialchars($order['orders_status']).'">'.$order['orders_status'].'</div>
-						$tmpcontent.='<select name="order_product_status" class="change_order_product_status" rel="'.$order['orders_products_id'].'" id="orders_'.$order['orders_products_id'].'">';
+						$tmpcontent.='<select name="order_product_status" class="change_order_product_status" rel="'.$order['orders_products_id'].'" id="orders_'.$order['orders_products_id'].'">
+						<option value="">'.$this->pi_getLL('choose').'</option>
+						';
 						if (is_array($all_orders_status)) {
 							foreach ($all_orders_status as $item) {
 								$tmpcontent.='<option value="'.$item['id'].'"'.($item['id']==$order['status']?' selected':'').'>'.$item['name'].'</option>'."\n";
@@ -2036,7 +2040,9 @@ $tmpcontent.='
 		';
 	$all_orders_status=mslib_fe::getAllOrderStatus();
 	if (is_array($all_orders_status) and count($all_orders_status)) {
-		$tmpcontent.='<select name="order_status">';
+		$tmpcontent.='<select name="order_status">
+		<option value="">'.$this->pi_getLL('choose').'</option>
+		';
 		foreach ($all_orders_status as $row) {
 			if ($this->get['tx_multishop_pi1']['is_manual'] == '1' && $this->get['action'] == 'edit_order' && $orders['orders_status_id'] == 0) {
 				$tmpcontent.='<option value="'.$row['id'].'" '.(($row['default_status'] > 0)?'selected':'').'>'.$row['name'].'</option>'."\n";

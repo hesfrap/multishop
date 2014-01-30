@@ -926,6 +926,12 @@ class tx_mslib_order extends tslib_pibase {
 			foreach ($keys as $key) {
 				$markerArray[$key] = $item[$key];
 			}
+			foreach ($item as $key => $val) {
+				// hooked plugins wants to add more types. lets find them and add them
+				if (!in_array($key,$keys)) {
+					$markerArray[$key] = $item[$key];
+				}
+			}
 			$contentItem .= $this->cObj->substituteMarkerArray($subparts['ITEMS_WRAPPER'], $markerArray,'###|###');
 		}
 		$subpartArray['###ITEMS_WRAPPER###'] = $contentItem;

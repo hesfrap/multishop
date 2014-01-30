@@ -583,53 +583,38 @@ class mslib_fe
 						foreach ($value as $$key => $$value) {
 							if (!is_array($$value)) {
 								if ((strlen($$value) > 0) && ($key != session_name()) && ($key != 'error')) {						
+									$string=$key.'['.$$key.']';
+									if (!mslib_fe::tep_in_array($string, $exclude_array)) {
 									  if ($hidden_fields) {
 										  $get_url .= '<input name="'.$key . rawurlencode('['.$$key.']').'" type="hidden" value="'.rawurlencode($$value).'">'."\n";
 									  } else {
 										  $get_url .= $key . rawurlencode('['.$$key.']') . '=' . rawurlencode(htmlentities($$value)) . '&';					
 									  }
+									}
 								}
 							} else {
 								foreach ($$value as $k => $v) {
-										if (is_array($v)) {
-											foreach ($v as $final_key => $final_value) {
+									if (is_array($v)) {
+										foreach ($v as $final_key => $final_value) {
+											$string=$key.'['.$$key.']['.$k.']';
+											if (!mslib_fe::tep_in_array($string, $exclude_array)) {	
 												$get_url .= $key . rawurlencode('['.$$key.']') .rawurlencode('['.$k.']['.$final_key.']') . '=' . rawurlencode(htmlentities($final_value)) . '&';
 											}
-										} else {
-											if ((strlen($v) > 0) && ($key != session_name()) && ($key != 'error')) {
+										}
+									} else {
+										if ((strlen($v) > 0) && ($key != session_name()) && ($key != 'error')) {
+											$string=$key.'['.$$key.']['.$k.']';
+											if (!mslib_fe::tep_in_array($string, $exclude_array)) {												
 												if ($hidden_fields) {
 													$get_url .= '<input name="'.$key . rawurlencode('['.$$$key.'][]').'" type="hidden" value="'.rawurlencode($v).'">'."\n";
 												} else {
 													$get_url .= $key . rawurlencode('['.$$key.']['.$k.']') . '=' . rawurlencode(htmlentities($v)) . '&';
 												}
-											}										
-										}
-									}
-								}							
-/*							
-							$string=$key.'['.$$key.']';		
-							if (!mslib_fe::tep_in_array($string, $exclude_array)) {
-								if (!is_array($$value)) {
-									if ((strlen($$value) > 0) && ($key != session_name()) && ($key != 'error')) {
-										if ($hidden_fields) {
-											$get_url .= '<input name="'.$key . rawurlencode('['.$$key.']').'" type="hidden" value="'.rawurlencode($$value).'">'."\n";
-										} else {
-											$get_url .= $key . rawurlencode('['.$$key.']') . '=' . rawurlencode(htmlentities($$value)) . '&';					
-										}
-									}
-								} else {
-									foreach ($$value as $k => $v) {										
-										if ((strlen($v) > 0) && ($key != session_name()) && ($key != 'error')) {
-											if ($hidden_fields) {
-												$get_url .= '<input name="'.$key . rawurlencode('['.$$key.'][]').'" type="hidden" value="'.rawurlencode($v).'">'."\n";
-											} else {
-												$get_url .= $key . rawurlencode('['.$$key.'][]') . '=' . rawurlencode(htmlentities($v)) . '&';
 											}
-										}
+										}										
 									}
 								}
-							}
-*/							
+							}			
 						}
 					}
 				}
@@ -1944,7 +1929,7 @@ class mslib_fe
 		string example: p2c.categories_id=12
 		array example:  $filter[]='p2c.categories_id=12'	
 	*/
-	function getProductsPageSet($filter=array(),$offset=0,$limit=0,$orderby=array(),$having=array(),$select=array(),$where=array(),$redirect_if_one_product=0,$extra_from=array(),$groupby=array(),$search_section='products_search',$select_total_count='',$returnTotalCountOnly=0,$enableFetchTaxRate=1) {
+	function getProductsPageSet($filter=array(),$offset=0,$limit=0,$orderby=array(),$having=array(),$select=array(),$where=array(),$redirect_if_one_product=0,$extra_from=array(),$groupby=array(),$search_section='products_search',$select_total_count='',$returnTotalCountOnly=0,$enableFetchTaxRate=1,$extra_join=array()) {
 			if (!is_array($filter) and $filter) {
 				$filter=array($filter);
 			}
@@ -1985,7 +1970,6 @@ class mslib_fe
 				if ($this->ms['MODULES']['INCLUDE_PRODUCTS_DESCRIPTION_DB_FIELD_IN_PRODUCTS_LISTING']) {
 					$required_cols.=',pd.products_description';
 				}
-				$from_clause.="tx_multishop_products p left join tx_multishop_specials s on p.products_id = s.products_id left join tx_multishop_manufacturers m on p.manufacturers_id = m.manufacturers_id, tx_multishop_products_description pd, tx_multishop_products_to_categories p2c, tx_multishop_categories c, tx_multishop_categories_description cd ";
 				//hook to let other plugins further manipulate the query
 				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getProductsPageSet'])) {
 					$query_elements=array();
@@ -2001,6 +1985,7 @@ class mslib_fe
 					$query_elements['redirect_if_one_product']=&$redirect_if_one_product;
 					$query_elements['extra_from']=&$extra_from;
 					$query_elements['search_section']=&$search_section;
+					$query_elements['extra_join']=&$extra_join;
 					$params = array (
 						'query_elements' => &$query_elements,
 						'enableFetchTaxRate' => &$enableFetchTaxRate
@@ -2009,6 +1994,13 @@ class mslib_fe
 						t3lib_div::callUserFunction($funcRef, $params, $this);
 					}
 				}  
+				$from_clause.="tx_multishop_products p left join tx_multishop_specials s on p.products_id = s.products_id left join tx_multishop_manufacturers m on p.manufacturers_id = m.manufacturers_id";
+				if (count($extra_join)) {
+					$from_clause.=" ";
+					$from_clause.=implode(" ",$extra_join);
+				}  				
+				$from_clause.=", tx_multishop_products_description pd, tx_multishop_products_to_categories p2c, tx_multishop_categories c, tx_multishop_categories_description cd ";
+				
 				//hook to let other plugins further manipulate the query eof					
 				if (count($extra_from)) {
 					$from_clause.=", ";
@@ -2073,6 +2065,10 @@ class mslib_fe
 					$where[]="pf.page_uid='".$this->showCatalogFromPage."'";
 				}  									
 				$from_clause.="tx_multishop_products_flat pf ";
+				if (count($extra_join)) {
+					$from_clause.=" ";
+					$from_clause.=implode(" ",$extra_join);
+				}				
 				//hook to let other plugins further manipulate the query
 				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getProductsPageSet'])) {
 					$query_elements=array();
