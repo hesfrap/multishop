@@ -26,7 +26,7 @@
  *
  * Hint: use extdeveval to insert/update function index above.
  */
-require_once(PATH_tslib.'class.tslib_pibase.php');
+//require_once(PATH_tslib.'class.tslib_pibase.php');
 /**
  * Plugin 'multishop' for the 'multishop' extension.
  *
