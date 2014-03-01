@@ -14,7 +14,8 @@ $current_year 	= date("Y");
 $dates=array();
 //$libaryWidgets['turnoverPerMonth']['content'].='<h2>'.htmlspecialchars($this->pi_getLL('sales_volume_by_month')).'</h2>';
 for ($i=3;$i>=0;$i--) {
-	$time=strtotime("-".$i." month");
+	//$time=strtotime("-".$i." month");
+	$time=strtotime(date('Y-m-01').' -'.$i.' MONTH');
 	
 //	$time=strtotime(date($selected_year.$i."-01")." 00:00:00");
 	$dates[strftime("%B %Y",$time)]=date("Y-m", $time);

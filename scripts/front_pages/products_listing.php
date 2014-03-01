@@ -12,7 +12,7 @@ if ($this->ms['MODULES']['CACHE_FRONT_END']) {
 		'lifeTime' => $this->ms['MODULES']['CACHE_TIME_OUT_LISTING_PAGES']
 	);
 	$Cache_Lite = new Cache_Lite($options);
-	$string=$this->cObj->data['uid'].'_'.$this->server['REQUEST_URI'].$this->server['QUERY_STRING'];
+	$string=$this->cObj->data['uid'].'_'.$this->HTTP_HOST.'_'.$this->server['REQUEST_URI'].$this->server['QUERY_STRING'];
 }
 if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get($string)) {	
 	if ($this->get['p']) {
@@ -52,7 +52,9 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 		}
 		if(!$this->conf['disableMetatags']) {
 			$output_array['meta']['title'] = '<title>'.htmlspecialchars($meta_title).$this->ms['MODULES']['PAGE_TITLE_DELIMETER'].$this->ms['MODULES']['STORE_NAME'].'</title>';	
-			$output_array['meta']['description'] = '<meta name="description" content="'.$meta_description.'" />';
+			if ($meta_description) {
+				$output_array['meta']['description'] = '<meta name="description" content="'.$meta_description.'" />';
+			}
 			if ($meta_keywords) {
 				$output_array['meta']['keywords'] 	= '<meta name="keywords" content="'.htmlspecialchars($meta_keywords).'" />';
 			}

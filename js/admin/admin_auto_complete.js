@@ -5,12 +5,12 @@ jQuery(document).ready(function($){
 		$("#ms_admin_us_page").val(0);
 	})
 	$(function(){
-	$("#ms_admin_skeyword").live("click", function(){
+	$("#ms_admin_skeyword").on("click", "selector", function(){
 		 $("#ms_admin_skeyword").val("");
 		 $(".ui-autocomplete").attr("id", "ui-autocomplete-admin");
 		 $(".ui-autocomplete").css("zIndex","999");
 	});
-	$("#ms_admin_skeyword").live("keydown.autocomplete", function(e){
+	$("#ms_admin_skeyword").on("keydown.autocomplete", "selector", function(e){
 		// dont process special keys
 		var skipKeys = [ 13,38,40,37,39,27,32,17,18,9,16,20,91,93,8,36,35,45,46,33,34,144,145,19 ];
 		if (jQuery.inArray(e.keyCode, skipKeys) != -1) sendData = false;

@@ -53,6 +53,7 @@ if (count($cart['last_visited'])) {
 				$filter[]=$tbl.'products_id NOT IN ('.$this->get['products_id'].')';
 			}
 		}
+		$limit_per_page = $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'];
 		$pageset=mslib_fe::getProductsPageSet($filter,$offset,$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'],$orderby,$having,$select,$where);
 		$products=$pageset['products'];
 		$no_content = false;

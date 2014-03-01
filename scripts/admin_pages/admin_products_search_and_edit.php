@@ -52,22 +52,33 @@ if ($this->post['submit']) {
 	}	
 	$data_update = array();
 	foreach ($this->post['up']['regular_price'] as $pid => $price) {
-		if (strstr($price,",")) {
-			$price = str_replace(",",".",$price);
-		}
-		$data_update[$pid]['price'] = $price;
-		$updateArray=array();
-		$updateArray['products_price']=$price;
-		// if product is originally coming from products importer we have to define that the merchant changed it
-		$str="select products_id from tx_multishop_products where imported_product=1 and lock_imported_product=0 and products_id='".$pid."'";
-		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);			
-		if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0) {
-			$updateArray['lock_imported_product']=1;
-		}
-		$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products', 'products_id=\''.$pid.'\'',$updateArray);			
-		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
-		if ($this->ms['MODULES']['FLAT_DATABASE']) {
-			$updateFlatProductIds[]=$pid;
+		if (is_numeric($pid)) {
+			if (strstr($price,",")) {
+				$price = str_replace(",",".",$price);
+			}
+			$data_update[$pid]['price'] = $price;
+			$updateArray=array();
+			$updateArray['products_price']=$price;
+			// if product is originally coming from products importer we have to define that the merchant changed it
+			$filter=array();
+			$filter[]='products_id='.$pid;
+			if (mslib_befe::ifExists('1', 'tx_multishop_products', 'imported_product', $filter)) {
+				// lock changed columns				
+				mslib_befe::updateImportedProductsLockedFields($pid,'tx_multishop_products',$updateArray);				
+			}			
+			/*
+			// if product is originally coming from products importer we have to define that the merchant changed it
+			$str="select products_id from tx_multishop_products where imported_product=1 and lock_imported_product=0 and products_id='".$pid."'";
+			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);			
+			if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0) {
+				$updateArray['lock_imported_product']=1;
+			}
+			*/
+			$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products', 'products_id=\''.$pid.'\'',$updateArray);			
+			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$updateFlatProductIds[]=$pid;
+			}
 		}
 	}
 	foreach ($this->post['up']['weight'] as $pid => $weight) {
@@ -138,6 +149,12 @@ if ($this->post['submit']) {
 				if (is_numeric($this->post['tx_multishop_pi1']['target_categories_id']) and mslib_befe::canContainProducts($this->post['tx_multishop_pi1']['target_categories_id'])) {
 					foreach ($this->post['selectedProducts'] as $old_categories_id => $array) {
 						foreach ($array as $pid) {
+							$filter=array();
+							$filter[]='products_id='.$pid;
+							if (mslib_befe::ifExists('1', 'tx_multishop_products', 'imported_product', $filter)) {
+								// lock changed columns
+								mslib_befe::updateImportedProductsLockedFields($pid,'tx_multishop_products_to_categories',array('categories_id'=>$this->post['tx_multishop_pi1']['target_categories_id']));				
+							}								
 							mslib_befe::moveProduct($pid,$this->post['tx_multishop_pi1']['target_categories_id'],$old_categories_id);
 						}
 					}
@@ -216,7 +233,7 @@ foreach ($limits as $limit) {
 $search_limit .='</select>';
 
 // product search
-if ($this->ms['MODULES']['FLAT_DATABASE']) {
+if ($this->ms['MODULES']['FLAT_DATABASE'] and !$this->ms['MODULES']['USE_FLAT_DATABASE_ALSO_IN_ADMIN_PRODUCTS_SEARCH_AND_EDIT']) {
 	$this->ms['MODULES']['FLAT_DATABASE']=0;
 }
 
@@ -226,43 +243,85 @@ $match		=array();
 $orderby	=array();
 $where		=array();
 $select		=array();
-$select[]='p.products_status';
-$select[]='p.products_weight';
-$select[]='p.products_quantity';
-$select[]='s.specials_new_products_price';
+if (!$this->ms['MODULES']['FLAT_DATABASE']) {
+	$select[]='p.products_status';
+	$select[]='p.products_weight';
+	$select[]='p.products_quantity';
+	$select[]='s.specials_new_products_price';
+}
 //$filter[]='p.page_uid='.$this->shop_pid; is already inside the getProductsPageSet
 if (isset($this->get['keyword']) and strlen($this->get['keyword']) > 0)  {
 	switch ($this->get['tx_multishop_pi1']['search_by']) {
 		case 'products_description':
-			$filter[]="(pd.products_description like '%".addslashes($this->get['keyword'])."%')";				
+			$prefix='pd.';
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$prefix='pf.';
+			}
+			$filter[]="(".$prefix."products_description like '%".addslashes($this->get['keyword'])."%')";				
 		break;
 		case 'products_model':
-			$filter[]="(p.products_model like '%".addslashes($this->get['keyword'])."%')";				
+			$prefix='p.';
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$prefix='pf.';
+			}		
+			$filter[]="(".$prefix."products_model like '%".addslashes($this->get['keyword'])."%')";				
 		break;
 		case 'products_weight':
-			$filter[]="(p.products_weight like '".addslashes($this->get['keyword'])."%')";				
+			$prefix='p.';
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$prefix='pf.';
+			}		
+			$filter[]="(".$prefix."products_weight like '".addslashes($this->get['keyword'])."%')";				
 		break;
 		case 'products_quantity':
-			$filter[]="(p.products_quantity like '".addslashes($this->get['keyword'])."%')";				
+			$prefix='p.';
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$prefix='pf.';
+			}
+			$filter[]="(".$prefix."products_quantity like '".addslashes($this->get['keyword'])."%')";				
 		break;
 		case 'products_price':
-			$filter[]="(p.products_price like '".addslashes($this->get['keyword'])."%')";				
+			$prefix='p.';
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$prefix='pf.';
+			}		
+			$filter[]="(".$prefix."products_price like '".addslashes($this->get['keyword'])."%')";				
 		break;
 		case 'categories_name':
-			$filter[]="(cd.categories_name like '%".addslashes($this->get['keyword'])."%')";				
+			$prefix='cd.';
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$prefix='pf.';
+			}		
+			$filter[]="(".$prefix."categories_name like '%".addslashes($this->get['keyword'])."%')";				
 		break;
 		case 'specials_price':
-			$filter[]="(s.specials_new_products_price like '".addslashes($this->get['keyword'])."%')";				
+			$prefix='s.';
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$prefix='pf.';
+			}		
+			$filter[]="(".$prefix."specials_new_products_price like '".addslashes($this->get['keyword'])."%')";				
 		break;
 		case 'products_id':
-			$filter[]="(p.products_id like '".addslashes($this->get['keyword'])."%')";
+			$prefix='p.';
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$prefix='pf.';
+			}
+			$filter[]="(".$prefix."products_id like '".addslashes($this->get['keyword'])."%')";
 		break;
 		case 'products_name':
 		default:
-			$filter[]="(pd.products_name like '%".addslashes($this->get['keyword'])."%')";				
+			$prefix='pd.';
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$prefix='pf.';
+			}		
+			$filter[]="(".$prefix."products_name like '%".addslashes($this->get['keyword'])."%')";				
 		break;
 		case 'manufacturers_name':
-			$filter[]="(m.manufacturers_name like '".addslashes($this->get['keyword'])."%')";				
+			$prefix='m.';
+			if ($this->ms['MODULES']['FLAT_DATABASE']) {
+				$prefix='pf.';
+			}
+			$filter[]="(".$prefix."manufacturers_name like '".addslashes($this->get['keyword'])."%')";				
 		break;		
 	}
 }
@@ -271,26 +330,54 @@ switch ($this->get['tx_multishop_pi1']['order_by']) {
 		$order_by='p.products_status';
 	break;
 	case 'products_model':
-		$order_by='p.products_model';
+		$prefix='p.';
+		if ($this->ms['MODULES']['FLAT_DATABASE']) {
+			$prefix='pf.';
+		}
+		$order_by=$prefix.'products_model';
 	break;
 	case 'products_price':
-		$order_by='p.products_price';
+		$prefix='p.';
+		if ($this->ms['MODULES']['FLAT_DATABASE']) {
+			$prefix='pf.';
+		}
+		$order_by=$prefix.'products_price';
 	break;
 	case 'products_weight':
-		$order_by='p.products_weight';
+		$prefix='p.';
+		if ($this->ms['MODULES']['FLAT_DATABASE']) {
+			$prefix='pf.';
+		}	
+		$order_by=$prefix.'products_weight';
 	break;
 	case 'products_quantity':
-		$order_by='p.products_quantity';
+		$prefix='p.';
+		if ($this->ms['MODULES']['FLAT_DATABASE']) {
+			$prefix='pf.';
+		}		
+		$order_by=$prefix.'products_quantity';
 	break;
 	case 'categories_name':
-		$order_by='cd.categories_name';
+		$prefix='cd.';
+		if ($this->ms['MODULES']['FLAT_DATABASE']) {
+			$prefix='pf.';
+		}		
+		$order_by=$prefix.'categories_name';
 	break;
 	case 'specials_price':
-		$order_by='s.specials_new_products_price';
+		$prefix='s.';
+		if ($this->ms['MODULES']['FLAT_DATABASE']) {
+			$prefix='pf.';
+		}
+		$order_by=$prefix.'specials_new_products_price';
 	break;
 	case 'products_name':
 	default:
-		$order_by='pd.products_name';
+		$prefix='pd.';
+		if ($this->ms['MODULES']['FLAT_DATABASE']) {
+			$prefix='pf.';
+		}
+		$order_by=$prefix.'products_name';
 	break;
 }
 switch ($this->get['tx_multishop_pi1']['order']) {
@@ -306,23 +393,25 @@ switch ($this->get['tx_multishop_pi1']['order']) {
 }
 $orderby[]=$order_by.' '.$order;
 if (is_numeric($this->get['manufacturers_id'])) {
+	$prefix='p.';
 	if ($this->ms['MODULES']['FLAT_DATABASE']) {
-		$tbl='pf.';
-	} else {
-		$tbl='p.';
+		$prefix='pf.';
 	}
-	$filter[]="(".$tbl."manufacturers_id='".addslashes($this->get['manufacturers_id'])."')";					
+	$filter[]="(".$prefix."manufacturers_id='".addslashes($this->get['manufacturers_id'])."')";					
 }
 if (is_numeric($this->get['cid']) and $this->get['cid'] > 0) {
 	if ($this->ms['MODULES']['FLAT_DATABASE']) {
 		$string='(';
 		for ($i=0;$i<4;$i++) {
-			if ($i>0) $string.=" or ";
+			if ($i>0) {
+				$string.=" or ";
+			}
 			$string.="categories_id_".$i." = '".$this->get['cid']."'";
 		}
 		$string.=')';
-		if ($string) $filter[]=$string;
-		// 
+		if ($string) {
+			$filter[]=$string;
+		}
 	} else {
 		$cats=mslib_fe::get_subcategory_ids($this->get['cid']);
 		$cats[]=$this->get['cid'];
@@ -354,17 +443,13 @@ if ($this->ms['MODULES']['FLAT_DATABASE'] and count($having)) {
 	$filter[]=$having[0];
 	unset($having);
 }			
-//$PAGE_PARSE_START_TIME = microtime();
-
 $pageset=mslib_fe::getProductsPageSet($filter,$offset,$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'],$orderby,$having,$select,$where,0,array(),array(),'admin_products_search');
 $products=$pageset['products'];
-
 if ($pageset['total_rows'] > 0) {
 	$subpartArray = array();
 	$subpartArray['###FORM_ACTION_PRICE_UPDATE_URL###'] 		= mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]=admin_products_search_and_edit&'.mslib_fe::tep_get_all_get_params(array('tx_multishop_pi1[action]','p','Submit','weergave','clearcache')));
 	
 	$query_string=mslib_fe::tep_get_all_get_params(array('tx_multishop_pi1[action]','tx_multishop_pi1[order_by]','tx_multishop_pi1[order]','p','Submit','weergave','clearcache'));
-	//
 	$key='products_name';
 	if ($this->get['tx_multishop_pi1']['order_by']==$key) {
 		$final_order_link=$order_link;
@@ -382,7 +467,7 @@ if ($pageset['total_rows'] > 0) {
 	}
 	$subpartArray['###FOOTER_SORTBY_MODEL_LINK###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_products_search_and_edit&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
 	$subpartArray['###HEADER_SORTBY_MODEL_LINK###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_products_search_and_edit&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-	//
+
 	$key='products_status';
 	if ($this->get['tx_multishop_pi1']['order_by']==$key) {
 		$final_order_link=$order_link;
@@ -391,7 +476,7 @@ if ($pageset['total_rows'] > 0) {
 	}
 	$subpartArray['###FOOTER_SORTBY_VISIBLE_LINK###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_products_search_and_edit&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
 	$subpartArray['###HEADER_SORTBY_VISIBLE_LINK###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_products_search_and_edit&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-	//
+
 	$key='categories_name';
 	if ($this->get['tx_multishop_pi1']['order_by']==$key) {
 		$final_order_link=$order_link;
@@ -400,7 +485,7 @@ if ($pageset['total_rows'] > 0) {
 	}
 	$subpartArray['###FOOTER_SORTBY_CATEGORY_LINK###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_products_search_and_edit&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
 	$subpartArray['###HEADER_SORTBY_CATEGORY_LINK###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_products_search_and_edit&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-	//
+
 	$key='products_price';
 	if ($this->get['tx_multishop_pi1']['order_by']==$key) {
 		$final_order_link=$order_link;
@@ -409,7 +494,7 @@ if ($pageset['total_rows'] > 0) {
 	}
 	$subpartArray['###FOOTER_SORTBY_PRICE_LINK###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_products_search_and_edit&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
 	$subpartArray['###HEADER_SORTBY_PRICE_LINK###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_products_search_and_edit&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-	//
+
 	$key='specials_price';
 	if ($this->get['tx_multishop_pi1']['order_by']==$key) {
 		$final_order_link=$order_link;
@@ -418,7 +503,7 @@ if ($pageset['total_rows'] > 0) {
 	}
 	$subpartArray['###FOOTER_SORTBY_SPECIAL_PRICE_LINK###'] = mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_products_search_and_edit&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
 	$subpartArray['###HEADER_SORTBY_SPECIAL_PRICE_LINK###'] = mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_products_search_and_edit&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-	//
+
 	$key='products_quantity';
 	if ($this->get['tx_multishop_pi1']['order_by']==$key) {
 		$final_order_link=$order_link;
@@ -427,7 +512,7 @@ if ($pageset['total_rows'] > 0) {
 	}
 	$subpartArray['###FOOTER_SORTBY_STOCK_LINK###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_products_search_and_edit&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
 	$subpartArray['###HEADER_SORTBY_STOCK_LINK###'] 		= mslib_fe::typolink(',2003','tx_multishop_pi1[page_section]=admin_products_search_and_edit&tx_multishop_pi1[order_by]='.$key.'&tx_multishop_pi1[order]='.$final_order_link.'&'.$query_string);
-	//
+
 	$key='products_weight';
 	if ($this->get['tx_multishop_pi1']['order_by']==$key) {
 		$final_order_link=$order_link;

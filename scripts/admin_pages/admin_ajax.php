@@ -16,30 +16,20 @@ $GLOBALS['TSFE']->additionalHeaderData[] = '
 	jQuery(function($){
 		$(".multiselect").multiselect();
 	});
-</script>	
-<script language="javascript" type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/tiny_mce/tinymce.min.js"></script>
-<script language="javascript" type="text/javascript">
-tinyMCE.init({
-	// General options
-	mode : "textareas",
-	plugins: [
-		"advlist autolink lists link image charmap print preview anchor",
-		"searchreplace visualblocks code fullscreen",
-		"insertdatetime media table contextmenu paste"
-	],
-	toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
-	document_base_url : "'.$this->FULL_HTTP_URL.'",
-	relative_urls : false,
-	convert_urls : false,
-	height : 300,
-	editor_selector : "mceEditor",
-	apply_source_formatting : true,
-	//cleanup : false,
-	accessibility_warnings : false,
-	verify_html : false,
-	forced_root_block : false,
-	force_br_newlines : true,
-	force_p_newlines : false
+</script>
+<link rel="stylesheet" type="text/css" href="'.t3lib_extMgm::siteRelPath($this->extKey).'js/redactor/css/style.css">
+<link rel="stylesheet" href="'.t3lib_extMgm::siteRelPath($this->extKey).'js/redactor/redactor/redactor.css" />
+<script src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/redactor/redactor/redactor.js"></script>
+<script type="text/javascript">
+$(function() {
+	$(\'.mceEditor\').redactor({
+		focus: false,
+		clipboardUploadUrl: \''.$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_upload_redactor&tx_multishop_pi1[redactorType]=clipboardUploadUrl').'\',
+		imageUpload: \''.$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_upload_redactor&tx_multishop_pi1[redactorType]=imageUpload').'\',
+		fileUpload: \''.$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_upload_redactor&tx_multishop_pi1[redactorType]=fileUpload').'\',
+		imageGetJson: \''.$this->FULL_HTTP_URL.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_upload_redactor&tx_multishop_pi1[redactorType]=imageGetJson').'\',
+		minHeight:\'400\'
+	});
 });
 </script>
 <script type="text/javascript">
@@ -48,7 +38,7 @@ var browser_height;
 jQuery().ready(function($){
 	browser_width=$(document).width();
 	browser_height=$(document).height();
-	$(".toggle_advanced_options").live("click", function(){
+	$(document).on("click", ".toggle_advanced_options", function(){
 		var value=$(this).val();				
 		if (value==\''.$this->pi_getLL('admin_show_options').'\')
 		{
@@ -65,20 +55,18 @@ jQuery().ready(function($){
 	});
 });			
 </script>
-<script type="text/javascript" src="'.$this->FULL_HTTP_URL_MS.'js/jquery.textarea-expander.js"></script> 
 <link rel="stylesheet" type="text/css" href="'.$this->FULL_HTTP_URL_MS.'templates/global/css/tab.css" media="screen" />
 <link rel="stylesheet" type="text/css" href="'.$this->FULL_HTTP_URL_MS.'templates/global/css/print.css" media="print" />
 ';
-if (strstr($this->conf['admin_template_folder'],"/"))
-{
+/*
+<script type="text/javascript" src="'.$this->FULL_HTTP_URL_MS.'js/jquery.textarea-expander.js"></script> 
+*/
+if (strstr($this->conf['admin_template_folder'],"/")) {
 	$prefixed_url=$this->FULL_HTTP_URL;
-}
-else
-{
+} else {
 	$prefixed_url=$this->FULL_HTTP_URL_MS.'templates/';
 }
-if ($this->conf['highslide_folder']=='highslide')
-{
+if ($this->conf['highslide_folder']=='highslide') {
 	// this shop uses highslide with black outlines. lets include black tab css to change the css
 	$GLOBALS['TSFE']->additionalHeaderData[] = '<link rel="stylesheet" type="text/css" href="'.$this->FULL_HTTP_URL_MS.'templates/global/css/tab_black.css" media="screen" />';	
 }

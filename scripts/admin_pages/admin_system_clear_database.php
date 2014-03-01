@@ -27,6 +27,8 @@ die();
 $navItems=array();
 $navItems['categories']='Categories';
 $navItems['products']='Products';
+$navItems['products_attributes']='Product Attributes';
+$navItems['manufacturers']='Manufacturers';
 $navItems['orders']='Orders';
 $navItems['everything']='Everything';
 $content.='<div class="main-heading"><h1>Clear Database</h1></div>
@@ -47,14 +49,11 @@ $content.='<div class="main-heading"><h1>Clear Database</h1></div>
 	</div>
 </form>
 ';
-if ($this->post and is_array($this->post['tx_multishop_pi1']['items']) and count($this->post['tx_multishop_pi1']['items']))
-{
+if ($this->post and is_array($this->post['tx_multishop_pi1']['items']) and count($this->post['tx_multishop_pi1']['items'])) {
 	set_time_limit(86400); 
 	ignore_user_abort(true);	
-	foreach ($this->post['tx_multishop_pi1']['items'] as $item)
-	{
-		switch ($item)
-		{
+	foreach ($this->post['tx_multishop_pi1']['items'] as $item) {
+		switch ($item) {
 			case 'orders':
 				$tables='
 				tx_multishop_orders
@@ -96,6 +95,38 @@ if ($this->post and is_array($this->post['tx_multishop_pi1']['items']) and count
 				}			
 				$content.='<p>products has been cleared.</p>';
 			break;
+			case 'manufacturers':
+				$string='
+				TRUNCATE `tx_multishop_manufacturers`;
+				TRUNCATE `tx_multishop_manufacturers_cms`;
+				TRUNCATE `tx_multishop_manufacturers_info`;			
+				';
+				$array=explode("\n",$string);
+				foreach ($array as $item) {
+					if ($item) {
+						$qry = $GLOBALS['TYPO3_DB']->sql_query($item);
+					}
+				}						
+				$content.='<p>manufacturers has been cleared.</p>';			
+			break;
+			case 'products_attributes':
+				$string='
+				TRUNCATE `tx_multishop_products_attributes`;
+				TRUNCATE `tx_multishop_products_attributes_download`;
+				TRUNCATE `tx_multishop_products_attributes_extra`;
+				TRUNCATE `tx_multishop_products_options`;
+				TRUNCATE `tx_multishop_products_options_values`;
+				TRUNCATE `tx_multishop_products_options_values_extra`;
+				TRUNCATE `tx_multishop_products_options_values_to_products_options`				
+				';
+				$array=explode("\n",$string);
+				foreach ($array as $item) {
+					if ($item) {
+						$qry = $GLOBALS['TYPO3_DB']->sql_query($item);
+					}
+				}						
+				$content.='<p>products_attributes has been cleared.</p>';
+			break;			
 			case 'everything':
 				$string='
 				TRUNCATE `tx_multishop_categories`;

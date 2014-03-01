@@ -119,6 +119,7 @@ form#admin_categories_edit_ .account-field option { padding:0 10px 0 0; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content h1 { border:none; background:#fff; font:bold 16px Arial, Helvetica, sans-serif; color:#c50000; margin:0; padding:7px 0; }
 
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content .account-field { overflow:hidden; width:100%; border-bottom:1px dotted #e0e0e0; background:#fff; font:12px Arial, Helvetica, sans-serif; color:#333; text-transform:uppercase; padding:7px 0; }
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content .account-field .redactor_box { text-transform:none; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content .account-field .account-field { border:none; padding:0; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content .account-field#msEditProductInputName input,
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content .account-field#msEditProductInputExternalUrl input,
@@ -676,3 +677,5 @@ span.viewfront a:hover { background:#e2e2e2; }
 
 #tx_multishop_pi1_core #tab-container .tab_container #product_shippingcost.tab_content fieldset fieldset { margin-top:10px; }
 #tx_multishop_pi1_core #tab-container .tab_container #product_shippingcost.tab_content fieldset fieldset table { margin-top:10px; }
+
+.redactor_box { float:left; width:639px; }

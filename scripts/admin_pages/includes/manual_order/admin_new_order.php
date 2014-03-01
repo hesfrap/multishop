@@ -1,6 +1,7 @@
 <?php
-if (!defined('TYPO3_MODE')) die ('Access denied.');
-
+if (!defined('TYPO3_MODE')) {
+	die('Access denied.');
+}
 $cart = $GLOBALS['TSFE']->fe_user->getKey('ses',$this->cart_page_uid);
 $products = $cart['products'];
 if (count($products) < 0) {
@@ -57,33 +58,31 @@ if (count($products) < 0) {
 		$birthday_validation = '';
 		if ($this->ms['MODULES']['CHECKOUT_ENABLE_BIRTHDAY']) {
 			$birthday_validation = '
-				jQuery("#birthday_visitor").datepicker({ 
-					dateFormat: "'.$this->pi_getLL('locale_date_format', 'm/d/Y').'",
-					altField: "#birthday",
-					altFormat: "yy-mm-dd",
-					changeMonth: true,
-					changeYear: true,
-					showOtherMonths: true,  
-					yearRange: "-100:+0" 
-				});
-				jQuery("#delivery_birthday_visitor").datepicker({ 
-					dateFormat: "'.$this->pi_getLL('locale_date_format', 'm/d/Y').'",
-					altField: "#delivery_birthday",
-					altFormat: "yy-mm-dd",
-					changeMonth: true,
-					changeYear: true,
-					showOtherMonths: true,  
-					yearRange: "-100:+0" 
-				});';
+			$("#birthday_visitor").datepicker({ 
+				dateFormat: "'.$this->pi_getLL('locale_date_format', 'm/d/Y').'",
+				altField: "#birthday",
+				altFormat: "yy-mm-dd",
+				changeMonth: true,
+				changeYear: true,
+				showOtherMonths: true,  
+				yearRange: "-100:+0" 
+			});
+			$("#delivery_birthday_visitor").datepicker({ 
+				dateFormat: "'.$this->pi_getLL('locale_date_format', 'm/d/Y').'",
+				altField: "#delivery_birthday",
+				altFormat: "yy-mm-dd",
+				changeMonth: true,
+				changeYear: true,
+				showOtherMonths: true,  
+				yearRange: "-100:+0" 
+			});';
 		}
-		
 		$GLOBALS['TSFE']->additionalHeaderData[] = '<script type="text/javascript">
-			jQuery(document).ready(function () {
-				jQuery(\'#ms_checkout\').h5Validate();
+			jQuery(document).ready(function($) {
+				$(\'#ms_checkout\').h5Validate();
 				' . $birthday_validation . '
 			}); //end of first load
 		</script>';
-		
 		if (is_array($erno) and count($erno) > 0) {
 			$content_ .= '<div class="error_msg">';
 			$content_ .= '<h3>'.$this->pi_getLL('the_following_errors_occurred').'</h3><ul>';
@@ -215,7 +214,6 @@ if (count($products) < 0) {
 				$(\'#manual_order_customer_id\').select2({
 					width:\'310px\'
 				});
-				
 				$(\'#manual_order_customer_id\').change(function() {
 					if ($(this).val() == \'\') {
 						$("#customer_details_form").show();

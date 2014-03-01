@@ -206,7 +206,7 @@ table#product_import_table td,
 table#product_import_table th,
 table#product_import_table td.column_name,
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content table#product_import_table th,
-#tab-container .tab_container .tab_content table#product_import_table td.column_name { background:#333 url(../images/importer_th.gif) left top repeat-x; color:#fff; white-space:nowrap; vertical-align:middle; }
+#tab-container .tab_container .tab_content table#product_import_table td.column_name { background:#333 url(../images/importer_th.gif) left top repeat-x; color:#fff; vertical-align:middle; }
 table#product_import_table th.cell_customer { width:90%; }
 table#product_import_table th,
 #tab-container .tab_container .tab_content table#product_import_table th { border-right:1px solid #999; }
@@ -552,3 +552,20 @@ table#product_import_table td { height:30px; }
 
 table#admin_modules_listing td input { float:left; }
 table#admin_modules_listing td label { display:block; padding:2px 0 0 20px; }
+
+.msBackendButton.disabled { opacity:0.3; }
+.msBackendButton.disabled:hover { 
+background-image   :-moz-linear-gradient(top, rgba(255, 255, 255, .3), rgba(255,255,255, 0)) !important; /* Firefox+ */
+background-image   :-webkit-linear-gradient(top, rgba(255, 255, 255, .3), rgba(255,255,255, 0)) !important; /* Chrome+, Safari+ */
+background-image   :-o-linear-gradient(top, rgba(255, 255, 255, .3), rgba(255,255,255, 0)) !important; /* Opera+ */
+background-image   :-ms-linear-gradient(top, rgba(255, 255, 255, .3), rgba(255,255,255, 0)) !important; /* IE10 */
+filter             :progid:DXImageTransform.Microsoft.gradient(startColorStr='#19FFFFFF', EndColorStr='#19000000'); /* IE+ */
+}
+.msBackendButton.disabled input,
+.msBackendButton.disabled span,
+.msBackendButton.disabled b { cursor:default !important; }
+
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content table#product_import_table.bvbmedia_netops_data_table th,
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content table#product_import_table.bvbmedia_netops_data_table td { font-size:14px; font-weight:normal; padding:3px 9px; }
+
+#netops_domain_action_buttons { text-align:center; }

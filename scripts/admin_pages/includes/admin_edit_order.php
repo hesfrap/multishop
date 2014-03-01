@@ -626,10 +626,6 @@ if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 	<input name="tx_multishop_pi1[billing_company]" type="text" id="edit_billing_company" value="'.$orders['billing_company'].'" />
 	</div>
 	<div class="account-field">
-	<label>'.ucfirst($this->pi_getLL('vat_id','VAT ID')).'</label>
-	<input name="tx_multishop_pi1[billing_vat_id]" type="text" id="edit_billing_vat_id" value="'.$orders['billing_vat_id'].'" />
-	</div>
-	<div class="account-field">
 	<label>'.ucfirst($this->pi_getLL('name')).'*:</label>
 	<input name="tx_multishop_pi1[billing_name]" type="text" id="edit_billing_name" value="'.$orders['billing_name'].'" required="required" />
 	</div>
@@ -685,6 +681,14 @@ if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 	<label>'.ucfirst($this->pi_getLL('fax')).':</label>
 	<input name="tx_multishop_pi1[billing_fax]" type="text" id="edit_billing_fax" value="'.$orders['billing_fax'].'" />
 	</div>
+	<div class="account-field">
+	<label>'.ucfirst($this->pi_getLL('vat_id','VAT ID')).'</label>
+	<input name="tx_multishop_pi1[billing_vat_id]" type="text" id="edit_billing_vat_id" value="'.$orders['billing_vat_id'].'" />
+	</div>
+	<div class="account-field">
+	<label>'.ucfirst($this->pi_getLL('coc_id','COC Nr.:')).'</label>
+	<input name="tx_multishop_pi1[billing_coc_id]" type="text" id="edit_billing_coc_id" value="'.$orders['billing_coc_id'].'" />
+	</div>
 	<a href="#" id="close_edit_billing_info" class="float_right msadmin_button">'.$this->pi_getLL('save').'</a>
 	</div>';
 }
@@ -697,9 +701,6 @@ if ($hide_billing_vcard) {
 	
 if ($orders['billing_company']) {
 	$tmpcontent.='<strong>'.$orders['billing_company'].'</strong><br />';
-}
-if ($orders['billing_vat_id']) {
-	$tmpcontent.='<strong>'.$orders['billing_vat_id'].'</strong><br />';
 }
 $tmpcontent.=$orders['billing_name'].'<br />
 	'.$orders['billing_address'].'<br />
@@ -717,7 +718,13 @@ if ($orders['billing_mobile']) {
 }
 if ($orders['billing_fax']) {
 	$tmpcontent.=$this->pi_getLL('fax').': '.$orders['billing_fax'].'<br />';
-}			
+}
+if ($orders['billing_vat_id']) {
+	$tmpcontent.='<strong>'.$this->pi_getLL('vat_id') . ' ' .$orders['billing_vat_id'].'</strong><br />';
+}	
+if ($orders['billing_coc_id']) {
+	$tmpcontent.='<strong>'.$this->pi_getLL('coc_id', 'COC Nr.:') . ' ' .$orders['billing_coc_id'].'</strong><br />';
+}		
 if ($this->ms['MODULES']['ORDER_EDIT'] and !$orders['is_locked']) {
 	$tmpcontent .= '<span><a href="#" id="edit_billing_info" class="msadmin_button">'.$this->pi_getLL('edit').'</a></span>';
 }
@@ -860,9 +867,19 @@ $headerData='
 		});
 	}
 	jQuery(document).ready(function($) {
-		$(".submit_button").live("click", function() {
+		$(document).on("click", ".submit_button", function() {
 			var edit_form = $(".admin_product_edit");
 			if (!edit_form[0].checkValidity()) {
+				jQuery("ul.tabs li").removeClass("active");
+				jQuery("ul.tabs li").each(function(i, v){
+					if (i == 0) {
+						jQuery(v).addClass("active"); 
+						jQuery(".tab_content").hide();
+						var activeTab = jQuery(v).find("a").attr("href");
+						jQuery(activeTab).fadeIn(0);
+					}
+				});
+				
 				$("#billing_details_container").hide();
 				$("#edit_billing_details_container").show();
 			
@@ -870,8 +887,7 @@ $headerData='
 				$("#edit_delivery_details_container").show();
 			}
 		});
-				
-		$("#edit_billing_info").live("click", function(e) {
+		$(document).on("click", "#edit_billing_info", function(e) {
 			e.preventDefault();			
 			$("#billing_details_container").hide();
 			$("#edit_billing_details_container").show();
@@ -882,10 +898,6 @@ $headerData='
 			var address_data 		= "";
 			$("[id^=edit_billing]").each(function(){
 				if ($(this).attr("id") == "edit_billing_company") {
-					if ($(this).val() != "") {
-						billing_details += "<strong>" + $(this).val() + "</strong><br/>";
-					}
-				} else if ($(this).attr("id") == "edit_billing_vat_id") {
 					if ($(this).val() != "") {
 						billing_details += "<strong>" + $(this).val() + "</strong><br/>";
 					}
@@ -926,6 +938,14 @@ $headerData='
 					if ($(this).val() != "") {
 						billing_details += "'.$this->pi_getLL('fax').': " + $(this).val() + "<br/>";
 					}
+				} else if ($(this).attr("id") == "edit_billing_vat_id") {
+					if ($(this).val() != "") {
+						billing_details += "<strong>'.$this->pi_getLL('vat_id').' " + $(this).val() + "</strong><br/>";
+					}
+				} else if ($(this).attr("id") == "edit_billing_coc_id") {
+					if ($(this).val() != "") {
+						billing_details += "<strong>'.$this->pi_getLL('coc_id', 'COC Nr.:').' " + $(this).val() + "</strong><br/>";
+					}
 				}
 			});
 								
@@ -935,7 +955,7 @@ $headerData='
 			$("#billing_details_container").show();
 			$("#edit_billing_details_container").hide();
 		});
-		$("#edit_delivery_info").live("click", function(e) {
+		$(document).on("click", "#edit_delivery_info", function(e) {
 			e.preventDefault();
 			$("#delivery_details_container").hide();
 			$("#edit_delivery_details_container").show();

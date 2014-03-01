@@ -1,7 +1,7 @@
 * { margin:0; padding:0; list-style:none; }
 body { background:#000 url(../images/msadmin_dash_bg.gif) left top repeat-x; font:12px Arial, Helvetica, sans-serif; color:#333; text-align:center; }
 #msadmin_wrapper { min-width:950px; padding:40px 20px 0; }
-#msadmin_section { width:100%; min-height:500px; background:#fff; text-align:left; margin:0 auto; border-radius:13px 13px 0 0; }
+#msadmin_section { overflow:hidden; width:100%; min-height:500px; background:#fff; text-align:left; margin:0 auto; border-radius:13px 13px 0 0; }
 #msadmin_content { padding:20px; }
 #msadmin_content .shadowbox { overflow:auto; width:100%; }
 
@@ -45,9 +45,14 @@ body { background:#000 url(../images/msadmin_dash_bg.gif) left top repeat-x; fon
 #msadmin_content #pagenav_container_list_wrapper ul#pagenav_container_list li { position:relative; float:left; left:-50%; margin:0; padding:0 5px; }
 #msadmin_content #pagenav_container_list_wrapper ul#pagenav_container_list li .dyna_button a { margin:0; }
 #msadmin_content #pagenav_container_list_wrapper ul#pagenav_container_list li ul li { position:static; left:0; padding:0; }
-#msadmin_content #pagenav_container_list_wrapper ul#pagenav_container_list li.pagenav_number { padding:0 20px; }
+/* #msadmin_content #pagenav_container_list_wrapper ul#pagenav_container_list li.pagenav_number { padding:0 20px; }
 #msadmin_content #pagenav_container_list_wrapper ul#pagenav_container_list li.pagenav_number li { padding:0 3px; }
-#msadmin_content #pagenav_container_list_wrapper ul#pagenav_container_list li.pagenav_number li span { font-weight:bold; }
+#msadmin_content #pagenav_container_list_wrapper ul#pagenav_container_list li.pagenav_number li span { font-weight:bold; } */
+#msadmin_content #pagenav_container_list_wrapper ul#pagenav_container_list li.pagenav_number { padding:0 10px; }
+#msadmin_content #pagenav_container_list_wrapper ul#pagenav_container_list li.pagenav_number li { padding:2px 3px; }
+#msadmin_content #pagenav_container_list_wrapper ul#pagenav_container_list li.pagenav_number li a,
+#msadmin_content #pagenav_container_list_wrapper ul#pagenav_container_list li.pagenav_number li span { display:block; height:21px; border:1px solid #cdcdcd; font-weight:bold; padding:6px 6px 0; border-radius:4px; line-height:16px; }
+#msadmin_content #pagenav_container_list_wrapper ul#pagenav_container_list li.pagenav_number li a { color:#999; }
 
 #msAdminSearchByCharNav { width:100%; } 
 #msAdminSearchByCharNav ul { list-style: none; text-align: center; }
@@ -87,3 +92,18 @@ body { background:#000 url(../images/msadmin_dash_bg.gif) left top repeat-x; fon
 #msadmin_content li span#admin_ajax_res_footer { display:block; padding:0 0 20px; }
 #msadmin_content li span#more-results { float:left; display:block; border:1px solid #7c7c7c; background:#d5d5d5 url(/typo3conf/ext/multishop/templates/global/images/submit_gradient.gif) left top repeat-x; font:12px Arial, Helvetica, sans-serif; color:#333; text-decoration:none; text-transform:uppercase; margin:0 0.5%; padding:2px 6px; cursor:pointer; }
 #msadmin_content li span#more-results:hover { background:#e2e2e2; }
+
+.msBackendButton#netops_domain_action_button_check_domain_availability { }
+.msBackendButton#netops_domain_action_button_check_pagerank { }
+.msBackendButton#netops_domain_action_button_check_seo { }
+.msBackendButton#netops_domain_action_button_claim_domain { }
+.msBackendButton#netops_domain_action_button_add_to_register_queue { }
+.msBackendButton#netops_domain_action_button_check_whois_domain { }
+.msBackendButton#netops_domain_action_button_domain_used_in_project { }
+
+#msadmin_section #msadmin_content #tx_multishop_pi1_core .formfield-wrapper ul.netopsVerticalList { overflow:hidden; width:100%; } 
+#msadmin_section #msadmin_content #tx_multishop_pi1_core .formfield-wrapper ul.netopsVerticalList li { line-height:16px; padding-right:10px; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core .formfield-wrapper ul.netopsVerticalList li a#noDeselectAvailableDomains { display:inline-block; background:url(../images/world_add.png) left 2px no-repeat; padding-top:3px; padding-left:20px; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core .formfield-wrapper ul.netopsVerticalList li a#noDeselectNotAvailableDomains { display:inline-block; background:url(../images/world_delete.png) left 2px no-repeat; padding-top:3px; padding-left:20px; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core .formfield-wrapper ul.netopsVerticalList li input[type="checkbox"] { float:left; margin:4px 5px 0 0; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core .formfield-wrapper ul.netopsVerticalList li label { float:left; padding-top:3px; }

@@ -32,8 +32,7 @@ $content .= '
 <script>
 jQuery(document).ready(function($){
 ';
-if (!$totalitems)
-{
+if (!$totalitems) {
 	$content.='
 	$(".multishop_goto_checkout").hide();
 	$(".multishop_goto_shopping_cart").hide();	
@@ -43,15 +42,13 @@ if (!$totalitems)
 $content.='
 $("#ajax_cart_tooltip").hide();
 // ajax add to cart
-$(".ajax_add_to_cart").live("click", function(e) {
+$(document).on("click", ".ajax_add_to_cart", function(e) {
 		e.preventDefault();
 		var products_id=$(this).attr("rel");
-		var quantity=$(this).parent().parent().find(".relation_cart_quantity").val();
-		
+		var quantity=$(this).parent().parent().find(".relation_cart_quantity").val();		
 		if (typeof quantity == "undefined") {
 			quantity = 1;
 		}
-		
 		$.ajax({ 
 				type:   "POST", 
 				url:    "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=products_to_basket').'", 
@@ -61,7 +58,7 @@ $(".ajax_add_to_cart").live("click", function(e) {
 					if(data.cartCount != null){
 						$("#basket_message").html(data.cartMessage);
 						$("html,body").scrollTop(0);
-						jQuery("#ajax_add_to_cart").html(data.added_product[\'products_name\']+" is toegevoegd!");
+						$("#ajax_add_to_cart").html(data.added_product[\'products_name\']+" is toegevoegd!");
 						$("#ajax_add_to_cart").show().delay(2500).fadeOut(1500);
 						$(".multishop_goto_checkout").show();
 						$(".multishop_goto_shopping_cart").show();

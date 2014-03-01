@@ -1,4 +1,5 @@
 /* ---- global ---- */
+.ui-state-default, .ui-widget-content .ui-state-default { background-image:none; }
 img { border:none; }
 .align-left,
 .align_left { text-align:left; }
@@ -6,7 +7,7 @@ img { border:none; }
 .align_right { text-align:right; }
 .align-center,
 .align_center { text-align:center; }
-.hr { border-bottom:1px solid #cdcdcd; margin:0 0 10px; padding:0 0 10px; }
+.hr { clear:both; border-bottom:1px solid #cdcdcd; margin:0 0 10px; padding:0 0 10px; }
 .extra_padding_bottom { overflow:hidden; padding:0 0 20px; }
 
 #tx_multishop_pi1_core .bold { font-weight:700; }
@@ -288,64 +289,119 @@ form.msadmin_form .account-field input[type="submit"]:hover { background:#e2e2e2
 .form-fieldset .mce-tinymce.mce-container.mce-panel { float:left; }
 .mce-btn button { height:28px; }
 
-.msBackendButton {
-display:inline-block;
+.msBackendButton,
+.ui-dialog-buttonpane .msBackendButton {
+display:inline-block !important;
 cursor: pointer !important;
-font:bold 12px/21px Arial, Helvetica, sans-serif;
-border-radius:4px;
-color:#fff;
-text-align:center;
-margin:2px 0 2px 0;
-padding:0;
-border:1px solid rgba(0,0,0,.1);
-border-bottom:1px solid rgba(0,0,0,.2);
-box-shadow         :0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 0 rgba(255,255,255,.4);
+font:bold 12px/21px Arial, Helvetica, sans-serif !important;
+border-radius:4px !important;
+color:#fff !important;
+text-align:center !important;
+margin:2px 0 22px 0 !important;
+padding:0 !important;
+border:1px solid rgba(0,0,0,.1) !important;
+border-bottom:1px solid rgba(0,0,0,.2) !important;
+box-shadow         :0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 0 rgba(255,255,255,.4) !important;
 background-image   :-moz-linear-gradient(top, rgba(255, 255, 255, .3), rgba(255,255,255, 0)); /* Firefox+ */
 background-image   :-webkit-linear-gradient(top, rgba(255, 255, 255, .3), rgba(255,255,255, 0)); /* Chrome+, Safari+ */
 background-image   :-o-linear-gradient(top, rgba(255, 255, 255, .3), rgba(255,255,255, 0)); /* Opera+ */
 background-image   :-ms-linear-gradient(top, rgba(255, 255, 255, .3), rgba(255,255,255, 0)); /* IE10 */
 filter             :progid:DXImageTransform.Microsoft.gradient(startColorStr='#19FFFFFF', EndColorStr='#19000000'); /* IE+ */
-text-shadow: rgba(0, 0, 0, 0.4) 1px 1px 0px;
+text-shadow: rgba(0, 0, 0, 0.4) 1px 1px 0px !important;
 }
-.msBackendButton:hover { 
+.msBackendButton:hover,
+.ui-dialog-buttonpane .msBackendButton:hover { 
 background-image   :-moz-linear-gradient(top, rgba(255, 255, 255, 0), rgba(255, 255, 255, .2)) !important; /* Firefox+ */
 background-image   :-webkit-linear-gradient(top, rgba(255, 255, 255, 0), rgba(255, 255, 255, .2)) !important; /* Chrome+, Safari+ */
 background-image   :-o-linear-gradient(top, rgba(255, 255, 255, 0), rgba(255, 255, 255, .2)) !important; /* Opera+ */
 background-image   :-ms-linear-gradient(top, rgba(255, 255, 255, 0), rgba(255, 255, 255, .2)) !important; /* IE10 */
 filter             :progid:DXImageTransform.Microsoft.gradient(startColorStr='#33FFFFFF', EndColorStr='#19FFFFFF') !important; /* IE+ */
-text-decoration:none;
+text-decoration:none !important;
 }
 .msBackendButton span,
-.msBackendButton b { display:inline-block; min-width:63px; min-height:24px; color:#fff; padding:3px 30px 0; }
-.msBackendButton input { display:inline-block !important; min-width:125px !important; min-height:27px !important; height:auto  !important; border:none !important; background:none !important; font:bold 12px/21px Arial, Helvetica, sans-serif !important; color:#fff !important; margin:0  !important; padding:0 30px !important; text-shadow:rgba(0, 0, 0, 0.4) 1px 1px 0px !important; box-shadow:none  !important; border-radius:0  !important;  cursor:pointer !important; }
+.msBackendButton b,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton span,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton b { display:inline-block !important; min-width:63px !important; width:auto !important; min-height:24px !important; height:auto !important; color:#fff !important; margin:0  !important; text-align:left; padding:3px 30px 0 !important; line-height:21px !important}
+.msBackendButton input,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton input { display:inline-block !important; min-width:125px !important; width:auto !important; min-height:27px !important; height:auto !important; border:none !important; background:none !important; font:bold 12px/21px Arial, Helvetica, sans-serif !important; color:#fff !important; margin:0  !important; padding:0 30px !important; text-shadow:rgba(0, 0, 0, 0.4) 1px 1px 0px !important; box-shadow:none  !important; border-radius:0  !important;  cursor:pointer !important; }
 .msBackendButton.arrowLeft span,
 .msBackendButton.arrowLeft b,
-.msBackendButton.arrowLeft input { background:url(../images/btn_arrow_left.png) left center no-repeat !important; }
+.msBackendButton.arrowLeft input,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowLeft span,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowLeft b,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowLeft input { background:url(../images/btn_arrow_left.png) left center no-repeat !important; }
 .msBackendButton.arrowRight span,
 .msBackendButton.arrowRight b,
-.msBackendButton.arrowRight input { background:url(../images/btn_arrow_right.png) right center no-repeat !important; }
+.msBackendButton.arrowRight input,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowRight span,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowRight b,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowRight input { background:url(../images/btn_arrow_right.png) right center no-repeat !important; }
 .msBackendButton.arrowDown span,
 .msBackendButton.arrowDown b,
-.msBackendButton.arrowDown input { background:url(../images/btn_arrow_down.png) left center no-repeat !important; }
+.msBackendButton.arrowDown input,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowDown span,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowDown b,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowDown input { background:url(../images/btn_arrow_down.png) left center no-repeat !important; }
 .msBackendButton.arrowUp span,
 .msBackendButton.arrowUp b,
-.msBackendButton.arrowUp input { background:url(../images/btn_arrow_up.png) left center no-repeat !important; }
+.msBackendButton.arrowUp input,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowUp span,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowUp b,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowUp input { background:url(../images/btn_arrow_up.png) left center no-repeat !important; }
 .msBackendButton.arrowPosLeft span,
 .msBackendButton.arrowPosLeft b,
-.msBackendButton.arrowPosLeft input { background-position:left center !important; }
+.msBackendButton.arrowPosLeft input,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowPosLeft span,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowPosLeft b,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowPosLeft input { background-position:left center !important; }
 .msBackendButton.arrowPosRight span,
 .msBackendButton.arrowPosRight b,
-.msBackendButton.arrowPosRight input { background-position:right center !important; }
+.msBackendButton.arrowPosRight input,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowPosRight span,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowPosRight b,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.arrowPosRight input { background-position:right center !important; }
 
 .msBackendButton.backState,
-.msBackendButton.prevState { background-color:red;}
-.msBackendButton.continueState { background-color:green;}
-.msBackendButton.miscState { background-color:purple;}
-.msBackendButton.updateState { background-color:orange;}
-.msBackendButton.searchState { background-color:dodgerblue; }
+.msBackendButton.prevState,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.backState,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.prevState { background-color:red !important;}
+.msBackendButton.continueState,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.continueState { background-color:green !important;}
+.msBackendButton.miscState,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.miscState { background-color:purple !important;}
+.msBackendButton.updateState,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.updateState { background-color:orange !important;}
+.msBackendButton.searchState,
+.ui-dialog.ui-dialog-buttonpane .msBackendButton.searchState { background-color:dodgerblue !important; }
 
 #msadmin_section #msadmin_content #tx_multishop_pi1_core #enabledServicesWrapper.account-field ul { margin:0; padding:0 0 0 200px; list-style:none; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core #enabledServicesWrapper.account-field ul li { overflow:hidden; width:400px; background:none; margin:0; padding:0 0 3px; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core #enabledServicesWrapper.account-field ul li .checkboxWithLabel { float:left; width:50%; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core #enabledServicesWrapper.account-field ul li input[type="checkbox"] { float:left; margin:3px 5px 0 0; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core #enabledServicesWrapper.account-field ul li label { clear:none; float:left; display:block; width:150px; padding:3px 0 0; text-align:left; }
+
+.ui-widget-content { border-color:#cdcdcd; box-shadow:0 0 20px #999; }
+.ui-dialog-titlebar.ui-widget-header { font:bold 12px/14px Arial, Helvetica, sans-serif; color:#fff; text-align:left; padding:0 0 10px;
+background-color   :#333;
+background-image   :-moz-linear-gradient(top, rgba(255, 255, 255, .3), rgba(255,255,255, 0)); /* Firefox+ */
+background-image   :-webkit-linear-gradient(top, rgba(255, 255, 255, .3), rgba(255,255,255, 0)); /* Chrome+, Safari+ */
+background-image   :-o-linear-gradient(top, rgba(255, 255, 255, .3), rgba(255,255,255, 0)); /* Opera+ */
+background-image   :-ms-linear-gradient(top, rgba(255, 255, 255, .3), rgba(255,255,255, 0)); /* IE10 */
+filter             :progid:DXImageTransform.Microsoft.gradient(startColorStr='#19FFFFFF', EndColorStr='#19000000'); /* IE+ */
+}
+.ui-dialog .ui-dialog-titlebar-close:hover { border-color:#666; background:#333; }
+.ui-dialog-titlebar.ui-widget-header .ui-icon { background-image:url(/typo3conf/ext/multishop/templates/global/images/ui-icons_222222_256x240_white.png); }
+.ui-dialog-content.ui-widget-content { font:12px Arial, Helvetica, sans-serif; text-align:left; box-shadow:none; }
+.ui-dialog-content.ui-widget-content h1 { font-size:14px; margin:0 0 10px; padding:0; }
+.ui-dialog-content.ui-widget-content strong { display:block; margin:0 0 10px; }
+.ui-dialog-content.ui-widget-content ul { margin:0; padding:0; list-style:none; }
+.ui-dialog-content.ui-widget-content ul li { margin:0; padding:0; }
+.ui-dialog-content.ui-widget-content ul li span { float:left; display:block; width:150px; text-align:left; padding:2px 0 0 0; }
+.ui-dialog-content.ui-widget-content ul li textarea { float:left; width:316px; border:1px solid #cdcdcd; font:12px Arial, Helvetica, sans-serif; padding:2px 4px; }
+.ui-dialog-content.ui-widget-content ul.threeCols { overflow:hidden; width:100%; margin:0 0 10px; }
+.ui-dialog-content.ui-widget-content ul.threeCols li { float:left; width:258px; line-height:19px; padding:0 0 4px 0; }
+.ui-dialog-content.ui-widget-content ul.threeCols li.bulletRed { width:234px; background:url(../images/bullet-red.png) -7px -7px no-repeat; padding:0 0 4px 24px; }
+.ui-dialog-content.ui-widget-content ul.threeCols li.bulletGreen { width:234px; background:url(../images/bullet-green.png) -7px -7px no-repeat; padding:0 0 4px 24px; }
+.ui-dialog-content.ui-widget-content ul.threeCols li.bulletBlack { width:234px; background:url(../images/bullet-black.png) -7px -7px no-repeat; padding:0 0 4px 24px; }
+.ui-dialog.ui-widget .ui-dialog-buttonpane { border:none; margin:0; padding:0 0 10px; text-align:center; box-shadow:none; }
+.ui-dialog.ui-widget .ui-dialog-buttonpane button { float:none !important; background-image:none; margin-left:5px !important; margin-right:5px !important; min-width:100px !important; }

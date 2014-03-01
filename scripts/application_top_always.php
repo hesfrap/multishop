@@ -148,9 +148,10 @@ if ($this->conf['fe_statisticsadmin_usergroup']) {
 if ($this->conf['cacheConfiguration'] == '1') {
 	$this->ms['MODULES']['CACHE_FRONT_END']=1;
 }
-
+if ($this->ms['MODULES']['CACHE_FRONT_END']) {
+	$string='loadConfiguration_'.$this->HTTP_HOST.'_'.$this->shop_pid.'_'.$this->cObj->data['uid'].'_'.md5(serialize($this->conf));
+}
 $lifetime=36000;
-$string='loadConfiguration_'.$this->shop_pid.'_'.$this->cObj->data['uid'];
 if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRONT_END'] and !$tmp=mslib_befe::cacheLite('get',$string,$lifetime,1))) {
 	$tmp=mslib_befe::loadConfiguration($this->shop_pid);
 	if ($this->ms['MODULES']['CACHE_FRONT_END']) {

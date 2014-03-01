@@ -86,12 +86,12 @@ if (!$product['products_id']) {
 		if ($pagination_items['previous_item']) {
 			$pagination.='<div class="pagination_previous"><a href="'.$pagination_items['previous_item'].'">'.$this->pi_getLL('previous').'</a></div>';
 		} else {
-			$pagination.='<div class="pagination_previous_disabled">'.$this->pi_getLL('previous').'</div>';		
+			$pagination.='<div class="pagination_previous_disabled"><span>'.$this->pi_getLL('previous').'</span></div>';		
 		}
 		if ($pagination_items['next_item']) {
 			$pagination.='<div class="pagination_next"><a href="'.$pagination_items['next_item'].'">'.$this->pi_getLL('next').'</a></div>';
 		} else {
-			$pagination.='<div class="pagination_next_disabled">'.$this->pi_getLL('next').'</div>';
+			$pagination.='<div class="pagination_next_disabled"><span>'.$this->pi_getLL('next').'</span></div>';
 		}
 		$pagination.='</div>';
 		$output['pagination']=$pagination;

@@ -101,8 +101,19 @@ $jsonData['html'].='
 					<td class="align_right"><a href="'.$productLink.'" target="_blank">'.$product['products_id'].'</a></td>
 					<td class="align_right">'.round($product['qty'],13).'</td>
 					<td><a href="'.$productLink.'" target="_blank">'.$product['products_name'].'</a></td>
-					<td class="align_right">'.mslib_fe::amount2Cents($product['total_price']).'</td>
+					<td class="align_right">'.mslib_fe::amount2Cents($product['final_price']).'</td>
 					</tr>';
+					
+					if (count($product['attributes'])) {
+						foreach ($product['attributes'] as $attributes) {
+							$jsonData['html'].='<tr class="'.$tr_subtype.'">
+							<td class="align_right">&nbsp;</td>
+							<td class="align_right">&nbsp;</td>
+							<td>' . $attributes['products_options'] . ': ' . $attributes['products_options_values'] .'</td>
+							<td class="align_right">'.($attributes['price_prefix'] == '-' ? '- ' : '') . mslib_fe::amount2Cents($attributes['options_values_price']).'</td>
+							</tr>';
+						}
+					}
 				}
 				$jsonData['html'].='
 				<tr class="removeTableCellBorder msAdminSubtotalRow">

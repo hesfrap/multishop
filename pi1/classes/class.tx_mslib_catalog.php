@@ -35,8 +35,20 @@ class tx_mslib_catalog {
 		switch ($sortItem) {
 			case 'manufacturers':
 				switch($sortByField) {
-					case 'manufacturers_name':
-						$str="SELECT c.categories_id from tx_multishop_manufacturers m where m.status=1 order by m.manufacturers_name+0, m.manufacturers_name ".$orderBy;
+					case 'manufacturers_name':						
+						$query_array=array();
+						$query_array['select'][]='c.categories_id';
+						$query_array['from'][]='tx_multishop_manufacturers m';
+						$query_array['where'][]='m.status=1';
+						$query_array['order_by'][]='SUBSTRING_INDEX(m.manufacturers_name, " ", 1) ASC, CAST(SUBSTRING_INDEX(m.manufacturers_name, " ", -1) AS SIGNED) '.$orderBy;
+						$str = $GLOBALS['TYPO3_DB']->SELECTquery(
+							(is_array($query_array['select'])?implode(",",$query_array['select']):''),         // SELECT ...
+							(is_array($query_array['from'])?implode(",",$query_array['from']):''),     // FROM ...
+							(is_array($query_array['where'])?implode(" and ",$query_array['where']):''),    // WHERE...
+							(is_array($query_array['group_by'])?implode(",",$query_array['group_by']):''),            // GROUP BY...
+							(is_array($query_array['order_by'])?implode(",",$query_array['order_by']):''),    // ORDER BY...
+							(is_array($query_array['limit'])?implode(",",$query_array['limit']):'')            // LIMIT ...
+						);						
 						$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 						$counter=0;
 						$content.='<div class="main-heading"><h2>Sorting Manufacturers on alphabet '.$orderBy.' done</h2></div>';
@@ -53,7 +65,19 @@ class tx_mslib_catalog {
 			case 'categories':
 				switch($sortByField) {
 					case 'categories_name':
-						$str="SELECT c.categories_id from tx_multishop_categories c, tx_multishop_categories_description cd where c.status=1 and c.parent_id='0' and c.page_uid='".$this->showCatalogFromPage."' and c.categories_id=cd.categories_id order by cd.categories_name+0,cd.categories_name ".$orderBy;
+						$query_array=array();
+						$query_array['select'][]='c.categories_id';
+						$query_array['from'][]='tx_multishop_categories c, tx_multishop_categories_description cd';
+						$query_array['where'][]='c.status=1 and c.parent_id=\'0\' and c.page_uid=\''.$this->showCatalogFromPage.'\' and c.categories_id=cd.categories_id';
+						$query_array['order_by'][]='SUBSTRING_INDEX(cd.categories_name, " ", 1) ASC, CAST(SUBSTRING_INDEX(cd.categories_name, " ", -1) AS SIGNED) '.$orderBy;
+						$str = $GLOBALS['TYPO3_DB']->SELECTquery(
+							(is_array($query_array['select'])?implode(",",$query_array['select']):''),         // SELECT ...
+							(is_array($query_array['from'])?implode(",",$query_array['from']):''),     // FROM ...
+							(is_array($query_array['where'])?implode(" and ",$query_array['where']):''),    // WHERE...
+							(is_array($query_array['group_by'])?implode(",",$query_array['group_by']):''),            // GROUP BY...
+							(is_array($query_array['order_by'])?implode(",",$query_array['order_by']):''),    // ORDER BY...
+							(is_array($query_array['limit'])?implode(",",$query_array['limit']):'')            // LIMIT ...
+						);						
 						$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 						$counter=0;
 						$content.='<div class="main-heading"><h2>Sorting categories on alphabet '.$orderby.' done</h2></div>';		
@@ -70,8 +94,20 @@ class tx_mslib_catalog {
 						if (count($subcategories_array)) {
 							foreach ($subcategories_array as $item) {
 								// try to sort the subcats
-								$content.= $item.'<br />';			
-								$str="SELECT c.categories_id from tx_multishop_categories c, tx_multishop_categories_description cd where c.status=1 and c.parent_id='".$item."' and c.page_uid='".$this->showCatalogFromPage."' and c.categories_id=cd.categories_id order by cd.categories_name+0,cd.categories_name ".$orderBy;
+								$content.= $item.'<br />';
+								$query_array=array();
+								$query_array['select'][]='c.categories_id';
+								$query_array['from'][]='tx_multishop_categories c, tx_multishop_categories_description cd';
+								$query_array['where'][]='c.status=1 and c.parent_id=\''.$item.'\' and c.page_uid=\''.$this->showCatalogFromPage.'\' and c.categories_id=cd.categories_id';
+								$query_array['order_by'][]='SUBSTRING_INDEX(cd.categories_name, " ", 1) ASC, CAST(SUBSTRING_INDEX(cd.categories_name, " ", -1) AS SIGNED) '.$orderBy;
+								$str = $GLOBALS['TYPO3_DB']->SELECTquery(
+									(is_array($query_array['select'])?implode(",",$query_array['select']):''),         // SELECT ...
+									(is_array($query_array['from'])?implode(",",$query_array['from']):''),     // FROM ...
+									(is_array($query_array['where'])?implode(" and ",$query_array['where']):''),    // WHERE...
+									(is_array($query_array['group_by'])?implode(",",$query_array['group_by']):''),            // GROUP BY...
+									(is_array($query_array['order_by'])?implode(",",$query_array['order_by']):''),    // ORDER BY...
+									(is_array($query_array['limit'])?implode(",",$query_array['limit']):'')            // LIMIT ...
+								);											
 								$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 								$counter=0;
 								while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
@@ -96,7 +132,19 @@ class tx_mslib_catalog {
 								// try to sort the subcats
 								$content.= $item.'<br />';
 								// try to find and sort the products
-								$str="SELECT p2c.categories_id, p.products_id, IF(s.status, s.specials_new_products_price, p.products_price) as final_price from tx_multishop_products p left join tx_multishop_specials s on p.products_id = s.products_id, tx_multishop_products_description pd, tx_multishop_products_to_categories p2c where p.products_status=1 and p.page_uid='".$this->showCatalogFromPage."' and p.products_id=pd.products_id and p.products_id=p2c.products_id and p2c.categories_id='".$item."' order by final_price ".$orderBy;
+								$query_array=array();
+								$query_array['select'][]='p2c.categories_id, p.products_id, IF(s.status, s.specials_new_products_price, p.products_price) as final_price';
+								$query_array['from'][]='tx_multishop_products p left join tx_multishop_specials s on p.products_id = s.products_id, tx_multishop_products_description pd, tx_multishop_products_to_categories p2c';
+								$query_array['where'][]='p.products_status=1 and p.page_uid=\''.$this->showCatalogFromPage.'\' and p.products_id=pd.products_id and p.products_id=p2c.products_id and p2c.categories_id=\''.$item.'\'';
+								$query_array['order_by'][]='final_price '.$orderBy;
+								$str = $GLOBALS['TYPO3_DB']->SELECTquery(
+									(is_array($query_array['select'])?implode(",",$query_array['select']):''),         // SELECT ...
+									(is_array($query_array['from'])?implode(",",$query_array['from']):''),     // FROM ...
+									(is_array($query_array['where'])?implode(" and ",$query_array['where']):''),    // WHERE...
+									(is_array($query_array['group_by'])?implode(",",$query_array['group_by']):''),            // GROUP BY...
+									(is_array($query_array['order_by'])?implode(",",$query_array['order_by']):''),    // ORDER BY...
+									(is_array($query_array['limit'])?implode(",",$query_array['limit']):'')            // LIMIT ...
+								);									
 								$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 								$counter=0;
 								while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
@@ -120,7 +168,19 @@ class tx_mslib_catalog {
 						if (count($subcategories_array)) {
 							foreach ($subcategories_array as $item) {
 								// try to find and sort the products
-								$str="SELECT p2c.categories_id, p.products_id from tx_multishop_products p, tx_multishop_products_description pd, tx_multishop_products_to_categories p2c where p.products_status=1 and p.page_uid='".$this->showCatalogFromPage."' and p.products_id=pd.products_id and p.products_id=p2c.products_id and p2c.categories_id='".$item."' order by pd.products_name+0,pd.products_name ".$orderBy;
+								$query_array=array();
+								$query_array['select'][]='p2c.categories_id, p.products_id, IF(s.status, s.specials_new_products_price, p.products_price) as final_price';
+								$query_array['from'][]='tx_multishop_products p left join tx_multishop_specials s on p.products_id = s.products_id, tx_multishop_products_description pd, tx_multishop_products_to_categories p2c';
+								$query_array['where'][]='p.products_status=1 and p.page_uid=\''.$this->showCatalogFromPage.'\' and p.products_id=pd.products_id and p2c.categories_id=\''.$item.'\' and p.products_id=p2c.products_id';
+								$query_array['order_by'][]='SUBSTRING_INDEX(pd.products_name, " ", 1) ASC, CAST(SUBSTRING_INDEX(pd.products_name, " ", -1) AS SIGNED) '.$orderBy;
+								$str = $GLOBALS['TYPO3_DB']->SELECTquery(
+									(is_array($query_array['select'])?implode(",",$query_array['select']):''),         // SELECT ...
+									(is_array($query_array['from'])?implode(",",$query_array['from']):''),     // FROM ...
+									(is_array($query_array['where'])?implode(" and ",$query_array['where']):''),    // WHERE...
+									(is_array($query_array['group_by'])?implode(",",$query_array['group_by']):''),            // GROUP BY...
+									(is_array($query_array['order_by'])?implode(",",$query_array['order_by']):''),    // ORDER BY...
+									(is_array($query_array['limit'])?implode(",",$query_array['limit']):'')            // LIMIT ...
+								);									
 								$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 								$counter=0;
 								while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
@@ -145,7 +205,19 @@ class tx_mslib_catalog {
 							foreach ($subcategories_array as $item) {
 								//$content.= $item.'<br />';		
 								// try to find and sort the products
-								$str="SELECT p2c.categories_id, p.products_id from tx_multishop_products p, tx_multishop_products_description pd, tx_multishop_products_to_categories p2c where p.products_status=1 and p.page_uid='".$this->showCatalogFromPage."' and p.products_id=pd.products_id and p.products_id=p2c.products_id and p2c.categories_id='".$item."' order by p.products_date_added ".$orderBy;
+								$query_array=array();
+								$query_array['select'][]='p2c.categories_id, p.products_id, IF(s.status, s.specials_new_products_price, p.products_price) as final_price';
+								$query_array['from'][]='tx_multishop_products p left join tx_multishop_specials s on p.products_id = s.products_id, tx_multishop_products_description pd, tx_multishop_products_to_categories p2c';
+								$query_array['where'][]='p.products_status=1 and p.page_uid=\''.$this->showCatalogFromPage.'\' and p.products_id=pd.products_id and p2c.categories_id=\''.$item.'\' and p.products_id=p2c.products_id';
+								$query_array['order_by'][]='p.products_date_added '.$orderBy;
+								$str = $GLOBALS['TYPO3_DB']->SELECTquery(
+									(is_array($query_array['select'])?implode(",",$query_array['select']):''),         // SELECT ...
+									(is_array($query_array['from'])?implode(",",$query_array['from']):''),     // FROM ...
+									(is_array($query_array['where'])?implode(" and ",$query_array['where']):''),    // WHERE...
+									(is_array($query_array['group_by'])?implode(",",$query_array['group_by']):''),            // GROUP BY...
+									(is_array($query_array['order_by'])?implode(",",$query_array['order_by']):''),    // ORDER BY...
+									(is_array($query_array['limit'])?implode(",",$query_array['limit']):'')            // LIMIT ...
+								);									
 								$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 								$no=time();
 								while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
@@ -175,14 +247,23 @@ class tx_mslib_catalog {
 						$qry = $GLOBALS['TYPO3_DB']->sql_query($str);
 						$rows =$GLOBALS['TYPO3_DB']->sql_num_rows($qry);
 						if ($rows) {
-							while (($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {			
-								$str2="select * from tx_multishop_products_options_values_to_products_options povp, tx_multishop_products_options_values pov where povp.products_options_id='".$row['products_options_id']."' and povp.products_options_values_id=pov.products_options_values_id and pov.language_id='0' order by pov.products_options_values_name+0, pov.products_options_values_name";	
-								//INET_ATON(pov.products_options_values_name)
-								//CAST(mid(pov.products_options_values_name, 6, LENGTH(c) -5) AS unsigned)
+							while (($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {	
+								$query_array=array();
+								$query_array['select'][]='*';
+								$query_array['from'][]='tx_multishop_products_options_values_to_products_options povp, tx_multishop_products_options_values pov';
+								$query_array['where'][]='povp.products_options_id=\''.$row['products_options_id'].'\' and pov.language_id=\'0\' and povp.products_options_values_id=pov.products_options_values_id';
+								$query_array['order_by'][]='SUBSTRING_INDEX(pov.products_options_values_name, " ", 1) ASC, CAST(SUBSTRING_INDEX(pov.products_options_values_name, " ", -1) AS SIGNED) '.$orderBy;
+								$str2 = $GLOBALS['TYPO3_DB']->SELECTquery(
+									(is_array($query_array['select'])?implode(",",$query_array['select']):''),         // SELECT ...
+									(is_array($query_array['from'])?implode(",",$query_array['from']):''),     // FROM ...
+									(is_array($query_array['where'])?implode(" and ",$query_array['where']):''),    // WHERE...
+									(is_array($query_array['group_by'])?implode(",",$query_array['group_by']):''),            // GROUP BY...
+									(is_array($query_array['order_by'])?implode(",",$query_array['order_by']):''),    // ORDER BY...
+									(is_array($query_array['limit'])?implode(",",$query_array['limit']):'')            // LIMIT ...
+								);
 								$qry2 = $GLOBALS['TYPO3_DB']->sql_query($str2);
 								$counter=0;
 								while (($row2 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry2)) != false) {
-								//		print_r($row2);
 									$counter++;
 									$updateArray=array();
 									$updateArray['sort_order']=$counter;
@@ -199,7 +280,6 @@ class tx_mslib_catalog {
 		}
 		return $content;
 	}
-	
 	// universal hook method for giving plugin information about update/insert action of the product 
 	function productsUpdateNotifierForPlugin($data, $product_id = 0) {
 		// handle with care, the $data is just direct information injected from $this->post/$item

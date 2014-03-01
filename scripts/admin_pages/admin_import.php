@@ -1,6 +1,7 @@
 <?php
-if (!defined('TYPO3_MODE')) die ('Access denied.');
-
+if (!defined('TYPO3_MODE')) {
+	die('Access denied.');
+}
 $GLOBALS['TSFE']->additionalHeaderData[] = '
 <script type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/multiselect/js/ui.multiselect_normal.js"></script>
 <link href="'.t3lib_extMgm::siteRelPath($this->extKey).'js/multiselect/css/ui.multiselect.css" rel="stylesheet" type="text/css"/>
@@ -43,14 +44,14 @@ $coltypes['products_name']='Products name';
 $coltypes['products_model']='Products model';
 $coltypes['products_description']='Products description';		 
 $coltypes['products_description_encoded']='Products description (encoded)';
-$coltypes['products_price']='Products price (normal price, excluding VAT)';
-$coltypes['products_price_including_vat']='Products price (normal price, including VAT)';
+$coltypes['products_price']='Products price (normal price, excl. VAT)';
+$coltypes['products_price_including_vat']='Products price (normal price, incl. VAT)';
 $coltypes['products_deeplink']='Products deeplink';		 
 $coltypes['products_meta_keywords']='Products meta keywords';		 
-$coltypes['products_old_price']='Products price (old price, excluding VAT)';		 
-$coltypes['products_old_price_including_vat']='Products price (old price, including VAT)';
-$coltypes['products_specials_price']='Products price (specials price, excluding VAT)';		 
-$coltypes['products_specials_price_including_vat']='Products price (specials price, including VAT)';
+$coltypes['products_old_price']='Products price (old price, excl. VAT)';		 
+$coltypes['products_old_price_including_vat']='Products price (old price, incl. VAT)';
+$coltypes['products_specials_price']='Products price (specials price, excl. VAT)';		 
+$coltypes['products_specials_price_including_vat']='Products price (specials price, incl. VAT)';
 
 $coltypes['products_short_description']='Products description (short description)';		 
 $coltypes['products_sku']='Products SKU';
@@ -84,8 +85,10 @@ for ($x=0;$x<$this->ms['MODULES']['NUMBER_OF_PRODUCT_IMAGES'];$x++) {
 	$coltypes['products_image'.$x2]='Products image '.($x+1);
 }
 for ($x=1;$x<=$max_category_level;$x++) {
-	$coltypes['categories_name'.$x]		='Category level '.$x.' (name)';
-	$coltypes['categories_image'.$x]	='Category level '.$x.' (image)';
+	$coltypes['categories_name'.$x]		='Categories name (level: '.$x.')';
+	$coltypes['categories_image'.$x]	='Categories image (level: '.$x.')';
+	$coltypes['categories_content'.$x]	='Categories content (level: '.$x.')';
+	$coltypes['categories_content_bottom'.$x]	='Categories content bottom (level: '.$x.')';
 }
 if ($this->ms['MODULES']['PRODUCTS_DETAIL_NUMBER_OF_TABS']) {
 	for ($x=1;$x<=$this->ms['MODULES']['PRODUCTS_DETAIL_NUMBER_OF_TABS'];$x++) {
@@ -204,16 +207,13 @@ if (is_numeric($this->get['job_id']) and is_numeric($this->get['status'])) {
 $ajax_html='
 	<script type="text/javascript">
 	jQuery(document).ready(function($){
-		jQuery(".hide_advanced_import_radio").live("click", function()
-		{
+		$(document).on("click", ".hide_advanced_import_radio", function() {
 			$(this).parent().find(".hide").hide();
 		});									
-		jQuery(".advanced_import_radio").live("click", function()
-		{
+		$(document).on("click", ".advanced_import_radio", function() {
 			$(this).parent().find(".hide").show();
 		});
-		$(".admin_menu_upload_productfeed").click(function(event)
-		{
+		$(".admin_menu_upload_productfeed").click(function(event) {
 			var cid=$(this).attr("cid");
 			var cloned_productfeed_form=$("#upload_productfeed_form").clone();
 			cloned_productfeed_form.find(".cid").attr("value",cid);
@@ -225,11 +225,13 @@ $ajax_html='
 	</script>			
 ';		
 $tabs=array();
+/*
 $html=mslib_fe::tep_get_categories_edit('',$GLOBALS['TSFE']->fe_user->user['uid']);
 if (!$html) {
 	$html=$this->pi_getLL('no_products_available');
 }
 $tabs['Update_by_Category']=array($this->pi_getLL('import_to_category'),$html.$ajax_html);
+*/
 if ($this->post['action'] == 'category-insert') {
 	if ($this->post['name']) {
 		$str="insert into tx_multishop_categories (parent_id,status,date_added,page_uid) VALUES ('".addslashes($this->post['parent'])."',1,".time().",".$this->showCatalogFromPage.")";
@@ -419,21 +421,20 @@ elseif ($this->post['action'] == 'product-import-preview' or (is_numeric($_REQUE
 				else 											$delimiter	="\t";
 				if ($this->post['backquotes'])						$backquotes='"';
 				else											$backquotes='"';
-				if ($this->post['format']=='txt')
-				{
+				if ($this->post['format']=='txt') {
 					$row = 1;
 					$rows=array();
 					if (($handle = fopen($file_location, "r")) !== FALSE) {
 						$counter=0;
-						while (($data = fgetcsv($handle, '', $delimiter,$backquotes)) !== FALSE)
-						{
-							if ($this->post['escape_first_line'])
-							{
-								if ($counter==0) 	$table_cols=$data;				
-								else				$rows[]=$data;												
-							}
-							else
-							{
+						while (($data = fgetcsv($handle, '', $delimiter,$backquotes)) !== FALSE) {
+							//print_r($data);
+							if ($this->post['escape_first_line']) {
+								if ($counter==0) {
+									$table_cols=$data;
+								} else {
+									$rows[]=$data;												
+								}
+							} else {
 								$rows[]=$data;	
 							}
 							$counter++;
@@ -544,16 +545,13 @@ elseif ($this->post['action'] == 'product-import-preview' or (is_numeric($_REQUE
 			<script type="text/javascript">
 			jQuery(document).ready(function($) {
 				var add_property_html=\''.addslashes($importer_add_aux_input).'\';
-				$(".delete_property").live("click", function()
-				{
+				$(document).on("click", ".delete_property", function() {
 					$(this).parent().hide("fast");
 				});	
-				$(".importer_add_property").click(function(event)
-				{
+				$(".importer_add_property").click(function(event) {
 					$(this).prev().append(add_property_html);			
 				});			
-				$(".importer_advanced_settings").click(function(event)
-				{
+				$(".importer_advanced_settings").click(function(event) {
 					$(this).next().toggle();			
 				});
 			});			
@@ -792,6 +790,11 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 				// include a pre-defined xml to php array way eof
 			} else {	
 				if ($this->post['database_name']) {
+					// get primary key first
+					$str="show index FROM ".$this->post['database_name'].' where Key_name = \'PRIMARY\'';
+					$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+					$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
+					$primaryKeyColumn=$row['Column_name'];					
 					if ($log_file) {
 						file_put_contents($log_file, $this->HTTP_HOST.' - loading random products. ('.date("Y-m-d G:i:s").")\n", FILE_APPEND);							
 					}
@@ -812,8 +815,8 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 					$datarows=array();
 					while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) != false) {
 						$datarows[]=$row;
-						if ($row['internal_id']) {
-							$str2="delete from ".$this->post['database_name']." where internal_id='".$row['internal_id']."'";
+						if ($primaryKeyColumn and isset($row[$primaryKeyColumn])) {
+							$str2="delete from ".$this->post['database_name']." where ".$primaryKeyColumn."='".$row[$primaryKeyColumn]."'";
 							$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
 						}
 					}
@@ -948,8 +951,24 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 			if ($this->post['tx_multishop_pi1']['default_vat_rate']) {
 				$default_iso_customer=mslib_fe::getCountryByName($this->tta_shop_info['country']);
 				$default_tax_rate=mslib_fe::taxRuleSet($this->post['tx_multishop_pi1']['default_vat_rate'], 0, $default_iso_customer['cn_iso_nr'],0);
-			}
-			foreach ($rows as $row) {				
+			}					
+			foreach ($rows as $row) {
+				// custom hook that can be controlled by third-party plugin
+				$skipRow=0;
+				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_import.php']['itemIteratePreProc'])) {
+					$params = array (
+						'row' => &$row,
+						'prefix_source_name' => $this->post['prefix_source_name'],
+						'skipRow' => &$skipRow
+					);
+					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_import.php']['itemIteratePreProc'] as $funcRef) {
+						t3lib_div::callUserFunction($funcRef, $params, $this);
+					}
+				}
+				if ($skipRow) {
+					continue;
+				}
+				// custom hook that can be controlled by third-party plugin eof					
 				$item=array();								
 				foreach ($row as $key => $col) {
 					if (!mb_detect_encoding($col, 'UTF-8', true)) {
@@ -1210,7 +1229,9 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 						if ($this->ms['target-cid']) $hashed_id=$this->ms['target-cid'];
 						for ($x=1;$x<=$max_category_level;$x++) {
 							if ($item['categories_name'.$x]) {
-								if ($hashed_id) $hashed_id.=' / ';
+								if ($hashed_id) {
+									$hashed_id.=' / ';
+								}
 								$hashed_id.=$item['categories_name'.$x];		
 								$strchk="SELECT categories_id from tx_multishop_categories c where c.hashed_id='".addslashes(md5($hashed_id))."'";
 								$qrychk=$GLOBALS['TYPO3_DB']->sql_query($strchk);								
@@ -1221,7 +1242,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 										// fix possible empty hash to make it backwards compatible
 										$rowchk=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qrychk);
 										$updateArray=array();
-										$updateArray['hashed_id']=md5($hashed_id);
+										$updateArray['hashed_id']=md5($hashed_id);										
 										$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_categories', "categories_id=".$rowchk['categories_id'],$updateArray);
 										$res = $GLOBALS['TYPO3_DB']->sql_query($query);										
 										// now rerun original query
@@ -1237,11 +1258,36 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 									$this->ms['sqls'][]=$str;
 									$qry=$GLOBALS['TYPO3_DB']->sql_query($str);	
 									$this->ms['target-cid']=$GLOBALS['TYPO3_DB']->sql_insert_id();
-									$str="insert into tx_multishop_categories_description (categories_id, language_id, categories_name) VALUES ('".$this->ms['target-cid']."','".$language_id."','".addslashes(trim($item['categories_name'.$x]))."')";
-									$this->ms['sqls'][]=$str;
-									$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+									$insertArray=array();
+									if (isset($item['categories_content'.$x])) {
+										$insertArray['content']=$item['categories_content'.$x];
+									}
+									if (isset($item['categories_content_bottom'.$x])) {
+										$insertArray['content_footer']=$item['categories_content_bottom'.$x];
+									}			
+									$insertArray['categories_id']=$this->ms['target-cid'];
+									$insertArray['language_id']=$language_id;
+									$insertArray['categories_name']=trim($item['categories_name'.$x]);
+									$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_categories_description', $insertArray);
+									$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
+									$this->ms['sqls'][]=$query;
 									$stats['categories_added']++;
-								}						
+								}
+								if ($this->ms['target-cid']) {
+									$updateArray=array();
+									if (isset($item['categories_content'.$x])) {
+										$updateArray['content']=$item['categories_content'.$x];
+									}
+									if (isset($item['categories_content_bottom'.$x])) {
+										$updateArray['content_footer']=$item['categories_content_bottom'.$x];
+									}
+									//$updateArray['categories_name']=trim($item['categories_name'.$x]);
+									if (count($updateArray)) {
+										$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_categories_description', "language_id=".$language_id." and categories_id=".$this->ms['target-cid'],$updateArray);
+										$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+										$this->ms['sqls'][]=$query;										
+									}
+								}													
 							}
 							if ($item['categories_image'.$x]) {
 								$categories_name=$item['categories_name'.$x];
@@ -1423,7 +1469,9 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 						}
 						else $skip=0;
 						if (!$skip) {
-							if ($this->post['relaxed_import']) sleep(35);	
+							if ($this->post['relaxed_import']) {
+								sleep(35);	
+							}
 							if ($item['products_name']) {
 								// if productsname is supplied
 								// if the date available is only a year, add the default month and day
@@ -1495,7 +1543,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								}	
 							}
 							$products_id='';
-							if (isset($item['products_vat_rate']) and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_vat_rate',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+							if (isset($item['products_vat_rate'])  and (!$item['imported_product'] or ($item['imported_product'] and !in_array('products_vat_rate',$importedProductsLockedFields)))) {
 								$taxGroupRow=mslib_fe::getTaxGroupByName($item['products_vat_rate']);
 								$tax_id=$taxGroupRow['rules_group_id'];
 								if (!isset($tax_id)) {
@@ -1517,11 +1565,11 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								}					
 								if ($tax_id) {
 									$item['tax_id']=$tax_id;
-								} elseif ($this->post['tx_multishop_pi1']['default_vat_rate'] and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_vat_rate',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+								} elseif ($this->post['tx_multishop_pi1']['default_vat_rate']  and (!$item['imported_product'] or ($item['imported_product'] and !in_array('products_vat_rate',$importedProductsLockedFields)))) {
 									$item['tax_id']=$this->post['tx_multishop_pi1']['default_vat_rate'];
 									$item['products_vat_rate']=$default_tax_rate['total_tax_rate'];
 								}	
-							} elseif ($this->post['tx_multishop_pi1']['default_vat_rate'] and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_vat_rate',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+							} elseif ($this->post['tx_multishop_pi1']['default_vat_rate'] and (!$item['imported_product'] or ($item['imported_product'] and !in_array('products_vat_rate',$importedProductsLockedFields)))) {
 								$item['tax_id']=$this->post['tx_multishop_pi1']['default_vat_rate'];
 								$item['products_vat_rate']=$default_tax_rate['total_tax_rate'];
 							}							
@@ -1536,8 +1584,10 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								$item['products_specials_price'] = number_format(($item['products_specials_price_including_vat']/(100+$item['products_vat_rate'])*100),14,'.','');
 							}
 							if ($item['products_old_price']) {
-								if ($item['products_price'] < $item['products_old_price']) $item['products_specials_price']=$item['products_price'];
-								$item['products_price']			=	$item['products_old_price'];									
+								if ($item['products_price'] < $item['products_old_price']) {
+									$item['products_specials_price']=$item['products_price'];
+								}
+								$item['products_price'] = $item['products_old_price'];									
 							}
 							if (!$item['products_description'] and $item['products_short_description']) $item['products_description']=nl2br($item['products_short_description']);			
 							if (is_numeric($item['updated_products_id'])) {
@@ -1548,13 +1598,19 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								$products_id=$item['updated_products_id'];								
 								// add product to the undo table first
 								$old_product=mslib_befe::addUndo($item['updated_products_id'],'tx_multishop_products');
+								if ($old_product['imported_product']) {
+									$item['imported_product']=1;
+									$importedProductsLockedFields=mslib_befe::getImportedProductsLockedFields($products_id);
+								}
+								/*
 								if ($old_product['imported_product'] and $old_product['lock_imported_product']) {
 									// we define that this product is a locked product to protect the product and only update what is allowed
 									$item['locked_product']=1;
 								}
+								*/
 //								error_log('old_product: '.print_r($old_product,1));
 								$updateArray=array();
-								if (isset($item['tax_id']) and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_vat_rate',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+								if (isset($item['tax_id']) and (!$item['imported_product'] or ($item['imported_product'] and !in_array('products_vat_rate',$importedProductsLockedFields)))) {
 									$updateArray['tax_id']=$item['tax_id'];
 								}							
 								if (isset($item['products_weight'])) {
@@ -1575,7 +1631,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								if (isset($item['products_ean'])) {
 									$updateArray['ean_code'] = $item['products_ean'];
 								}
-								if (isset($item['products_price']) and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_price',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+								if (isset($item['products_price']) and (!$item['imported_product'] or ($item['imported_product'] and !in_array('products_price',$importedProductsLockedFields)))) {
 									$updateArray['products_price'] = $item['products_price'];
 								}								
 								if ($item['manufacturers_id']) {
@@ -1584,7 +1640,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								if (isset($item['products_staffel_price'])) {
 									$updateArray['staffel_price'] = $item['products_staffel_price'];
 								}							
-								if (isset($item['products_quantity']) and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_quantity',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+								if (isset($item['products_quantity']) and (!$item['imported_product'] or ($item['imported_product'] and !in_array('products_quantity',$importedProductsLockedFields)))) {
 									$updateArray['products_quantity'] = $item['products_quantity'];
 								}
 								if ($item['products_model']) {
@@ -1619,7 +1675,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								}
 								if (isset($item['products_sort_order'])) {
 									$updateArray['sort_order'] = $item['products_sort_order'];								
-								}
+								}																	
 								if (count($updateArray)) {
 									// custom hook that can be controlled by third-party plugin
 									if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_import.php']['updateProductPreHook'])) {
@@ -1678,7 +1734,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								if (isset($item['products_meta_keywords'])) {
 									$updateArray['products_meta_keywords'] = $item['products_meta_keywords'];								
 								}
-								if (isset($item['products_name']) and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_name',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+								if (isset($item['products_name']) and (!$item['imported_product'] or ($item['imported_product'] and !in_array('products_name',$importedProductsLockedFields)))) {
 									$updateArray['products_name'] = $item['products_name'];
 								}
 								
@@ -1687,9 +1743,9 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								} elseif ($item['products_description']) {
 									$updateArray['products_description'] = $item['products_description'];
 								} */
-								if (isset($item['products_description_encoded']) and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_description',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+								if (isset($item['products_description_encoded']) and (!$item['imported_product'] or ($item['imported_product'] and !in_array('products_description',$importedProductsLockedFields)))) {
 									$updateArray['products_description'] = $item['products_description_encoded'];
-								} elseif ($item['products_description'] and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_description',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+								} elseif ($item['products_description'] and (!$item['imported_product'] or ($item['imported_product'] and !in_array('products_description',$importedProductsLockedFields)))) {
 									$updateArray['products_description'] = $item['products_description'];
 								}
 								if (isset($item['products_short_description'])) {
@@ -1727,7 +1783,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 									$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products_description', 'products_id='.$item['updated_products_id'],$updateArray);
 									$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
 								}
-								if (isset($item['products_specials_price']) and ($item['products_specials_price'] <= $item['products_price'])) {
+								if (isset($item['products_specials_price']) and ($item['products_specials_price'] < $item['products_price'])) {
 									$updateArray=array();
 									$updateArray['specials_new_products_price']=$item['products_specials_price'];									
 									if (strstr($updateArray['specials_new_products_price'],",")) {
@@ -1789,7 +1845,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 									$res = $GLOBALS['TYPO3_DB']->sql_query($query);																													
 								}									
 								$content .=ucfirst(t3lib_div::strtolower($this->pi_getLL('admin_product'))).' "<strong>'.($item['products_name']?$item['products_name']:$item['extid']).'</strong>" '.$this->pi_getLL('has_been_adjusted').'.<br />';								
-								if ($this->ms['target-cid'] and (!$item['locked_product'] or ($item['locked_product'] and !in_array('categories_id',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+								if ($this->ms['target-cid'] and (!$item['imported_product'] or ($item['imported_product'] and !in_array('categories_id',$importedProductsLockedFields)))) {
 									if (!$this->post['incremental_update']) {
 										$query = $GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_products_to_categories', 'products_id='.$item['updated_products_id']);
 										$res = $GLOBALS['TYPO3_DB']->sql_query($query);																			
@@ -1836,7 +1892,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								}
 								// lets add the new product to the products table
 								$updateArray=array();
-								if (isset($item['tax_id']) and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_vat_rate',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+								if (isset($item['tax_id']) and (!$item['imported_product'] or ($item['imported_product'] and !in_array('products_vat_rate',$importedProductsLockedFields)))) {
 									$updateArray['tax_id']=$item['tax_id'];
 								}
 								if ($item['products_id']) $updateArray['products_id'] =$item['products_id'];
@@ -1849,7 +1905,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								$updateArray['products_quantity'] = $item['products_quantity'];
 								$updateArray['extid'] = $item['extid'];
 
-								if ((isset($item['products_price']) or isset($item['products_old_price'])) and (!$item['locked_product'] or ($item['locked_product'] and !in_array('products_price',$this->post['tx_multishop_pi1']['locked_fields'])))) {
+								if ((isset($item['products_price']) or isset($item['products_old_price'])) and (!$item['imported_product'] or ($item['imported_product'] and !in_array('products_price',$importedProductsLockedFields)))) {
 									if ($item['products_old_price']) {
 										$updateArray['products_price'] = $item['products_old_price'];
 									} elseif ($item['products_price']) {
@@ -1883,14 +1939,22 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								if (strstr($updateArray['product_capital_price'],",")) {
 									$updateArray['product_capital_price']=str_replace(",",'.',$updateArray['product_capital_price']);
 								}								
-								$updateArray['products_date_added']		=strtotime($item['products_date_added']);
+								$updateArray['products_date_added'] =strtotime($item['products_date_added']);
 								$updateArray['products_date_available']	=strtotime($item['products_date_available']);
-								$updateArray['products_last_modified']	=strtotime($item['products_date_modified']);
-								$updateArray['page_uid']				=$this->showCatalogFromPage;
-								$updateArray['manufacturers_id']		=$item['manufacturers_id'];
-								$updateArray['imported_product']		=1;
+								$updateArray['products_last_modified'] =strtotime($item['products_date_modified']);
+								$updateArray['page_uid'] =$this->showCatalogFromPage;
+								$updateArray['manufacturers_id'] =$item['manufacturers_id'];
+								$updateArray['imported_product'] =1;
 								if ($this->get['job_id']) {
-									$updateArray['import_job_id']		=$this->get['job_id'];
+									$updateArray['import_job_id'] =$this->get['job_id'];
+									if ($item['products_unique_identifier']) {
+										// save also the feed products_id, maybe we need it later
+										$updateArray['foreign_products_id']=$item['products_unique_identifier'];
+									}
+									if ($this->post['prefix_source_name']) {
+										// save also the feed source name, maybe we need it later
+										$updateArray['foreign_source_name']=$this->post['prefix_source_name'];
+									}									
 								}
 								if (isset($item['products_sort_order'])) {
 									$updateArray['sort_order']=$item['products_sort_order'];
@@ -1967,7 +2031,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 									$res = $GLOBALS['TYPO3_DB']->sql_query($query);										
 								}
 								$inserteditems[$this->ms['target-cid']][]=$item['products_name'];
-								if ($item['products_specials_price'] and ($item['products_specials_price'] <= $item['products_price'])) {
+								if ($item['products_specials_price'] and ($item['products_specials_price'] < $item['products_price'])) {
 									// product has a specials price, lets add it
 									$updateArray=array();
 									$updateArray['products_id']					=$item['added_products_id'];
@@ -2121,7 +2185,12 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 							// predefined attribute option mappings eof
 							// update flat database
 							if ($this->ms['MODULES']['FLAT_DATABASE'] or $this->ms['MODULES']['GLOBAL_MODULES']['FLAT_DATABASE']) {
-								mslib_befe::convertProductToFlat($products_id,'tx_multishop_products_flat');
+								if (isset($item['products_status']) and $item['products_status']=='0' and is_numeric($products_id)) {
+									$query = $GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_products_flat', 'products_id='.$products_id);
+									$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
+								} else {								
+									mslib_befe::convertProductToFlat($products_id,'tx_multishop_products_flat');
+								}
 							}
 							
 							// lets notify plugin that we have update action in product
@@ -2179,7 +2248,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 										} else {
 											$time_running=number_format($running_seconds,0,'.','').' seconds';
 										}
-										$estimated_seconds=round(((($global_ms_string/100)*(100-$completed_percentage))));
+										$estimated_seconds=round((((($end_time-$global_start_time)/$completed_percentage)*(100-$completed_percentage))));
 										
 										/*
 										$message.="\n";
@@ -2199,7 +2268,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 										} else {
 											$estimated_time_remaining=number_format($estimated_seconds,0,'.','').' second(s)';
 										}										
-										$message.= '50 products processed in: '.$ms_string.'ms. '.number_format(($total_datarows-$item_counter),0,'','.').' of '.number_format($total_datarows,0,'','.').' product(s) waiting for import ('.round($completed_percentage).'% completed).'."\n".'Job is running: '.($time_running).' and the estimated time remaining is: '.$estimated_time_remaining.'.'."\n";
+										$message.= '50 products processed in: '.$ms_string.'ms. '.number_format(($total_datarows-$item_counter),0,'','.').' of '.number_format($total_datarows,0,'','.').' product(s) waiting for import ('.round($completed_percentage).'% / '.number_format($item_counter, 0,'','.').' products imported).'."\n".'Job is running: '.($time_running).' and the estimated time remaining is: '.$estimated_time_remaining.'.'."\n";
 										$message.= "----------------------------------\n";
 									}
 									// reset timer and subtel

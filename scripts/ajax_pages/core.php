@@ -1,45 +1,40 @@
 <?php
-if (!defined('TYPO3_MODE')) die ('Access denied.');
-
+if (!defined('TYPO3_MODE')) {
+	die('Access denied.');
+}
 $this->ms['page']=$this->get['tx_multishop_pi1']['page_section'];		
-switch ($this->ms['page'])
-{
+switch ($this->ms['page']) {
 	case 'downloadCategoryTree':
-		if ($this->ADMIN_USER)
-		{
+		if ($this->ADMIN_USER) {
 			$multishop_category_array=array();
 			$query2 = $GLOBALS['TYPO3_DB']->SELECTquery(
-							'cd.categories_name, c.categories_id, c.parent_id',         // SELECT ...
-							'tx_multishop_categories c, tx_multishop_categories_description cd',     // FROM ...
-							'c.parent_id =0 and c.status=1 and c.categories_id=cd.categories_id',    // WHERE...
-							'',            // GROUP BY...
-							'cd.categories_name',    // ORDER BY...
-							''            // LIMIT ...
+				'cd.categories_name, c.categories_id, c.parent_id',         // SELECT ...
+				'tx_multishop_categories c, tx_multishop_categories_description cd',     // FROM ...
+				'c.parent_id =0 and c.status=1 and c.categories_id=cd.categories_id',    // WHERE...
+				'',            // GROUP BY...
+				'cd.categories_name',    // ORDER BY...
+				''            // LIMIT ...
 			);								
 			$res2 = $GLOBALS['TYPO3_DB']->sql_query($query2);
-			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res2) > 0)
-			{
-				while($row2 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res2))
-				{
+			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res2) > 0) {
+				while($row2 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res2)) {
 					$query3 = $GLOBALS['TYPO3_DB']->SELECTquery(
-									'*',         // SELECT ...
-									'tx_multishop_categories c, tx_multishop_categories_description cd',     // FROM ...
-									'c.parent_id=\''.$row2['categories_id'].'\' and c.status=1 and c.categories_id=cd.categories_id',    // WHERE...
-									'',            // GROUP BY...
-									'cd.categories_name',    // ORDER BY...
-									''            // LIMIT ...
+						'*',         // SELECT ...
+						'tx_multishop_categories c, tx_multishop_categories_description cd',     // FROM ...
+						'c.parent_id=\''.$row2['categories_id'].'\' and c.status=1 and c.categories_id=cd.categories_id',    // WHERE...
+						'',            // GROUP BY...
+						'cd.categories_name',    // ORDER BY...
+						''            // LIMIT ...
 					);								
 					$res3 = $GLOBALS['TYPO3_DB']->sql_query($query3);
-					if ($GLOBALS['TYPO3_DB']->sql_num_rows($res3) > 0)
-					{					
-						while(($row3 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res3)))
-						{
+					if ($GLOBALS['TYPO3_DB']->sql_num_rows($res3) > 0) {					
+						while(($row3 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res3))) {
 							$multishop_category_array[]=array(
-							'categoryTree'=>$row2['categories_name'].' / '.$row3['categories_name'],
-							'mainCatID'=>$row2['categories_id'],
-							'mainCatName'=>$row2['categories_name'],
-							'subCatID'=>$row3['categories_id'],
-							'subCatName'=>$row3['categories_name']						
+								'categoryTree'=>$row2['categories_name'].' / '.$row3['categories_name'],
+								'mainCatID'=>$row2['categories_id'],
+								'mainCatName'=>$row2['categories_name'],
+								'subCatID'=>$row3['categories_id'],
+								'subCatName'=>$row3['categories_name']						
 							);	
 						}
 					}
@@ -58,14 +53,12 @@ switch ($this->ms['page'])
 		exit();
 	break;	
 	case 'retrieveAdminNotificationMessage':
-		if ($this->ADMIN_USER)
-		{
+		if ($this->ADMIN_USER) {
 			$startTime=(time()-(60));
 			$str="SELECT id, title, message, customer_id, crdate from tx_multishop_notification where unread=1 and crdate > ".$startTime." limit 2";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			$messages=array();
-			while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry))
-			{
+			while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
 				$row['crdate']=strftime("%x %X",  $row['crdate']);
 				$messages[]=$row;
 				// update status to read
@@ -309,7 +302,7 @@ switch ($this->ms['page'])
 					// relative mode
 					require($this->DOCUMENT_ROOT.$this->ms['MODULES']['DOWNLOAD_INVOICE_TYPE'].'.php');	
 				} else {
-					require(t3lib_extMgm::extPath('multishop').'scripts/ajax_pages/download_invoice_b2c.php');	
+					require(t3lib_extMgm::extPath('multishop').'scripts/ajax_pages/download_invoice_b2c.php');
 				}
 			}		
 		}
@@ -382,6 +375,125 @@ switch ($this->ms['page'])
 			}
 		}
 		exit();					
+	break;
+	case 'admin_upload_redactor':
+		if ($this->ADMIN_USER) {	
+			$continueUpload=0;
+			switch($this->get['tx_multishop_pi1']['redactorType']) {
+				case 'imageGetJson':
+					$fileUploadPathRelative='uploads/tx_multishop/images/cmsimages';
+					$fileUploadPathAbsolute=$this->DOCUMENT_ROOT.$fileUploadPathRelative;
+					if (is_dir($fileUploadPathAbsolute)) {
+						$items=t3lib_div::getAllFilesAndFoldersInPath(array(),$fileUploadPathAbsolute.'/');
+						if (count($items)) {
+							$array=array();
+							foreach ($items as $item) {
+								$path_parts = pathinfo($item);
+								$file=array();
+								$file['title']=$path_parts['filename'];
+								$file['thumb']=str_replace($this->DOCUMENT_ROOT,'',$item);
+								$file['image']=$file['thumb'];
+								$file['folder']=str_replace($fileUploadPathAbsolute,'',$path_parts['dirname']);						
+								$array[]=$file;
+							}
+							echo htmlspecialchars(json_encode($array), ENT_NOQUOTES);
+						}
+					}
+					exit();
+				break;
+				case 'clipboardUploadUrl':
+					if ($this->post['contentType'] and $this->post['data']) {
+						switch($this->post['contentType']) {
+							case 'image/png':
+							case 'image/jpg':
+							case 'image/gif':
+							case 'image/jpeg':
+							case 'image/pjpeg':
+								$fileUploadPathRelative='uploads/tx_multishop/images/cmsimages';
+								$fileUploadPathAbsolute=$this->DOCUMENT_ROOT.$fileUploadPathRelative;
+								$temp_file=$this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/'.uniqid();
+								file_put_contents($temp_file,base64_decode($this->post['data']));
+								if (file_exists($temp_file)) {
+									$size=getimagesize($temp_file);
+									if ($size[0] > 5 and $size[1] > 5) {
+										$imgtype = mslib_befe::exif_imagetype($temp_file);
+										if ($imgtype) {							
+											// valid image
+											$ext = image_type_to_extension($imgtype, false);
+											if ($ext) {				
+												$continueUpload=1;
+											}
+										}
+									}
+								}
+							break;
+						}
+					}
+				break;
+				case 'imageUpload':
+					$_FILES['file']['type'] = strtolower($_FILES['file']['type']);				
+					switch($_FILES['file']['type']) {
+						case 'image/png':
+						case 'image/jpg':
+						case 'image/gif':
+						case 'image/jpeg':
+						case 'image/pjpeg':
+							$fileUploadPathRelative='uploads/tx_multishop/images/cmsimages';
+							$fileUploadPathAbsolute=$this->DOCUMENT_ROOT.$fileUploadPathRelative;
+							$temp_file=$this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/'.uniqid();
+							move_uploaded_file($_FILES['file']['tmp_name'],$temp_file);
+							$size=getimagesize($temp_file);
+							if ($size[0] > 5 and $size[1] > 5) {
+								$imgtype = mslib_befe::exif_imagetype($temp_file);
+								if ($imgtype) {							
+									// valid image
+									$ext = image_type_to_extension($imgtype, false);
+									if ($ext) {				
+										$continueUpload=1;
+									}
+								}
+							}						
+						break;
+					}
+				break;				
+				case 'fileUpload':
+					$fileUploadPathRelative='uploads/tx_multishop/images/cmsfiles';
+					$fileUploadPathAbsolute=$this->DOCUMENT_ROOT.$fileUploadPathRelative;
+					$temp_file=$this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/'.uniqid();
+					move_uploaded_file($_FILES['file']['tmp_name'],$temp_file);
+					$path_parts = pathinfo($_FILES["file"]["name"]);
+					$ext = $path_parts['extension'];				
+					if ($ext) {				
+						$continueUpload=1;
+					}
+				break;
+
+			}
+			if ($continueUpload) {
+				if (!$this->get['tx_multishop_pi1']['title']) {
+					$this->get['tx_multishop_pi1']['title']=uniqid();
+				}
+				$i=0;				
+				$filename=mslib_fe::rewritenamein($this->get['tx_multishop_pi1']['title']).'.'.$ext;
+				$target=$fileUploadPathAbsolute.'/'.$filename;
+				if (file_exists($target)) {
+					do {		
+						$filename=mslib_fe::rewritenamein($this->get['tx_multishop_pi1']['title']).($i > 0?'-'.$i:'').'.'.$ext;			
+						$target=$fileUploadPathAbsolute.'/'.$filename;
+						$i++;
+					} while (file_exists($target));
+				}
+				if (copy($temp_file,$target)) {
+					$fileLocation=$this->FULL_HTTP_URL.$fileUploadPathRelative.'/'.$filename;
+					$result = array(
+						'filelink' => $fileLocation
+					);										
+					echo htmlspecialchars(json_encode($result), ENT_NOQUOTES);
+					exit();										
+				}	
+			}
+		}
+		exit();
 	break;
 	case 'admin_upload_product_images':
 		if ($this->ADMIN_USER) {
@@ -660,6 +772,7 @@ switch ($this->ms['page'])
 				
 				$return_data['results'][$counter]['values_id'] = $row2['products_options_values_id'];
 				$return_data['results'][$counter]['values_name'] = htmlspecialchars($row2['products_options_values_name']);
+				$return_data['results'][$counter]['pov2po_id'] = htmlspecialchars($row2['products_options_values_to_products_options_id']);
 				
 				$lang_counter = 0;
 				foreach ($this->languages as $key => $language) {
@@ -682,6 +795,116 @@ switch ($this->ms['page'])
 			
 			$json_data = mslib_befe::array2json($return_data);
 			echo $json_data;
+		}
+		exit();
+	break;
+	case 'fetch_options_description':
+		// this is the AJAX server for deleting the product attributes
+		if ($this->ADMIN_USER) {
+			$option_id 		= $this->post['data_id'];
+			$return_data 	= array();
+
+			$option_name = mslib_fe::getRealNameOptions($option_id);
+			$return_data['options_name'] = $option_name;
+			
+			$str2="select products_options_id, products_options_descriptions, language_id from tx_multishop_products_options po where po.products_options_id='".$option_id."'";
+			$qry2 = $GLOBALS['TYPO3_DB']->sql_query($str2);
+				
+			$counter = 0;
+			while (($row2 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry2)) != false) {
+				$return_data['results'][$counter]['option_id'] = $row2['products_options_id'];
+				$return_data['results'][$counter]['lang_title'] = $this->languages[$row2['language_id']]['title']; 
+				$return_data['results'][$counter]['lang_id'] = $row2['language_id'];
+				$return_data['results'][$counter]['description'] = htmlspecialchars($row2['products_options_descriptions']);
+						
+				$counter++;
+			}
+			$json_data = mslib_befe::array2json($return_data);
+			echo $json_data;
+		}
+		exit();
+	break;
+	case 'save_options_description':
+		// this is the AJAX server for deleting the product attributes
+		if ($this->ADMIN_USER) {
+			foreach ($this->post['opt_desc'] as $opt_id => $langs_id) {
+				foreach ($langs_id as $lang_id => $opt_desc) {
+					$updateArray 	= array();
+					$updateArray['products_options_descriptions'] = $opt_desc;
+				
+					$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products_options', 'products_options_id=\''.$opt_id.'\' and language_id = ' . $lang_id, $updateArray);
+					$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+				}
+			}
+		}
+		exit();
+	break;
+	case 'fetch_options_values_description':
+		// this is the AJAX server for deleting the product attributes
+		if ($this->ADMIN_USER) {
+			$pov2po_id 		= $this->post['data_id'];
+			$return_data 	= array();
+	
+			$str="select * from tx_multishop_products_options_values_to_products_options pov2po where pov2po.products_options_values_to_products_options_id='".$pov2po_id."'";
+			$qry = $GLOBALS['TYPO3_DB']->sql_query($str);
+			$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
+			
+			$option_name = mslib_fe::getRealNameOptions($row['products_options_id']);
+			$return_data['options_name'] = $option_name;
+			
+			$option_value_name = mslib_fe::getNameOptions($row['products_options_values_id']);
+			$return_data['options_values_name'] = $option_value_name;
+
+			$counter = 0;
+			foreach ($this->languages as $key => $language) {
+				$str2="select * from tx_multishop_products_options_values_to_products_options_desc pov2pod where pov2pod.products_options_values_to_products_options_id='".$pov2po_id."' and language_id = '".$key."'";
+				$qry2 = $GLOBALS['TYPO3_DB']->sql_query($str2);
+		
+				if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry2)) {
+					while (($row2 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry2)) != false) {
+						$return_data['results'][$counter]['pov2po_id'] = $pov2po_id;
+						$return_data['results'][$counter]['lang_title'] = $this->languages[$row2['language_id']]['title'];
+						$return_data['results'][$counter]['lang_id'] = $row2['language_id'];
+						$return_data['results'][$counter]['description'] = htmlspecialchars($row2['description']);
+					}
+				} else {
+					$return_data['results'][$counter]['pov2po_id'] = $pov2po_id;
+					$return_data['results'][$counter]['lang_title'] = $this->languages[$key]['title'];
+					$return_data['results'][$counter]['lang_id'] = $key;
+					$return_data['results'][$counter]['description'] = '';
+				}
+				
+				$counter++;
+			}
+			
+			$json_data = mslib_befe::array2json($return_data);
+			echo $json_data;
+		}
+		exit();
+	break;
+	case 'save_options_values_description':
+		// this is the AJAX server for deleting the product attributes
+		if ($this->ADMIN_USER) {
+			foreach ($this->post['ov_desc'] as $pov2po_id => $langs_id) {
+				foreach ($langs_id as $lang_id => $pov2po_desc) {
+					$updateArray 	= array();
+					
+					$str2="select * from tx_multishop_products_options_values_to_products_options_desc pov2pod where pov2pod.products_options_values_to_products_options_id='".$pov2po_id."' and language_id = '".$lang_id."'";
+					$qry2 = $GLOBALS['TYPO3_DB']->sql_query($str2);
+					
+					if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry2)) {
+						$updateArray['description'] = $pov2po_desc;
+						$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products_options_values_to_products_options_desc', 'products_options_values_to_products_options_id=\''.$pov2po_id.'\' and language_id = ' . $lang_id, $updateArray);
+						$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+					} else {
+						$updateArray['products_options_values_to_products_options_id'] = $pov2po_id;
+						$updateArray['language_id'] = $lang_id;
+						$updateArray['description'] = $pov2po_desc;
+						$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_options_values_to_products_options_desc', $updateArray);
+						$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+					}
+				}
+			}
 		}
 		exit();
 	break;
@@ -781,6 +1004,7 @@ switch ($this->ms['page'])
 				$keys[] 		= 'mobile';
 				$keys[] 		= 'fax';
 				$keys[] 		= 'vat_id';
+				$keys[] 		= 'coc_id';
 				
 				
 				$updateArray 	= array();

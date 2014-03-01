@@ -199,7 +199,7 @@ jQuery(document).ready(function()
 	}
 	//start ajax pagging
 	 //Manage click events
-	jQuery('#ajax_pagination #pagenav_container  a').live('click', function(e) {
+	jQuery('#ajax_pagination #pagenav_container  a').on("click", "selector", function(e) {
 		e.preventDefault();
 		var pageNum = this.id;
 		filterproducts(pageNum);

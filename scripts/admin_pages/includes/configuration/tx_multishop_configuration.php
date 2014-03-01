@@ -16,6 +16,17 @@ if (!defined('TYPO3_MODE')) die ('Access denied.');
 // 12 Invoice Settings
 
 $records=array();
+
+$records[]=array(
+		'configuration_title'=>'Use Flat database also in admin products search and edit',
+		'configuration_key'=>'USE_FLAT_DATABASE_ALSO_IN_ADMIN_PRODUCTS_SEARCH_AND_EDIT',
+		'configuration_value'=>'0',
+		'description'=>'When flat database is enabled, this setting will improve performance when searching on the admin products search and edit page.',
+		'group_id'=>'3',
+		'use_function'=>'',
+		'set_function'=>'',
+		'depend_on_configuration_key'=>'',
+		'use_function'=>'');
 $records[]=array(
 		'configuration_title'=>'Multishop Encryption key',
 		'configuration_key'=>'MULTISHOP_ENCRYPTION_KEY',
@@ -1508,6 +1519,16 @@ $records[]=array(
 		'group_id'=>'6',
 		'use_function'=>'',
 		'set_function'=>'tep_cfg_select_option(array(\'0\', \'1\'),',
+		'depend_on_configuration_key'=>'',
+		'use_function'=>'');
+$records[]=array(
+		'configuration_title'=>'Search also in products negative keywords',
+		'configuration_key'=>'SEARCH_ALSO_IN_PRODUCTS_NEGATIVE_KEYWORDS',
+		'configuration_value'=>'0',
+		'description'=>'This enables the search-engine to also search in the column products_negative_keywords.',
+		'group_id'=>'3',
+		'use_function'=>'',
+		'set_function'=>'tep_cfg_select_option(array(\'0\',\'1\'),',
 		'depend_on_configuration_key'=>'',
 		'use_function'=>'');
 // custom hook that can be controlled by third-party plugin

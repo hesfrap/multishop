@@ -1,7 +1,10 @@
 <?php
-if (!defined('TYPO3_MODE')) die ('Access denied.');
-
+if (!defined('TYPO3_MODE')) {
+	die('Access denied.');
+}
 if ($this->get['feed_hash']) {
+	set_time_limit(86400); 
+	ignore_user_abort(true);	
     $feed = mslib_fe::getProductFeed($this->get['feed_hash'],'code');
 	$lifetime = 7200;
 	if ($this->ADMIN_USER) {
@@ -95,11 +98,17 @@ if ($this->get['feed_hash']) {
 						case 'manufacturers_name':
 							$content.='brand';
 						break;						
+						case 'product_capital_price':
+							$content.='capital price';
+						break;
 						case 'products_price':
 							$content.='price';
 						break;
 						case 'products_price_excluding_vat':
 							$content.='price excluding vat';
+						break;						
+						case 'products_vat_rate':
+							$content.=$row['tax_rate'];
 						break;						
 						case 'products_url':
 							$content.='link';
@@ -178,8 +187,11 @@ if ($this->get['feed_hash']) {
 					$parent_id=$this->get['categories_id'];
 				}				
 				if (is_numeric($this->get['manufacturers_id'])) {
-					if ($this->ms['MODULES']['FLAT_DATABASE']) 	$tbl='pf.';
-					else									$tbl='p.';
+					if ($this->ms['MODULES']['FLAT_DATABASE']) {
+						$tbl='pf.';
+					} else {
+						$tbl='p.';
+					}
 					$filter[]="(".$tbl."manufacturers_id='".addslashes($this->get['manufacturers_id'])."')";					
 				}
 				if (strlen($this->get['skeyword']) >2) {
@@ -301,18 +313,16 @@ if ($this->get['feed_hash']) {
 								$qry_attributes = $GLOBALS['TYPO3_DB']->sql_query($sql_attributes);
 								while ($row_attributes = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_attributes)) {
 									$attributes_data['attribute_option_name_' . $row_attributes['options_id']][] = $row_attributes['products_options_values_name'];
-								}
-								
+								}								
 								foreach ($attributes_data as $attribute_key => $attribute_val) {
 									$row[$attribute_key] = implode(', ', $attributes_data[$attribute_key]);
 								}
-							}
-							
+							}							
 							$cats = mslib_fe::Crumbar($product['categories_id']);
 							$cats = array_reverse($cats);	
 							$product['categories_crum']=$cats;
 							// some parts are not available in flat table and vice versa so lets merge them
-							$records[]=array_merge($product,$row);						
+							$records[]=array_merge($product,$row);
 						}
 					}
 				}
@@ -361,14 +371,13 @@ if ($this->get['feed_hash']) {
         // load all products'
 		foreach ($records as $row) {			
 			$total=count($fields);
-			$count=0;
-	
+			$count=0;	
 			foreach ($fields as $counter => $field) {
 				$count++;
 				if ($this->get['format']=='csv') {
 					$content .= '"';
 				}										
-				$tmpcontent='';					
+				$tmpcontent='';								
 				switch ($field) {
 					case 'categories_id':
 						$tmpcontent .= $row['categories_id'];
@@ -377,16 +386,14 @@ if ($this->get['feed_hash']) {
 						$tmpcontent .= $row['categories_name'];
 					break;
 					case 'categories_content_top':
-						$string=strip_tags(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['categories_content_top']));
-						if ($string) {
-							$string = preg_replace('/\s+/', ' ', $string);
+						if ($row['content']) {
+							$string=strip_tags(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['content']));
 							$tmpcontent .= $string;
-						}					
+						}
 					break;
 					case 'categories_content_bottom':
-						$string=strip_tags(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['categories_content_bottom']));
-						if ($string) {
-							$string = preg_replace('/\s+/', ' ', $string);
+						if ($row['content_footer']) {
+							$string=strip_tags(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['content_footer']));
 							$tmpcontent .= $string;
 						}
 					break;
@@ -398,7 +405,113 @@ if ($this->get['feed_hash']) {
 					break;										
 					case 'categories_meta_description':
 						$tmpcontent .= $row['meta_description'];
-					break;										
+					break;
+					case 'categories_meta_title_1':
+					case 'categories_meta_title_2':
+					case 'categories_meta_title_3':
+					case 'categories_meta_title_4':
+					case 'categories_meta_title_5':
+						$level=str_replace("categories_meta_title_",'',$field);
+						if ($row['categories_crum'][($level-1)]['id']) {						
+							$filter=array();
+							$filter[]='language_id='.$GLOBALS['TSFE']->sys_language_uid;
+							$row2=mslib_befe::getRecord($row['categories_crum'][($level-1)]['id'], 'tx_multishop_categories_keywords', 'categories_id', $filter);
+							$tmpcontent .= $row2['meta_title'];
+						}
+					break;						
+					case 'categories_meta_keywords_1':
+					case 'categories_meta_keywords_2':
+					case 'categories_meta_keywords_3':
+					case 'categories_meta_keywords_4':
+					case 'categories_meta_keywords_5':
+						$level=str_replace("categories_meta_keywords_",'',$field);
+						if ($row['categories_crum'][($level-1)]['id']) {						
+							$filter=array();
+							$filter[]='language_id='.$GLOBALS['TSFE']->sys_language_uid;
+							$row2=mslib_befe::getRecord($row['categories_crum'][($level-1)]['id'], 'tx_multishop_categories_keywords', 'categories_id', $filter);
+							$tmpcontent .= $row2['meta_keywords'];
+						}
+					break;					
+					case 'categories_meta_description_1':
+					case 'categories_meta_description_2':
+					case 'categories_meta_description_3':
+					case 'categories_meta_description_4':
+					case 'categories_meta_description_5':
+						$level=str_replace("categories_meta_description_",'',$field);
+						if ($row['categories_crum'][($level-1)]['id']) {						
+							$filter=array();
+							$filter[]='language_id='.$GLOBALS['TSFE']->sys_language_uid;
+							$row2=mslib_befe::getRecord($row['categories_crum'][($level-1)]['id'], 'tx_multishop_categories_description', 'categories_id', $filter);
+							$tmpcontent .= $row2['meta_description'];					
+						}
+					break;
+					case 'categories_content_top_1':
+					case 'categories_content_top_2':
+					case 'categories_content_top_3':
+					case 'categories_content_top_4':
+					case 'categories_content_top_5':
+						$level=str_replace("categories_content_top_",'',$field);
+						if ($row['categories_crum'][($level-1)]['id']) {						
+							$filter=array();
+							$filter[]='language_id='.$GLOBALS['TSFE']->sys_language_uid;
+							$row2=mslib_befe::getRecord($row['categories_crum'][($level-1)]['id'], 'tx_multishop_categories_description', 'categories_id', $filter);
+							if ($row2['content']) {
+								$string=strip_tags(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row2['content']));
+								$tmpcontent .= $string;
+							}
+						}
+					break;	
+					case 'categories_name_1':
+					case 'categories_name_2':
+					case 'categories_name_3':
+					case 'categories_name_4':
+					case 'categories_name_5':
+						$level=str_replace("categories_name_",'',$field);
+						if ($row['categories_crum'][($level-1)]['id']) {
+							$filter=array();
+							$filter[]='language_id='.$GLOBALS['TSFE']->sys_language_uid;
+							$row2=mslib_befe::getRecord($row['categories_crum'][($level-1)]['id'], 'tx_multishop_categories_description', 'categories_id', $filter);
+							if ($row2['categories_name']) {
+								$string=strip_tags(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row2['categories_name']));
+								$tmpcontent .= $string;
+							}
+						}
+					break;	
+					case 'categories_image':
+					case 'categories_image_1':
+					case 'categories_image_2':
+					case 'categories_image_3':
+					case 'categories_image_4':
+					case 'categories_image_5':
+						$level=str_replace("categories_image_",'',$field);
+						if ($row['categories_crum'][($level-1)]['id']) {						
+							$filter=array();
+							if ($level) {
+								$row2=mslib_befe::getRecord($row['categories_crum'][($level-1)]['id'], 'tx_multishop_categories', 'categories_id', $filter);
+							} else {
+								$row2=mslib_befe::getRecord($row['categories_id'], 'tx_multishop_categories', 'categories_id', $filter);
+							}
+							if ($row2['categories_image']) {
+								$tmpcontent.= $this->FULL_HTTP_URL.mslib_befe::getImagePath($row2['categories_image'],'categories','original');
+							}
+						}
+					break;						
+					case 'categories_content_bottom_1':
+					case 'categories_content_bottom_2':
+					case 'categories_content_bottom_3':
+					case 'categories_content_bottom_4':
+					case 'categories_content_bottom_5':
+						$level=str_replace("categories_content_bottom_",'',$field);
+						if ($row['categories_crum'][($level-1)]['id']) {						
+							$filter=array();
+							$filter[]='language_id='.$GLOBALS['TSFE']->sys_language_uid;
+							$row2=mslib_befe::getRecord($row['categories_crum'][($level-1)]['id'], 'tx_multishop_categories_description', 'categories_id', $filter);
+							if ($row2['content_footer']) {
+								$string=strip_tags(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row2['content_footer']));
+								$tmpcontent .= $string;
+							}
+						}
+					break;	
 					case 'products_condition':
 						$tmpcontent .= $row['products_condition'];
 					break;
@@ -415,10 +528,18 @@ if ($this->get['feed_hash']) {
 						$tmpcontent .= $row['products_name'];
 					break;
 					case 'products_status':
-						$tmpcontent .= $row['products_status'];
+						if ($this->ms['MODULES']['FLAT_DATABASE']) {
+							$tmpcontent .= '1'; 
+						} else {
+							$tmpcontent .= $row['products_status']; 							
+						}
 					break;					
 					case 'products_model':
 						$tmpcontent .= $row['products_model'];
+					break;
+					case 'products_old_price_excluding_vat':
+						//$tmpcontent .= $row['products_price'];
+						$tmpcontent .= round($row['products_price'],14);
 					break;
 					case 'products_old_price':
 						$final_price = mslib_fe::final_products_price($row);
@@ -435,22 +556,33 @@ if ($this->get['feed_hash']) {
 							}
 						}
 						if ($old_product_price != $final_price) {
-							$tmpcontent .= $old_product_price;
+							//$tmpcontent .= round($old_product_price,14);
+							$tmpcontent .= round($old_product_price,2);
 						} else {
 							$tmpcontent .= '';
 						}
-						break;
-					case 'products_price':
-						$tmpcontent .= mslib_fe::final_products_price($row);
 					break;
 					case 'products_price_excluding_vat':
 						$tmpcontent .= round($row['final_price'],14);
+					break;						
+					case 'products_price':
+						$tmpcontent .= mslib_fe::final_products_price($row);
 					break;
+					case 'product_capital_price':
+						if ($this->ms['MODULES']['FLAT_DATABASE']) {
+							$row2=mslib_befe::getRecord($row['products_id'], 'tx_multishop_products', 'products_id');
+							$tmpcontent .= $row2['product_capital_price'];
+						} else {
+							$tmpcontent .= $row['product_capital_price'];
+						}
+					break;					
 					case 'manufacturers_id':
 						$tmpcontent .= $row['manufacturers_id'];
 					break;
 					case 'manufacturers_name':
-						if ($row['manufacturers_id']) {
+						if ($row['manufacturers_name']) {
+							$tmpcontent .= $row['manufacturers_name'];
+						} elseif (!$row['manufacturers_name'] and $row['manufacturers_id']) {
 							$manufacturer = mslib_fe::getManufacturer($row['manufacturers_id']);
 							if ($manufacturer['manufacturers_name']) {
 								$tmpcontent .= $manufacturer['manufacturers_name'];
@@ -459,14 +591,10 @@ if ($this->get['feed_hash']) {
 					break;
 					case 'category_crum_path':
 						$tmpcontent .= $row['categories_crum'][0]['name'];
-						if ($row['categories_crum'][1]['name']) {
-							$tmpcontent .= " > ".$row['categories_crum'][1]['name'];
-						}
-						if ($row['categories_crum'][2]['name']) {
-							$tmpcontent .= " > ".$row['categories_crum'][2]['name'];
-						}
-						if ($row['categories_crum'][3]['name']) {
-							$tmpcontent .= " > ".$row['categories_crum'][3]['name'];
+						for ($i=1;$i<6;$i++) {
+							if ($row['categories_crum'][$i]['name']) {
+								$tmpcontent .= " > ".$row['categories_crum'][$i]['name'];
+							}
 						}
 					break;
 					case 'category_link':
@@ -521,20 +649,35 @@ if ($this->get['feed_hash']) {
 						}
 					break;							
 					case 'products_external_url':
-						if ($row['products_url']) $tmpcontent.= $row['products_url'];
+						if ($row['products_url']) {
+							$tmpcontent.= $row['products_url'];
+						}
 					break;										
 					case 'products_image_50':
-						if ($row['products_image']) $tmpcontent.= $this->FULL_HTTP_URL.mslib_befe::getImagePath($row['products_image'],'products','50');
+						if ($row['products_image']) {
+							$tmpcontent.= $this->FULL_HTTP_URL.mslib_befe::getImagePath($row['products_image'],'products','50');
+						}
 					break;
 					case 'products_image_100':
-						if ($row['products_image']) $tmpcontent.= $this->FULL_HTTP_URL.mslib_befe::getImagePath($row['products_image'],'products','100');
+						if ($row['products_image']) {
+							$tmpcontent.= $this->FULL_HTTP_URL.mslib_befe::getImagePath($row['products_image'],'products','100');
+						}
 					break;
 					case 'products_image_200':
-						if ($row['products_image']) $tmpcontent.= $this->FULL_HTTP_URL.mslib_befe::getImagePath($row['products_image'],'products','200');
+						if ($row['products_image']) {
+							$tmpcontent.= $this->FULL_HTTP_URL.mslib_befe::getImagePath($row['products_image'],'products','200');
+						}
 					break;
 					case 'products_image_normal':
-						if ($row['products_image']) $tmpcontent.= $this->FULL_HTTP_URL.mslib_befe::getImagePath($row['products_image'],'products','normal');
-					break;						
+						if ($row['products_image']) {
+							$tmpcontent.= $this->FULL_HTTP_URL.mslib_befe::getImagePath($row['products_image'],'products','normal');
+						}
+					break;
+					case 'products_image_original':
+						if ($row['products_image']) {
+							$tmpcontent.= $this->FULL_HTTP_URL.mslib_befe::getImagePath($row['products_image'],'products','original');
+						}
+					break;
 					case 'products_ean':
 						$tmpcontent.= $row['ean_code'];
 					break;							
@@ -558,14 +701,11 @@ if ($this->get['feed_hash']) {
 					break;
 					case 'products_url':
 						$where='';
-						if ($row['categories_id'])
-						{
+						if ($row['categories_id']) {
 							// get all cats to generate multilevel fake url
 							$level=0;
-							if (count($row['categories_crum']) > 0)
-							{
-								foreach ($row['categories_crum'] as $cat)
-								{
+							if (count($row['categories_crum']) > 0) {
+								foreach ($row['categories_crum'] as $cat) {
 									$where.="categories_id[".$level."]=".$cat['id']."&";
 									$level++;
 								}
@@ -574,7 +714,7 @@ if ($this->get['feed_hash']) {
 							}
 							// get all cats to generate multilevel fake url eof
 						}
-						$link=mslib_fe::typolink($this->conf['products_detail_page_pid'],'&'.$where.'&products_id='.$row['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
+						$link=mslib_fe::typolink($this->conf['products_detail_page_pid'],$where.'&products_id='.$row['products_id'].'&tx_multishop_pi1[page_section]=products_detail');
 						$tmpcontent.= $this->FULL_HTTP_URL.$link;
 					break;
 					case 'products_meta_title':
@@ -601,8 +741,7 @@ if ($this->get['feed_hash']) {
 					break;						
 				}
 				// custom page hook that can be controlled by third-party plugin
-				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/download_product_feed.php']['iterateItemFieldProc']))
-				{
+				if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/download_product_feed.php']['iterateItemFieldProc'])) {
 					$output=$tmpcontent;
 					$params = array (
 						'mode'  => $mode,
@@ -610,11 +749,10 @@ if ($this->get['feed_hash']) {
 						'row'	=> &$row,
 						'output' => &$output
 					); 
-					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/download_product_feed.php']['iterateItemFieldProc'] as $funcRef)
-					{
+					foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/download_product_feed.php']['iterateItemFieldProc'] as $funcRef) {
 						t3lib_div::callUserFunction($funcRef, $params, $this);
 					}
-					if ($output){
+					if ($output) {
 						$tmpcontent=$output;
 					}
 				}	
@@ -625,23 +763,23 @@ if ($this->get['feed_hash']) {
 					$tmpcontent = html_entity_decode($tmpcontent);
                     $tmpcontent = str_replace(array('&nbsp;', '&amp;', '&euro;', '&amp;quot;', '&quot;'), array(' ', '&', 'EUR', "'", "'"), $tmpcontent);
 				}
+				// test extra delimiter strip
+				if ($feed['delimiter']) {
+					$tmpcontent=str_replace($feed['delimiter'],"",$tmpcontent);
+					$tmpcontent=str_replace("\r","",$tmpcontent);
+					$tmpcontent=str_replace("\n","",$tmpcontent);
+					//$tmpcontent=str_replace('"',"\"",$tmpcontent);
+				}
 				$content.=$tmpcontent;
-				
-				if ($this->get['format']=='csv')
-				{
+				if ($this->get['format']=='csv') {
 					$content.= '"';
 				}					
-				if ($count < $total)
-				{
-					if ($this->get['format']=='csv')
-					{
+				if ($count < $total) {
+					if ($this->get['format']=='csv') {
 						$content.= ';';
-					}
-					else
-					{
+					} else {
 						// add delimiter
-						switch ($feed['delimiter'])
-						{
+						switch ($feed['delimiter']) {
 							case 'dash':
 								$content.= '|';
 							break;
@@ -657,7 +795,6 @@ if ($this->get['feed_hash']) {
 			}
 			// new line
 			$content.= "\r\n";
-					
 		}
         $Cache_Lite->save($content);			
     }

@@ -119,7 +119,7 @@ $dates=array();
 $data=array();
 $data[]=array('Datum','Bestellingen');
 for ($i=12;$i>=0;$i--) {
-	$time=strtotime("-".$i." month");
+	$time=strtotime(date('Y-m-01').' -'.$i.' MONTH');
 	$dates[strftime("%B %Y",$time)]=date("Y-m", $time);
 }
 foreach ($dates as $key => $value) {
@@ -174,7 +174,7 @@ $dates=array();
 $data=array();
 $data[]=array('Datum','Gebruikers');
 for ($i=12;$i>=0;$i--) {
-	$time=strtotime("-".$i." month");
+	$time=strtotime(date('Y-m-01').' -'.$i.' MONTH');
 	$dates[strftime("%B %Y",$time)]=date("Y-m", $time);
 }
 foreach ($dates as $key => $value) {
@@ -229,7 +229,7 @@ $dates=array();
 $data=array();
 $data[]=array('Datum','Winkelwagens');
 for ($i=12;$i>=0;$i--) {
-	$time=strtotime("-".$i." month");
+	$time=strtotime(date('Y-m-01').' -'.$i.' MONTH');
 	$dates[strftime("%B %Y",$time)]=date("Y-m", $time);
 }
 foreach ($dates as $key => $value) {

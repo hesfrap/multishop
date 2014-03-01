@@ -176,12 +176,12 @@
 
 <script type="text/javascript">	
 jQuery(document).ready(function($) {		
-	jQuery(".update_product_status").live('click',function(e) {		
+	$(document).on("click", ".update_product_status", function(e) {		
 		e.preventDefault();		
-		var products_id=jQuery(this).attr("rel");
+		var products_id=$(this).attr("rel");
 		var enabled_label='###LABEL_ADMIN_YES###';
 		var disabled_label='###LABEL_ADMIN_NO###';
-		var tthis=jQuery(this).parent();
+		var tthis=$(this).parent();
 		$.ajax({ 
 			type:   "POST",
 			url:    "###AJAX_UPDATE_PRODUCT_STATUS_URL###",
@@ -201,11 +201,11 @@ jQuery(document).ready(function($) {
 		var original_val	= o.val();
 		var current_value 	= parseFloat(o.val());
 		var tax_id_holder 	= "#product_tax_id_" + o.attr("rel");
-		var tax_id 			= jQuery(tax_id_holder).val();
+		var tax_id 			= $(tax_id_holder).val();
 				
 		if (current_value > 0) {
 			if (to_include_vat) {
-				jQuery.getJSON("###AJAX_GET_TAX_RULESET_URL0###", { current_price: original_val, to_tax_include: true, tax_group_id: jQuery(tax_id_holder).val() }, function(json) {
+				$.getJSON("###AJAX_GET_TAX_RULESET_URL0###", { current_price: original_val, to_tax_include: true, tax_group_id: $(tax_id_holder).val() }, function(json) {
     				if (json && json.price_including_tax) {
 						var incl_tax_crop = decimalCrop(json.price_including_tax);
 									
@@ -219,7 +219,7 @@ jQuery(document).ready(function($) {
 				o.parent().next().next().first().children().val(original_val);
 						
 			} else {
-				jQuery.getJSON("###AJAX_GET_TAX_RULESET_URL1###", { current_price: original_val, to_tax_include: false, tax_group_id: jQuery(tax_id_holder).val() }, function(json) {
+				$.getJSON("###AJAX_GET_TAX_RULESET_URL1###", { current_price: original_val, to_tax_include: false, tax_group_id: $(tax_id_holder).val() }, function(json) {
     				if (json && json.price_excluding_tax) {
 						var excl_tax_crop = decimalCrop(json.price_excluding_tax);
 									
@@ -269,20 +269,20 @@ jQuery(document).ready(function($) {
 		return number;
 	}
 									
-	jQuery(".msProductsPriceExcludingVat").keyup(function() {
-		productPrice(true, jQuery(this));
+	$(".msProductsPriceExcludingVat").keyup(function() {
+		productPrice(true, $(this));
 	});
 		
-	jQuery(".msProductsPriceIncludingVat").keyup(function() {
-		productPrice(false, jQuery(this));
+	$(".msProductsPriceIncludingVat").keyup(function() {
+		productPrice(false, $(this));
 	});
 						
-	jQuery(".msSpecialsPriceExcludingVat").keyup(function() {
-		productPrice(true, jQuery(this));
+	$(".msSpecialsPriceExcludingVat").keyup(function() {
+		productPrice(true, $(this));
 	});
 		
-	jQuery(".msSpecialsPriceIncludingVat").keyup(function() {
-		productPrice(false, jQuery(this));
+	$(".msSpecialsPriceIncludingVat").keyup(function() {
+		productPrice(false, $(this));
 	});
 });	
 </script>

@@ -35,7 +35,7 @@ class mslib_befe {
 		Back-end / Front-end functions
 	*/
 	// load local front-end module config
-	function loadConfiguration ($multishop_page_uid='') {
+	public function loadConfiguration ($multishop_page_uid='') {
 		if (!$multishop_page_uid or $multishop_page_uid==$this->shop_pid) {			
 			static $settings;
 			if (is_array($settings)) {
@@ -142,7 +142,7 @@ class mslib_befe {
 	PATH_site.t3lib_extMgm::siteRelPath($this->extKey)	
 	example output: my-photo.jpg
 	*/
-	function resizeCategoryImage ($original_path,$filename,$module_path,$run_in_background=0) {
+	public function resizeCategoryImage ($original_path,$filename,$module_path,$run_in_background=0) {
 		if (!$GLOBALS['TYPO3_CONF_VARS']['GFX']['jpg_quality']) {
 			$GLOBALS['TYPO3_CONF_VARS']['GFX']['jpg_quality']=75;
 		}
@@ -200,7 +200,7 @@ class mslib_befe {
 			return $filename;
 		}
 	}
-	function resizeManufacturerImage ($original_path,$filename,$module_path,$run_in_background=0) {
+	public function resizeManufacturerImage ($original_path,$filename,$module_path,$run_in_background=0) {
 		if (!$GLOBALS['TYPO3_CONF_VARS']['GFX']['jpg_quality']) {
 			$GLOBALS['TYPO3_CONF_VARS']['GFX']['jpg_quality']=75;
 		}
@@ -261,7 +261,7 @@ class mslib_befe {
 	example input: 'my-photo.jpg','products',100
 	example output: upload/tx_multishop/images/products/100/my/my-photo.jpg
 	*/
-	function getImagePath($filename,$type,$width=100) {
+	public function getImagePath($filename,$type,$width=100) {
 		$folder=$this->ms['image_paths'][$type][$width].'/'.mslib_befe::getImagePrefixFolder($filename);
 		return $folder.'/'.$filename;
 	}
@@ -269,13 +269,13 @@ class mslib_befe {
 	example input: my-photo.jpg
 	example output: my
 	*/
-	function getImagePrefixFolder($filename) {
+	public function getImagePrefixFolder($filename) {
 		$array=explode(".",$filename);
 		$folder_name=substr(preg_replace("/\.+?$/is","",trim($array[0])),0,3);
 		$folder_name=preg_replace("/\-$/","",$folder_name);
 		return t3lib_div::strtolower($folder_name);
 	}	
-	function resizeProductImage ($original_path,$filename,$module_path,$run_in_background=0) {
+	public function resizeProductImage ($original_path,$filename,$module_path,$run_in_background=0) {
 		if (!$GLOBALS['TYPO3_CONF_VARS']['GFX']['jpg_quality']) {
 			$GLOBALS['TYPO3_CONF_VARS']['GFX']['jpg_quality']=75;
 		}
@@ -453,7 +453,7 @@ class mslib_befe {
 			return $filename;
 		}
 	} 
-	function countProducts ($page_uid) {
+	public function countProducts ($page_uid) {
 		if (!is_numeric($page_uid)) {
 			return false;
 		}
@@ -464,7 +464,7 @@ class mslib_befe {
 		}
 		return $row['total'];
 	}
-	function countOrders ($page_uid) {
+	public function countOrders ($page_uid) {
 		if (!is_numeric($page_uid)) {
 			return false;
 		}
@@ -475,7 +475,7 @@ class mslib_befe {
 		}
 		return $row['total'];
 	}
-	function countCustomerAddresses($page_uid) {
+	public function countCustomerAddresses($page_uid) {
 		if (!is_numeric($page_uid)) {
 			return false;
 		}
@@ -486,7 +486,7 @@ class mslib_befe {
 		}
 		return $row['total'];
 	}
-	function countCustomers ($page_uid) {
+	public function countCustomers ($page_uid) {
 		if (!is_numeric($page_uid)) {
 			return false;
 		}
@@ -497,7 +497,7 @@ class mslib_befe {
 		}
 		return $row['total'];
 	}
-	function countCategories ($page_uid) {
+	public function countCategories ($page_uid) {
 		if (!is_numeric($page_uid)) {
 			return false;
 		}
@@ -508,7 +508,7 @@ class mslib_befe {
 		}
 		return $row['total'];
 	}
-	function countManufacturers ($page_uid) {
+	public function countManufacturers ($page_uid) {
 //		$data	= $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('count(1) as total','tx_multishop_manufacturers','page_uid=\''.$page_uid.'\'','');		
 		$data	= $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('count(1) as total','tx_multishop_manufacturers','','');		
 		$row=$data[0];
@@ -517,7 +517,7 @@ class mslib_befe {
 		}
 		return $row['total'];
 	}
-	function countImportJobs ($page_uid) {
+	public function countImportJobs ($page_uid) {
 		if (!is_numeric($page_uid)) {
 			return false;
 		}
@@ -528,7 +528,7 @@ class mslib_befe {
 		}
 		return $row['total'];
 	}
-	function deleteProductImage ($file_name) {			
+	public function deleteProductImage ($file_name) {			
 		if ($file_name) {
 			foreach ($this->ms['image_paths']['products'] as $key => $value) {
 				$folder_name=mslib_befe::getImagePrefixFolder($file_name);
@@ -542,7 +542,7 @@ class mslib_befe {
 			}
 		}
 	}
-	function enableProduct($products_id) {
+	public function enableProduct($products_id) {
 		if (!is_numeric($products_id)) {
 			return false;
 		}
@@ -555,7 +555,7 @@ class mslib_befe {
 			}
 		}
 	}	
-	function disableProduct($products_id) {
+	public function disableProduct($products_id) {
 		if (!is_numeric($products_id)) {
 			return false;
 		}
@@ -567,7 +567,7 @@ class mslib_befe {
 			}
 		}
 	}
-	function enableCustomer($uid) {
+	public function enableCustomer($uid) {
 		if (is_numeric($uid)) {
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['enableCustomer'])) {
 				$params = array (
@@ -596,7 +596,7 @@ class mslib_befe {
 			}
 		}
 	}	
-	function disableCustomer($uid) {
+	public function disableCustomer($uid) {
 		if (!is_numeric($uid)) {
 			return false;
 		}
@@ -618,7 +618,7 @@ class mslib_befe {
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
 		}
 	}	
-	function deleteCustomer($uid) {
+	public function deleteCustomer($uid) {
 		if (!is_numeric($uid)) {
 			return false;
 		}
@@ -639,7 +639,7 @@ class mslib_befe {
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
 		}		
 	}
-	function deleteOrder($orders_id) {
+	public function deleteOrder($orders_id) {
 		if (!is_numeric($orders_id)) {
 			return false;
 		}
@@ -650,7 +650,7 @@ class mslib_befe {
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
 		}		
 	}	
-	function deleteProduct ($products_id, $categories_id='') {		
+	public function deleteProduct ($products_id, $categories_id='') {		
 		if (!is_numeric($products_id)) {
 			return false;
 		}
@@ -658,6 +658,16 @@ class mslib_befe {
 			$row=mslib_fe::getProduct($products_id,'','',1,1);
 			if (is_numeric($row['products_id'])) {
 				if (is_numeric($categories_id)) {
+					//hook to let other plugins further manipulate the create table query
+					if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['deleteProductPreHook'])) {
+						$params = array (
+							'products_id' => &$products_id,
+							'categories_id' => &$categories_id
+						); 
+						foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['deleteProductPreHook'] as $funcRef) {
+							t3lib_div::callUserFunction($funcRef, $params, $this);
+						}
+					}					
 					// just delete the relation to the category
 					$qry = $GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_multishop_products_to_categories','products_id='.$products_id.' and categories_id='.$categories_id);
 					// count if there are relations left
@@ -674,6 +684,16 @@ class mslib_befe {
 					$definitive_delete=1;
 				}
 				if ($definitive_delete) {
+					//hook to let other plugins further manipulate the create table query
+					if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['deleteProductPreHook'])) {
+						$params = array (
+							'products_id' => $products_id,
+							'categories_id' => ''							
+						); 
+						foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['deleteProductPreHook'] as $funcRef) {
+							t3lib_div::callUserFunction($funcRef, $params, $this);
+						}
+					}					
 					for ($x=0;$x<$this->ms['MODULES']['NUMBER_OF_PRODUCT_IMAGES'];$x++) {
 						$i=$x;
 						if ($i==0) {
@@ -697,21 +717,21 @@ class mslib_befe {
 						$res = $GLOBALS['TYPO3_DB']->sql_query($query);					
 					}
 					$qry	= $GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_multishop_products_to_relative_products','products_id='.$products_id.' or relative_product_id='.$products_id);					
+					//hook to let other plugins further manipulate the create table query
+					if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['deleteProductPostHook'])) {
+						$params = array (
+							'products_id' => $products_id
+						); 
+						foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['deleteProductPostHook'] as $funcRef) {
+							t3lib_div::callUserFunction($funcRef, $params, $this);
+						}
+					}						
 					return 1;
 				}
-			}
-			//hook to let other plugins further manipulate the create table query
-			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['deleteProductPostHook'])) {
-				$params = array (
-					'products_id' => $products_id
-				); 
-				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['deleteProductPostHook'] as $funcRef) {
-					t3lib_div::callUserFunction($funcRef, $params, $this);
-				}
-			}			
+			}		
 		}
 	}
-	function deleteCategory ($categories_id) {
+	public function deleteCategory ($categories_id) {
 		if (!is_numeric($categories_id)) {
 			return false;
 		}		
@@ -752,26 +772,26 @@ class mslib_befe {
 			}			  
 		}
 	} 	
-	function deleteCategoryImage ($file_name) {
+	public function deleteCategoryImage ($file_name) {
 		foreach ($this->ms['image_paths']['categories'] as $key => $value) {
 			$path=PATH_site.$value.'/'.$file_name;
 			if (unlink($path)) return 1;			
 		}						
 	}
-	function deleteManufacturerImage ($file_name) {
+	public function deleteManufacturerImage ($file_name) {
 		foreach ($this->ms['image_paths']['manufacturers'] as $key => $value) {
 			$path=PATH_site.$value.'/'.$file_name;
 			if (unlink($path)) return 1;
 		}
 	}
-	function deleteManufacturer($id) {
+	public function deleteManufacturer($id) {
 		if (is_numeric($id)) {
 			$qry	= $GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_multishop_manufacturers','manufacturers_id='.$id);	
 			$qry	= $GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_multishop_manufacturers_cms','manufacturers_id='.$id);	
 			$qry	= $GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_multishop_manufacturers_info','manufacturers_id='.$id);  
 		}
 	} 		
-	function deltree($path) {
+	public function deltree($path) {
 		if (is_dir($path)) {
 			if (version_compare(PHP_VERSION, '5.0.0') < 0) {
 				$entries = array();
@@ -797,7 +817,7 @@ class mslib_befe {
 			return unlink($path);
 		}
 	}
-	function doesExist($table,$field,$value,$more='') {
+	public function doesExist($table,$field,$value,$more='') {
 		$query="SELECT * FROM ".$table." WHERE ".$field."='".addslashes($value)."' ".$more;
 		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 		if (($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) != false) {
@@ -807,7 +827,7 @@ class mslib_befe {
 	/*
 	Some PHP compilations doesnt have the exif_imagetype function. In that case we provide our own alternative
 	*/
-	function exif_imagetype ($filename) {
+	public function exif_imagetype ($filename) {
 		if (function_exists('exif_imagetype')) {
 			return exif_imagetype($filename);
 		} else if ((list($width,$height,$type,$attr) = getimagesize($filename)) !== false) {
@@ -815,7 +835,7 @@ class mslib_befe {
 		}
 		return false;
 	}
-	function convertConfiguration($ms) {
+	public function convertConfiguration($ms) {
 		// bit lame code, but this is for subdirectory hosted typo3 installations. Compatible for front and back-end.
 		/*
 		$paths=explode("/",$_SERVER['PHP_SELF']);
@@ -855,7 +875,7 @@ class mslib_befe {
 		return $ms;
 	}
 	// method for logging changes to specific tables
-	function addUndo($id,$table) {
+	public function addUndo($id,$table) {
 		if (is_numeric($id) and $table) {
 			$undo_tables=array();
 			$undo_tables['tx_multishop_products']='tx_multishop_undo_products';		
@@ -868,7 +888,7 @@ class mslib_befe {
 			return $row;
 		}
 	}
-	function ms_implode($char,$array,$fix='',$prefix,$addslashes=false) {
+	public function ms_implode($char,$array,$fix='',$prefix,$addslashes=false) {
 		$lem = array_keys($array);
 		$char = htmlentities($char);
 		for($i=0;$i<sizeof($lem);$i++) {
@@ -885,7 +905,7 @@ class mslib_befe {
 		return $str;
 	}	
 	// function for saving the importer products images
-	function saveImportedProductImages ($products_id, $input, $item, $oldproduct=array(), $log_file='') {
+	public function saveImportedProductImages ($products_id, $input, $item, $oldproduct=array(), $log_file='') {
 		if (!is_numeric($products_id)) {
 			return false;
 		}
@@ -984,7 +1004,7 @@ class mslib_befe {
 		}
 	}
 	// method for adding a product to the flat table for maximum speed
-	function convertProductToFlat ($products_id, $table_name='tx_multishop_products_flat') {
+	public function convertProductToFlat ($products_id, $table_name='tx_multishop_products_flat') {
 		if (!is_numeric($products_id)) {
 			return false;
 		}
@@ -1194,13 +1214,26 @@ class mslib_befe {
 					if ($this->debug) {
 						error_log($query);
 					}
+					// custom hook that can be controlled by third-party plugin
+					if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['convertProductToFlatProcInsert'])) {
+						$params = array (
+							'products_id'			=> &$products_id,
+							'flat_product' 			=> &$flat_product,
+							'row' 					=> &$row,
+							'table_name' 			=> &$table_name
+						);
+						foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['convertProductToFlatProcInsert'] as $funcRef) {
+							t3lib_div::callUserFunction($funcRef, $params, $this);
+						}
+					}
+					// custom hook that can be controlled by third-party plugin eof						
 				}
-				return $flat_product['products_id'];	
 			}			
+			return $flat_product['products_id'];	
 		}
 	}	
 	// method for scanning subfolders and retrieve their associated files
-	function listdir($dir='.') { 
+	public function listdir($dir='.') { 
 		if (!is_dir($dir)) { 
 			return false; 
 		} 		
@@ -1208,7 +1241,7 @@ class mslib_befe {
 		mslib_befe::listdiraux($dir, $files); 	
 		return $files; 
 	} 	
-	function listdiraux($dir, &$files) { 
+	public function listdiraux($dir, &$files) { 
 		$handle = opendir($dir); 
 		while (($file = readdir($handle)) !== false) { 
 			if ($file == '.' || $file == '..') { 
@@ -1226,7 +1259,7 @@ class mslib_befe {
 		} 
 		closedir($handle); 
 	}	
-	function tep_get_categories_select($categories_id='0', $aid='',$level=0,$selectedid='') {
+	public function tep_get_categories_select($categories_id='0', $aid='',$level=0,$selectedid='') {
 		$parent_categories_query = $GLOBALS['TYPO3_DB']->sql_query("SELECT cd.categories_name, c.categories_id, c.parent_id from tx_multishop_categories c, tx_multishop_categories_description cd where c.parent_id='" . $categories_id . "' and c.status=1 and c.categories_id=cd.categories_id and c.page_uid='".$this->shop_pid."' order by c.sort_order, cd.categories_name");
 		$rows=$GLOBALS['TYPO3_DB']->sql_num_rows($parent_categories_query);
 		while (($parent_categories = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($parent_categories_query)) != false) {
@@ -1244,7 +1277,7 @@ class mslib_befe {
 		}
 		return $html;
 	}	
-	function tep_get_chained_categories_select($categories_id='0', $aid='',$level=0,$selectedid='',$page_uid='') {
+	public function tep_get_chained_categories_select($categories_id='0', $aid='',$level=0,$selectedid='',$page_uid='') {
 		if (!$page_uid) {
 			$page_uid=$this->shop_pid;
 		}
@@ -1268,7 +1301,7 @@ class mslib_befe {
 		}
 		return $output;
 	}	
-	function array2json($arr) {
+	public function array2json($arr) {
 		if(function_exists('json_encode')) {
 			return json_encode($arr); //Lastest versions of PHP already has this functionality.
 		}
@@ -1320,7 +1353,7 @@ class mslib_befe {
 		}
 		return '{' . $json . '}';//Return associative JSON
 	}
-	function rebuildFlatDatabase () {		
+	public function rebuildFlatDatabase () {		
 		$content.='<div class="main-heading"><h1>Rebuild Flat Database</h1></div>';
 		$str="DROP TABLE IF EXISTS `tx_multishop_products_flat_tmp`;";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
@@ -1489,7 +1522,7 @@ class mslib_befe {
 		}		
 		return $content;
 	}
-	function convToUtf8($content) { 
+	public function convToUtf8($content) { 
 		if(!mb_check_encoding($content, 'UTF-8') or !($content === mb_convert_encoding(mb_convert_encoding($content, 'UTF-32', 'UTF-8' ), 'UTF-8', 'UTF-32'))) { 
 			$content = mb_convert_encoding($content, 'UTF-8'); 	
 			if (mb_check_encoding($content, 'UTF-8')) { 
@@ -1500,7 +1533,7 @@ class mslib_befe {
 		} 
 		return $content; 
 	}
-	function detect_encoding($string) {  
+	public function detect_encoding($string) {  
 		static $list = array('utf-8', 'windows-1251');
 		foreach ($list as $item) {
 			$sample = iconv($item, $item, $string);
@@ -1510,13 +1543,13 @@ class mslib_befe {
 		}
 		return null;
 	}		
-	function loadCurrency($value,$field='cu_iso_nr') {
+	public function loadCurrency($value,$field='cu_iso_nr') {
 		if ($value) {
 			$data=$GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*',' static_currencies',$field.'=\''.addslashes($value).'\'','');		
 			return $data[0];
 		}
 	}
-	function print_r($array_in,$title='') {
+	public function print_r($array_in,$title='') {
 		if (is_object($array_in)) {
 			$json = json_encode($array_in);
 			$array_in = json_decode($json,TRUE);			
@@ -1584,7 +1617,7 @@ class mslib_befe {
 		}
 		return $result;
 	}
-	function Week($week) {
+	public function Week($week) {
 		$year = date('Y');
 		$lastweek=$week-1;
 		if ($lastweek==0) {
@@ -1597,7 +1630,7 @@ class mslib_befe {
 		}
 		return $arrdays;
 	}
-	function RunMultishopUpdate ($multishop_page_uid='') {
+	public function RunMultishopUpdate ($multishop_page_uid='') {
 		$settings=array();
 		// attribute fixer
 		$str = "select * from tx_multishop_products_options where language_id='0' order by sort_order";
@@ -1710,7 +1743,7 @@ class mslib_befe {
 		}
 		return $content;
 	}	
-	function getMethodsByProduct ($products_id) {
+	public function getMethodsByProduct ($products_id) {
 		if (is_numeric($products_id)) {
 			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
 				'*',         // SELECT ...
@@ -1738,7 +1771,7 @@ class mslib_befe {
 		* @param	string		Extension key
 		* @return	array		Information array (unless an error occured)
 		*/
-	function getExtensionInfo($path, $extKey)	{
+	public function getExtensionInfo($path, $extKey)	{
 		$file = $path.'/ext_emconf.php';
 		if (@is_file($file))	{
 			$_EXTKEY = $extKey;
@@ -1764,7 +1797,7 @@ class mslib_befe {
 			return 'ERROR: No emconf.php file: '.$file;
 		}
 	}	
-	function canContainProducts($categories_id) {
+	public function canContainProducts($categories_id) {
 		if (!is_numeric($categories_id)) {
 			return false;
 		}
@@ -1779,7 +1812,7 @@ class mslib_befe {
 			}
 		}
 	}
-	function moveProduct($products_id, $target_categories_id, $old_categories_id='') {
+	public function moveProduct($products_id, $target_categories_id, $old_categories_id='') {
 		if (!is_numeric($products_id)) {
 			return false;
 		}
@@ -1809,7 +1842,7 @@ class mslib_befe {
 			}
 		}
 	}
-	function duplicateProduct($id_product, $target_categories_id) {
+	public function duplicateProduct($id_product, $target_categories_id) {
 		if (!is_numeric($id_product)) {
 			return false;
 		}
@@ -1975,7 +2008,7 @@ class mslib_befe {
 	 * @param	string		Zip-file target name
 	 * @return	array		Files packed
 	 */
-	function zipPack($file, $targetFile)	{
+	public function zipPack($file, $targetFile)	{
 		if (!(isset($GLOBALS['TYPO3_CONF_VARS']['BE']['unzip']['unzip']['split_char']) && 
 			  isset($GLOBALS['TYPO3_CONF_VARS']['BE']['unzip']['unzip']['pre_lines']) && 
 			  isset($GLOBALS['TYPO3_CONF_VARS']['BE']['unzip']['unzip']['post_lines']) && 
@@ -2002,7 +2035,7 @@ class mslib_befe {
 	 * @param	string		File to unpack
 	 * @return	array		Files unpacked
 	 */
-	function zipUnpack($file,$overwrite=0)	{
+	public function zipUnpack($file,$overwrite=0)	{
 		if (!(isset($GLOBALS['TYPO3_CONF_VARS']['BE']['unzip']['unzip']['split_char']) && 
 			  isset($GLOBALS['TYPO3_CONF_VARS']['BE']['unzip']['unzip']['pre_lines']) && 
 			  isset($GLOBALS['TYPO3_CONF_VARS']['BE']['unzip']['unzip']['post_lines']) && 
@@ -2034,7 +2067,7 @@ class mslib_befe {
 	 * @param	string		The type/configuration for which to parse the output
 	 * @return	array		A clean list of the filenames returned by the binary
 	 */
-	function getFileResult($list, $type = 'zip')	{
+	public function getFileResult($list, $type = 'zip')	{
 		$sc = $GLOBALS['TYPO3_CONF_VARS']['BE']['unzip'][$type]['split_char'];
 		$pre = intval($GLOBALS['TYPO3_CONF_VARS']['BE']['unzip'][$type]['pre_lines']);
 		$post_lines = intval($GLOBALS['TYPO3_CONF_VARS']['BE']['unzip'][$type]['post_lines']);
@@ -2065,7 +2098,7 @@ class mslib_befe {
 		return $fl;
 	}
 /*	
-	function updateOrderStatus($orders_id,$orders_status_id,$customer_notified=0)
+	public function updateOrderStatus($orders_id,$orders_status_id,$customer_notified=0)
 	{
 		$order=mslib_fe::getOrder($orders_id);
 		if ($order['orders_id'])
@@ -2087,7 +2120,7 @@ class mslib_befe {
 		}
 	}
 */	
-	function updateOrderStatus($orders_id, $orders_status, $mail_customer=0) {
+	public function updateOrderStatus($orders_id, $orders_status, $mail_customer=0) {
 		if (!is_numeric($orders_id)) {
 			return false;
 		}
@@ -2339,7 +2372,7 @@ class mslib_befe {
 			}
 		}
 	}
-	function updateOrderProductStatus($orders_id, $order_product_id, $orders_status) {
+	public function updateOrderProductStatus($orders_id, $order_product_id, $orders_status) {
 		if (!is_numeric($orders_id)) {
 			return false;
 		}
@@ -2351,7 +2384,7 @@ class mslib_befe {
 		$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_orders_products', 'orders_id=\''.$orders_id.'\' and orders_products_id = \''.$order_product_id.'\'',$updateArray);
 		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 	}
-	function getHashedPassword($password) {
+	public function getHashedPassword($password) {
 		$objPHPass = null;
 		if (t3lib_extMgm::isLoaded('t3sec_saltedpw')) {
 			require_once(t3lib_extMgm::extPath('t3sec_saltedpw').'res/staticlib/class.tx_t3secsaltedpw_div.php');
@@ -2372,7 +2405,7 @@ class mslib_befe {
 		}
 		return $password;
 	}
-	function generateRandomPassword($length=10, $string='', $type='pronounceable') {
+	public function generateRandomPassword($length=10, $string='', $type='pronounceable') {
 		if (!$type and $string) {
 			$type='pronounceable';
 		} elseif (!$type) {
@@ -2396,16 +2429,24 @@ class mslib_befe {
 		}
 		return $password;
 	}
-	function storeProductsKeywordSearch ($keyword, $negative_results=0) {
+	public function storeProductsKeywordSearch($keyword, $negative_results=0) {
 		$insertArray=array();
-		$insertArray['keyword'] 			= $keyword;
-		$insertArray['ip_address'] 			= $this->REMOTE_ADDR;
-		$insertArray['crdate'] 				= time();
-		$insertArray['negative_results']	= $negative_results;		
+		$insertArray['keyword'] = $keyword;
+		$insertArray['ip_address'] = $this->REMOTE_ADDR;
+		$insertArray['crdate'] = time();
+		$insertArray['negative_results'] = $negative_results;	
+		$insertArray['http_host'] = $this->HTTP_HOST;	
+		$insertArray['page_uid'] = $this->shop_pid;	
+		if ($GLOBALS['TSFE']->fe_user->user['uid']) {
+			$insertArray['customer_id'] = $GLOBALS['TSFE']->fe_user->user['uid'];
+		}
+		if ($this->get['categories_id']) {
+			$insertArray['categories_id'] = $this->get['categories_id'];			
+		}
 		$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_search_log', $insertArray);
 		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 	}
-	function storeCustomerCartContent ($content, $customer_id ='', $is_checkout = 0) {
+	public function storeCustomerCartContent ($content, $customer_id ='', $is_checkout = 0) {
 		if (!$customer_id && $GLOBALS['TSFE']->fe_user->user['uid']) {
 			$customer_id = $GLOBALS['TSFE']->fe_user->user['uid'];
 		}
@@ -2419,7 +2460,7 @@ class mslib_befe {
 		$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_cart_contents', $insertArray);
 		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 	}	
-	function storeNotificationMessage($title='', $message='', $customer_id=0, $message_type='generic') {
+	public function storeNotificationMessage($title='', $message='', $customer_id=0, $message_type='generic') {
 		if (!$customer_id && $GLOBALS['TSFE']->fe_user->user['uid']) {
 			$customer_id = $GLOBALS['TSFE']->fe_user->user['uid'];
 		}		
@@ -2434,7 +2475,7 @@ class mslib_befe {
 		$res = $GLOBALS['TYPO3_DB']->sql_query($query);				
 	}
 	// get tree
-	function getPageTree($pid = '0',$cates=array(),$times=0,$include_itself=0){
+	public function getPageTree($pid = '0',$cates=array(),$times=0,$include_itself=0){
 		if ($include_itself)	 {
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid,title,keywords,description', 'pages', 'hidden = 0 and deleted = 0 and (uid='.$pid.')', '');
 			while($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res))	{						
@@ -2453,10 +2494,10 @@ class mslib_befe {
 		return $cates;
 	}		
 	// convert the string of URL to <a href="URL">URL</a>
-	function str2href($str) {
+	public function str2href($str) {
 		$str = preg_replace('/\s(\w+:\/\/)(\S+)/', ' <a href="\\1\\2" target="_blank">\\1\\2</a>', $str);
 	}
-	function str_highlight($text, $needle='', $options = null, $highlight = null) {
+	public function str_highlight($text, $needle='', $options = null, $highlight = null) {
 		$STR_HIGHLIGHT_SIMPLE=1;
 		$STR_HIGHLIGHT_WHOLEWD=2;
 		$STR_HIGHLIGHT_CASESENS=0;
@@ -2507,7 +2548,7 @@ class mslib_befe {
 		}
 		return $text;
 	}
-	function cacheLite($action='',$key,$timeout='',$serialized=0,$content='') {
+	public function cacheLite($action='',$key,$timeout='',$serialized=0,$content='') {
 		$options = array(
 			'caching' => true,
 			'cacheDir' => $this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/cache/',
@@ -2546,7 +2587,7 @@ class mslib_befe {
 			break;
 		}		
 	}
-	function loadLanguages() {
+	public function loadLanguages() {
 		$this->linkVars = $GLOBALS['TSFE']->linkVars;		
 		$useSysLanguageTitle = trim($this->conf['useSysLanguageTitle']) ? trim($this->conf['useSysLanguageTitle']) : 0;
 		$useIsoLanguageCountryCode = trim($this->conf['useIsoLanguageCountryCode']) ? trim($this->conf['useIsoLanguageCountryCode']) : 0;
@@ -2595,7 +2636,7 @@ class mslib_befe {
 			$this->languagesUids[$key] 		= $row['uid'];
 		}		
 	}
-	function array_flatten($a,$f=array()){
+	public function array_flatten($a,$f=array()){
 		if(!$a||!is_array($a)) {
 			return '';
 		}
@@ -2608,7 +2649,7 @@ class mslib_befe {
 		}
 		return $f;
 	}	
-	function loginAsUser($uid,$section='') {
+	public function loginAsUser($uid,$section='') {
 		if (!is_numeric($uid)) {
 			return false;
 		}
@@ -2643,12 +2684,21 @@ class mslib_befe {
 			exit();		
 		}
 	}
-	function ifExists($value, $table, $field, $additional_where=array()) {
-		if (isset($value) and $table and $field) {
+	public function ifExists($value='', $table, $field='', $additional_where=array()) {
+		if ($table) {
+			$filter=array();
+			if ($field and $value) {
+				$filter[]=$field.'="'.addslashes($value).'"';
+			}
+			if (count($additional_where)) {
+				foreach ($additional_where as $item) {
+					$filter[]=$item;
+				}
+			}
 			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
 				'1',         // SELECT ...
 				$table,     // FROM ...
-				$field.'="'.addslashes($value).'"'.(count($additional_where) ? ' AND '.implode(' AND ',$additional_where):''),    // WHERE...
+				implode(' AND ',$filter),    // WHERE...
 				'',            // GROUP BY...
 				'',    // ORDER BY...
 				'1'            // LIMIT ...
@@ -2662,7 +2712,7 @@ class mslib_befe {
 			}				
 		}
 	}
-	function getCount($value='',$table,$field='',$additional_where=array()) {
+	public function getCount($value='',$table,$field='',$additional_where=array()) {
 		if ($table) {
 			$queryArray=array();
 			$queryArray['from']=$table;
@@ -2694,26 +2744,37 @@ class mslib_befe {
 			return 0;
 		}
 	}	
-	function getRecord($value, $table, $field, $additional_where=array()) {
-		if (isset($value) and $table and $field) {
-			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
-				'*',         // SELECT ...
-				$table,     // FROM ...
-				$field.'="'.addslashes($value).'"'.(count($additional_where) ? ' AND '.implode(' AND ',$additional_where):''),    // WHERE...
-				'',            // GROUP BY...
-				'',    // ORDER BY...
-				'1'            // LIMIT ...
-			);
-			if ($this->msDebug) {
-				return $query;
+	public function getRecord($value='', $table, $field='', $additional_where=array()) {
+		$queryArray=array();
+		$queryArray['from']=$table;
+		if ($value and $field) {
+			$queryArray['where'][]=addslashes($field).'=\''.addslashes($value).'\'';
+		}
+		if (count($additional_where)) {
+			foreach ($additional_where as $where) {
+				if ($where) {
+					$queryArray['where'][]=$where;
+				}
 			}
-			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
-			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
-				return $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
-			}				
+		}
+		$query = $GLOBALS['TYPO3_DB']->SELECTquery(
+			'*',         // SELECT ...
+			$queryArray['from'],     // FROM ...
+			implode(' AND ',$queryArray['where']),    // WHERE...
+			'',            // GROUP BY...
+			'',    // ORDER BY...
+			''            // LIMIT ...
+		);
+		if ($this->msDebug) {
+			return $query;
+		}
+		//error_log($query);
+		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
+		if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
+			return $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 		}
 	}		
-	function getRecords($value, $table, $field, $additional_where=array()) {
+	public function getRecords($value, $table, $field, $additional_where=array()) {
 		if (isset($value) and $table and $field) {
 			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
 				'*',         // SELECT ...
@@ -2735,12 +2796,79 @@ class mslib_befe {
 				return $items;
 			}				
 		}
-	}		
-	function readPageAccess($id,$perms_clause)      {
+	}	
+	public function updateImportedProductsLockedFields($products_id,$table,$updateArray) {		
+		$lockedFields=array();
+		$lockedFields['tx_multishop_products'][]='products_price';
+		$lockedFields['tx_multishop_products'][]='products_vat_rate';
+		$lockedFields['tx_multishop_products'][]='products_name';
+		$lockedFields['tx_multishop_products'][]='products_quantity';
+		$lockedFields['tx_multishop_products'][]='products_model';
+		$lockedFields['tx_multishop_products'][]='products_status';
+		
+		$lockedFields['tx_multishop_products_description'][]='products_name';
+		$lockedFields['tx_multishop_products_description'][]='products_shortdescription';
+		$lockedFields['tx_multishop_products_description'][]='products_description';
+		
+		$lockedFields['tx_multishop_products_to_categories'][]='categories_id';
+		if (is_numeric($products_id) and $table) {
+			// get fields that we need to take care of
+			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
+				'*',         // SELECT ...
+				$table,     // FROM ...
+				'products_id='.$products_id,    // WHERE...
+				'',            // GROUP BY...
+				'',    // ORDER BY...
+				''            // LIMIT ...
+			);
+			$res = $GLOBALS['TYPO3_DB']->sql_query($query);		
+			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {
+				$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
+				foreach ($lockedFields[$table] as $field_key) {
+					if ($row[$field_key] != $updateArray[$field_key]) {
+						// add to locking table with original value
+						$filter=array();
+						$filter[]='products_id='.$row['products_id'];
+						if (!mslib_befe::ifExists($field_key, 'tx_multishop_products_locked_fields', 'field_key', $filter)) {
+							$insertArray=array();
+							$insertArray['field_key']=$field_key;
+							$insertArray['products_id']=$row['products_id'];
+							$insertArray['crdate']=time();
+							$insertArray['cruser_id']=$GLOBALS['TSFE']->fe_user->user['uid'];
+							$insertArray['original_value']=$row[$field_key];							
+							$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_locked_fields', $insertArray);
+							$res = $GLOBALS['TYPO3_DB']->sql_query($query);							
+						}
+					}
+				}
+			}
+		}
+	}
+	public function getImportedProductsLockedFields($products_id) {
+		if (is_numeric($products_id)) {
+			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
+				'field_key',         // SELECT ...
+				'tx_multishop_products_locked_fields',     // FROM ...
+				'products_id='.$products_id,    // WHERE...
+				'',            // GROUP BY...
+				'',    // ORDER BY...
+				''            // LIMIT ...
+			);
+			$res = $GLOBALS['TYPO3_DB']->sql_query($query);			
+			if ($GLOBALS['TYPO3_DB']->sql_num_rows($res) > 0) {			
+				$array=array();
+				while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
+					$array[]=$row['field_key'];
+				}
+				return $array;
+			}
+		}
+	}
+	public function readPageAccess($id,$perms_clause) {
 		if ((string)$id!='')    {
 			$id = intval($id);
 			if (!$id) {
-				if ($GLOBALS['BE_USER']->isAdmin())     {
+				if ($GLOBALS['BE_USER']->isAdmin()) {
 					$path = '/';
 					$pageinfo['_thePath'] = $path;
 					return $pageinfo;
@@ -2757,7 +2885,7 @@ class mslib_befe {
 		}
 		return false;
 	}
-	function isValidDate($date) { 
+	public function isValidDate($date) { 
 		if (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $dateTime, $matches)) { 
 			if (checkdate($matches[2], $matches[3], $matches[1])) { 
 				return true; 
@@ -2765,7 +2893,7 @@ class mslib_befe {
 		}	
 		return false; 
 	}	
-	function isValidDateTime($dateTime) { 
+	public function isValidDateTime($dateTime) { 
 		if (preg_match("/^(\d{4})-(\d{2})-(\d{2}) ([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/", $dateTime, $matches)) { 
 			if (checkdate($matches[2], $matches[3], $matches[1])) { 
 				return true; 
@@ -2774,15 +2902,15 @@ class mslib_befe {
 		return false; 
 	} 	 
 	// utf-8 support
-	function strtoupper($value) {
+	public function strtoupper($value) {
 		return $GLOBALS['LANG']->csConvObj->conv_case($GLOBALS['LANG']->charSet, $value, 'toUpper');
 	}
 	// utf-8 support
-	function strtolower($value) {
+	public function strtolower($value) {
 		return $GLOBALS['LANG']->csConvObj->conv_case($GLOBALS['LANG']->charSet, $value, 'toLower');
 	}
 	// utf-8 support
-	function strlen($value) {
+	public function strlen($value) {
 		return $GLOBALS['LANG']->csConvObj->strlen($GLOBALS['LANG']->charSet, $value);
 	}
 }

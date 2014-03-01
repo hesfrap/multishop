@@ -45,7 +45,7 @@ if (is_array($cart['products']) and count($cart['products']))
 		// loading payment methods
 		$payment_methods=mslib_fe::loadPaymentMethods(0, $user_country);
 		// loading shipping methods eof
-		$shipping_methods=mslib_fe::loadShippingMethods();		
+		$shipping_methods=mslib_fe::loadShippingMethods(0, $user_country);		
 	}
 }
 if (count($shipping_methods) == 0 and count($payment_methods)==0)

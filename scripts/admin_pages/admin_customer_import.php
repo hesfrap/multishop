@@ -365,8 +365,8 @@ if ($this->post['action'] == 'customer-import-preview' or (is_numeric($this->get
 		<script type="text/javascript">
 		jQuery(document).ready(function($) {
 			var add_property_html=\'' . addslashes($importer_add_aux_input). '\';
-			jQuery(".delete_property").live("click", function() {
-				jQuery(this).parent().hide("fast");
+			$(document).on("click", ".delete_property", function() {
+				$(this).parent().hide("fast");
 			});	
 			$(".importer_add_property").click(function(event) {
 				$(this).prev().append(add_property_html);			
@@ -1010,12 +1010,10 @@ if($this->ms['show_default_form']) {
 	<fieldset><legend>' . ucfirst($this->pi_getLL('format')) . '</legend>
 	<script type="text/javascript">
 	jQuery(document).ready(function($) {
-		jQuery(".hide_advanced_import_radio").live("click", function()
-		{
+		$(document).on("click", ".hide_advanced_import_radio", function() {
 			$(this).parent().find(".hide").hide();
 		});									
-		jQuery(".advanced_import_radio").live("click", function()
-		{
+		$(document).on("click", ".advanced_import_radio", function() {
 			$(this).parent().find(".hide").show();
 		});
 	});

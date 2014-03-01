@@ -230,4 +230,7 @@ plugin.multishop {
 	
 	# cat=plugin.multishop - main; type=int+; label= TT address record ID of the store: The uid number of the tt_address record that contains the Store address details. This record is mandatory for correct calculation of VAT.
 	tt_address_record_id_store =
+	
+	order_details_table_ajaxProductsToBasket_tmpl_path=
+	order_details_table_ajaxGetMethodCosts_tmpl_path=
 }

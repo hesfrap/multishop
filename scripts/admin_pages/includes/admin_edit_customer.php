@@ -1,7 +1,7 @@
 <?php
-
-if (!defined('TYPO3_MODE')) die ('Access denied.');
-
+if (!defined('TYPO3_MODE')) {
+	die('Access denied.');
+}
 // now parse all the objects in the tmpl file
 if ($this->conf['admin_edit_customer_tmpl_path']) {
 	$template = $this->cObj->fileResource($this->conf['admin_edit_customer_tmpl_path']);
@@ -270,20 +270,18 @@ if(!$this->post && is_numeric($this->get['tx_multishop_pi1']['cid'])) {
 $head='';
 $head.='
 <script type="text/javascript">
-	jQuery(document).ready(function () {
+	jQuery(document).ready(function($) {
 		jQuery(\'#edit_customer\').h5Validate();
-		
-		//Display BOX Message
-		jQuery("#birthday_visitor").datepicker({ 
-										dateFormat: "'.$this->pi_getLL('locale_date_format', 'm/d/Y').'",
-										altField: "#birthday",
-										altFormat: "yy-mm-dd",
-										changeMonth: true,
-										changeYear: true,
-										showOtherMonths: true,  
-										yearRange: "'.(date("Y")-100).':'.date("Y").'" 
-										});
-		jQuery("#delivery_birthday_visitor").datepicker({ 
+		$("#birthday_visitor").datepicker({ 
+			dateFormat: "'.$this->pi_getLL('locale_date_format_js', 'm/d/Y').'",
+			altField: "#birthday",
+			altFormat: "yy-mm-dd",
+			changeMonth: true,
+			changeYear: true,
+			showOtherMonths: true,  
+			yearRange: "'.(date("Y")-100).':'.date("Y").'" 
+			});
+		$("#delivery_birthday_visitor").datepicker({ 
 			dateFormat: "'.$this->pi_getLL('locale_date_format', 'm/d/Y').'",
 			altField: "#delivery_birthday",
 			altFormat: "yy-mm-dd",

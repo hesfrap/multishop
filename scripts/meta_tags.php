@@ -100,23 +100,19 @@ $meta_tags=array();
 	</script>
 	';				
 	}
-	if ($this->ADMIN_USER) 
-	{
-		$admin_menu_panel = mslib_fe::jQueryAdminMenu();
-		
+	if ($this->ADMIN_USER) {
+		$admin_menu_panel = mslib_fe::jQueryAdminMenu();		
 		// admin stats
-		if ($this->ms['MODULES']['GLOBAL_MODULES']['CACHE_FRONT_END'])
-		{
+		if ($this->ms['MODULES']['GLOBAL_MODULES']['CACHE_FRONT_END']) {
 			$options = array(
-					'caching' => true,
-					'cacheDir' => $this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/cache/',
-					'lifeTime' => 180
+				'caching' => true,
+				'cacheDir' => $this->DOCUMENT_ROOT.'uploads/tx_multishop/tmp/cache/',
+				'lifeTime' => 180
 			);
 			$Cache_Lite = new Cache_Lite($options);
 			$string=md5('admin_stats_'.$this->shop_pid);
 		}
-		if (!$this->ms['MODULES']['GLOBAL_MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['GLOBAL_MODULES']['CACHE_FRONT_END'] and !$html=$Cache_Lite->get($string)))
-		{
+		if (!$this->ms['MODULES']['GLOBAL_MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['GLOBAL_MODULES']['CACHE_FRONT_END'] and !$html=$Cache_Lite->get($string))) {
 			$html= '
 		<script type="text/javascript">
 		jQuery(document).ready(function($) {
@@ -126,8 +122,7 @@ $meta_tags=array();
 			$messages=array();
 			// total customers
 			$str="SELECT count(1) as total from fe_users where disable=0";
-			if (!$this->masterShop)
-			{
+			if (!$this->masterShop) {
 				$str.=" and page_uid='".$this->shop_pid."'";
 			}
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
@@ -242,21 +237,21 @@ $meta_tags=array();
 			var MS_ADMIN_PANEL_AUTO_COMPLETE_URL=\''.mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=admin_panel_ajax_search').'\';
 			var MS_ADMIN_PANEL_FULL_URL=\''.$this->FULL_HTTP_URL.'\';
 			jQuery(document).ready(function($){
-				$(".ms_admin_minimize").live("click", function(e) {
+				$(document).on("click", ".ms_admin_minimize", function(e) {
 					e.preventDefault();
 					$.cookie("hide_admin_panel", "1", { expires: 7, path: \'/\', domain: \''.$this->server['HTTP_HOST'].'\'});
 					$("#tx_multishop_admin_header_bg").slideToggle("slow");
 					$("#tx_multishop_admin_footer_wrapper").slideToggle("slow");
 					$("#ms_admin_minimaxi_wrapper").html(\'<ul id="ms_admin_maximize"><li><a href="#" class="ms_admin_maximize">'.$this->pi_getLL('maximize').'</a></li></ul>\');
 				});
-				$(".ms_admin_maximize").live("click", function(e) {
+				$(document).on("click", ".ms_admin_maximize", function(e) {
 					e.preventDefault();
 					$.cookie("hide_admin_panel", "0", { expires: 7, path: \'/\', domain: \''.$this->server['HTTP_HOST'].'\'});
 					$("#tx_multishop_admin_header_bg").slideToggle("slow");
 					$("#tx_multishop_admin_footer_wrapper").slideToggle("slow");
 					$("#ms_admin_minimaxi_wrapper").html(\'<ul id="ms_admin_minimize"><li><a href="#" class="ms_admin_minimize">'.$this->pi_getLL('minimize').'</a></li></ul>\');
 				});
-				$("#ms_admin_simulate_language").live("change", function() {
+				$(document).on("change", "#ms_admin_simulate_language", function() {
 					$("#multishop_admin_language_form").submit();
 				});							
 				
@@ -341,7 +336,7 @@ $meta_tags=array();
 											
 				';
 		$html.='
-$("#multishop_update_button").live("click", function(e) {
+$(document).on("click", "#multishop_update_button", function(e) {
 	e.preventDefault();
 	if (CONFIRM(\'Are you sure you want to run the Multishop updater?\'))
 	{

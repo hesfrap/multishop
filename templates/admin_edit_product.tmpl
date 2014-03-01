@@ -2,16 +2,16 @@
 <!-- ###JS_HEADER### begin -->
 <script type="text/javascript">
 function populateRelatedProduct(data) {
-	jQuery.each(data.related_product, function(categories_id, related_data) {
+	$.each(data.related_product, function(categories_id, related_data) {
 		var html_elem = '';
 		if (categories_id > 0) {
 			var existing_fieldset_id = "#category" + categories_id;
 			var last_row_existing_fieldset = "#checkAllC" + categories_id;
 			
-			if (jQuery(existing_fieldset_id).length > 0) {
-				jQuery.each(related_data.products, function(i, products_data) {
+			if ($(existing_fieldset_id).length > 0) {
+				$.each(related_data.products, function(i, products_data) {
 					var existing_cb = '#cb_' + categories_id + '_' + products_data.id;
-					if (jQuery(existing_cb).length == 0) {
+					if ($(existing_cb).length == 0) {
 						if (products_data.checked == 1) {
 							html_elem += '<li><input class="cekbox shiftCheckbox category' + categories_id + '" checked="true" type="checkbox" name="category' + categories_id + '" id="cb_' + categories_id + '_' + products_data.id + '" value="' + products_data.id + '" />' + products_data.name + '</li>';
 	
@@ -20,12 +20,12 @@ function populateRelatedProduct(data) {
 						}
 					}
 				});
-				jQuery(last_row_existing_fieldset).before(html_elem);
+				$(last_row_existing_fieldset).before(html_elem);
 			} else {
 				html_elem += '<fieldset><legend>' + related_data.categories_name + '</legend>';
 				html_elem += '<ul id="category' + categories_id + '">';
 				var checked_rp = 0;
-				jQuery.each(related_data.products, function(i, products_data) {
+				$.each(related_data.products, function(i, products_data) {
 					if (products_data.checked == 1) {
 						html_elem += '<li><input class="cekbox shiftCheckbox category' + categories_id + '" checked="true" type="checkbox" name="category' + categories_id + '" id="cb_' + categories_id + '_' + products_data.id + '" value="' + products_data.id + '"/>' + products_data.name + '</li>';
 			
@@ -40,27 +40,27 @@ function populateRelatedProduct(data) {
 					html_elem += '<li id="checkAllC' + categories_id + '"><input type="checkbox" class="checkAll" rel="category' + categories_id + '" />Check / Uncheck All</li>';
 				}
 				html_elem += '</ul></fieldset>';
-				jQuery("#related_product_placeholder").append(html_elem);
+				$("#related_product_placeholder").append(html_elem);
 			}
 		}
 	});
 }		
 function saveRelation(url, related_pid) {
-	jQuery.ajax({
+	$.ajax({
 		type:"POST",
 		url: url,
 		data: {product_id: related_pid, pid:"###AJAX_PID###", req:"save"}
 	});
 }			
 function deleteRelation(url, related_pid) {
-	jQuery.ajax({
+	$.ajax({
 		type:"POST",
 		url: url,
 		data: {product_id: related_pid, pid:"###AJAX_PID###", req:"delete"}
 	});
 }
 function initRelatedProduct(url) {
-	jQuery.ajax({
+	$.ajax({
 		type: "POST",
 		url: url,
 		dataType: "json",
@@ -75,10 +75,10 @@ function initRelatedProduct(url) {
 function productPrice(to_include_vat, o, type) {
 	var original_val	= o.val();
 	var current_value 	= parseFloat(o.val());
-	var tax_id 			= jQuery("#tax_id").val();
+	var tax_id 			= $("#tax_id").val();
 	if (current_value > 0) {
 		if (to_include_vat) {
-			jQuery.getJSON("###AJAX_URL_GET_TAX_RULESET###", { current_price: original_val, to_tax_include: true, tax_group_id: jQuery("#tax_id").val() }, function(json) {
+			$.getJSON("###AJAX_URL_GET_TAX_RULESET###", { current_price: original_val, to_tax_include: true, tax_group_id: $("#tax_id").val() }, function(json) {
 				if (json && json.price_including_tax) {
 					var incl_tax_crop = decimalCrop(json.price_including_tax);
 					o.parent().next().first().children().val(incl_tax_crop);
@@ -89,7 +89,7 @@ function productPrice(to_include_vat, o, type) {
 			// update the hidden excl vat
 			o.parent().next().next().first().children().val(original_val);
 		} else {
-			jQuery.getJSON("###AJAX_URL_GET_TAX_RULESET###", { current_price: original_val, to_tax_include: false, tax_group_id: jQuery("#tax_id").val() }, function(json) {
+			$.getJSON("###AJAX_URL_GET_TAX_RULESET###", { current_price: original_val, to_tax_include: false, tax_group_id: $("#tax_id").val() }, function(json) {
 				if (json && json.price_excluding_tax) {
 					var excl_tax_crop = decimalCrop(json.price_excluding_tax);
 					// update the excl. vat
@@ -134,16 +134,16 @@ function mathRound(float) {
 	return Math.round(float*100)/100;
 }
 function getSpecialsSections(products_id) {
-	jQuery.ajax({
+	$.ajax({
 		url: '###AJAX_URL_GET_SPECIAL_SECTIONS###',
 		data: 'products_id=###AJAX_PID###',
 		type: 'post',
 		dataType: 'html',
 		success: function (j){
 			if (j) {
-				jQuery("#specials_sections").hide();
-				jQuery("#specials_sections").html(j);
-				jQuery("#specials_sections").slideDown("fast");
+				$("#specials_sections").hide();
+				$("#specials_sections").html(j);
+				$("#specials_sections").slideDown("fast");
 			}
 		}
 	});
@@ -297,59 +297,57 @@ jQuery(document).ready(function($) {
 			}
 		});
 	});
-	jQuery(".checkAll").live("click", function() {
+	$(document).on("click", ".checkAll", function() {
 		var product_class_name = "." + jQuery(this).attr("rel");
 
-		if (jQuery(this).is(":checked")) {
-			jQuery(product_class_name).attr("checked", true);
+		if ($(this).is(":checked")) {
+			$(product_class_name).attr("checked", true);
 			saveRelation(url_relatives, jQuery(product_class_name).serialize());
-
 		} else {
 			// .serialize only() take the checked checkbox
 			deleteRelation(url_relatives, jQuery(product_class_name).serialize());
-
-			jQuery(product_class_name).attr("checked", false);
+			$(product_class_name).attr("checked", false);
 		}
 	});
-	jQuery(".cekbox").live("click", function() {
-		var related_id = jQuery(this).val();
+	$(document).on("click", ".cekbox", function() {
+		var related_id = $(this).val();
 	
-		if (jQuery(this).is(":checked")) {
+		if ($(this).is(":checked")) {
 			saveRelation(url_relatives, related_id);
 
 		} else {
 			deleteRelation(url_relatives, related_id);
 		}
 	});
-	jQuery("#load").hide();
-	jQuery().ajaxStart(function() {
-		jQuery("#load").show();
-		jQuery("#related_product_placeholder").hide();
+	$("#load").hide();
+	$().ajaxStart(function() {
+		$("#load").show();
+		$("#related_product_placeholder").hide();
 	}).ajaxStop(function() {
-		jQuery("#load").hide();
-		jQuery("#related_product_placeholder").show();
+		$("#load").hide();
+		$("#related_product_placeholder").show();
 	});
 	// related product js EOF
 
 	//copy products
-	jQuery("#cp_product").bind("click",function(){
-		jQuery.ajax({
+	$("#cp_product").bind("click",function(){
+		$.ajax({
 			type: "POST",
 			url: "###AJAX_URL_COPY_PRODUCT###",
-			data: {idcategory:jQuery("select[name=cid]").val(),pid:"###AJAX_PID###",type_copy:"copy"},
+			data: {idcategory:$("select[name=cid]").val(),pid:"###AJAX_PID###",type_copy:"copy"},
 			success: function(data) {
-				jQuery("#has_cd").html(data);
+				$("#has_cd").html(data);
 			}
 		});
 	});
 	
-	jQuery("#dp_product").bind("click",function(){
-		jQuery.ajax({
+	$("#dp_product").bind("click",function(){
+		$.ajax({
 			type: "POST",
 			url: "###AJAX_URL_COPY_PRODUCT###",
-			data: {idcategory:jQuery("select[name=cid]").val(),pid:"###AJAX_PID###",type_copy:"duplicate"},
+			data: {idcategory:$("select[name=cid]").val(),pid:"###AJAX_PID###",type_copy:"duplicate"},
 			success: function(data) {
-				jQuery("#has_cd").html(data);
+				$("#has_cd").html(data);
 			}
 		});
 	});
@@ -581,28 +579,28 @@ jQuery(document).ready(function($) {
 </div>
 <script type="text/javascript">
 jQuery().ready(function($){
-	jQuery(".admin_product_edit").submit(function() {
-		if (jQuery("#categories_id").val() == "0") {
+	$(".admin_product_edit").submit(function() {
+		if ($("#categories_id").val() == "0") {
 			alert("Please select category for this product");
 			return false;
 		}
 		
-		if (jQuery("#products_name_0").val() == "") {
+		if ($("#products_name_0").val() == "") {
 			alert("Product name is empty");
 			return false;
 		}
 	});		
-	if (jQuery("#products_name_0").val() == "") {
-		jQuery(".qq-uploader").before('<span class="file-upload-hidden">define product name first in details tab</span>');
-		jQuery(".qq-uploader").hide();
+	if ($("#products_name_0").val() == "") {
+		$(".qq-uploader").before('<span class="file-upload-hidden">define product name first in details tab</span>');
+		$(".qq-uploader").hide();
 	}	
-	jQuery("#products_name_0").keyup(function() {
-		if (jQuery("#products_name_0").val() != "") {
-			jQuery(".file-upload-hidden").hide();
-			jQuery(".qq-uploader").show();
+	$("#products_name_0").keyup(function() {
+		if ($("#products_name_0").val() != "") {
+			$(".file-upload-hidden").hide();
+			$(".qq-uploader").show();
 		} else {
-			jQuery(".qq-uploader").hide();
-			jQuery(".file-upload-hidden").show();
+			$(".qq-uploader").hide();
+			$(".file-upload-hidden").show();
 		}
 	});
 	###JS_ADVANCED_OPTION_TOGGLE###

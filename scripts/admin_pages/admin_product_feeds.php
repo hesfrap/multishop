@@ -3,13 +3,23 @@ if (!defined('TYPO3_MODE')) die ('Access denied.');
 
 // defining the types
 $array=array();
-$array['categories_name'] = 'Categories name';
-$array['categories_content_top'] ='Categories content (top)';
-$array['categories_content_bottom'] ='Categories content (bottom)';
+$array['categories_name'] = 'Categories name (product category level)';
+$array['categories_content_top'] ='Categories content top (product category level)';
+$array['categories_content_bottom'] ='Categories content bottom (product category level)';
 $array['categories_id'] ='Categories id';
-$array['categories_meta_title'] ='Categories META title';
-$array['categories_meta_keywords'] ='Categories META keywords';
-$array['categories_meta_description'] ='Categories META description';
+$array['categories_meta_title'] ='Categories META title (product category level)';
+$array['categories_meta_keywords'] ='Categories META keywords (product category level)';
+$array['categories_meta_description'] ='Categories META description (product category level)';
+for ($i=1;$i<6;$i++) {
+	$array['categories_meta_title_'.$i] ='Categories META title (level: '.$i.')';
+	$array['categories_meta_keywords_'.$i] ='Categories META keywords (level: '.$i.')';
+	$array['categories_meta_description_'.$i] ='Categories META description (level: '.$i.')';	
+	$array['categories_image_'.$i] ='Categories image (level: '.$i.')';	
+	$array['categories_content_top_'.$i] ='Categories content top (level: '.$i.')';	
+	$array['categories_content_bottom_'.$i] ='Categories content bottom (level: '.$i.')';	
+	$array['categories_name_'.$i] ='Categories name (level: '.$i.')';	
+}
+
 $array['products_id'] ='Products id';
 $array['products_url'] ='Products link';
 $array['products_external_url'] ='Products external URL';
@@ -23,24 +33,27 @@ $array['products_image_50'] ='Products image (thumbnail 50)';
 $array['products_image_100'] ='Products image (thumbnail 100)';
 $array['products_image_200'] ='Products image (thumbnail 200)';
 $array['products_image_normal'] ='Products image (enlarged)';
+$array['products_image_original'] ='Products image (biggest / original)';
 $array['products_ean'] ='Products EAN code';
 $array['products_sku'] ='Products SKU code';
 $array['products_quantity'] ='Products quantity';
-$array['products_old_price'] ='Products old price';
-$array['products_price'] ='Products price';
-$array['products_price_excluding_vat'] ='Products price excluding vat';
+$array['products_old_price'] ='Products old price (incl. VAT)';
+$array['products_old_price_excluding_vat'] ='Products old price (excl. VAT)';
+
+$array['products_price'] ='Products price (incl. VAT)';
+$array['products_price_excluding_vat'] ='Products price (excl. VAT)';
+
+$array['product_capital_price'] ='Products capital price';
 
 $array['products_weight'] ='Products weight';
 $array['products_status'] ='Products status';
 $array['minimum_quantity'] ='Products minimum quantity';
 $array['maximum_quantity'] ='Products maximum quantity';
 $array['order_unit_name'] ='Products order unit name';
+$array['products_vat_rate'] ='Products VAT rate';
 
 $array['category_link'] ='Category link';
-$array['category_level_1'] ='Category level 1';
-$array['category_level_2'] ='Category level 2';
-$array['category_level_3'] ='Category level 3';
-$array['category_level_4'] ='Category level 4';
+
 $array['manufacturers_name'] ='Manufacturers name';
 $array['manufacturers_id'] ='Manufacturers id';
 $array['manufacturers_products_id'] ='Manufacturers products id';
@@ -233,7 +246,7 @@ if ($_REQUEST['section']=='edit' or $_REQUEST['section']=='add') {
 		</div>		
 		<div class="account-field">
 				<label>&nbsp;</label>
-				<input name="Submit" type="submit" value="'.htmlspecialchars($this->pi_getLL('save')).'" class="msadmin_button" />
+				<span class="msBackendButton continueState arrowRight arrowPosLeft"><input name="Submit" type="submit" value="'.htmlspecialchars($this->pi_getLL('save')).'" class="msadmin_button" /></span>
 		</div>	
 		<input name="feed_id" type="hidden" value="'.$this->get['feed_id'].'" />
 		<input name="section" type="hidden" value="'.$_REQUEST['section'].'" />
@@ -250,19 +263,19 @@ if ($_REQUEST['section']=='edit' or $_REQUEST['section']=='add') {
 					$(".hide_pf").show();				
 				}
 			});		
-			jQuery("#add_field").click(function(event) {
+			$("#add_field").click(function(event) {
 				counter++;
 				var item=\'<div><div class="account-field"><label>Type</label><select name="fields[\'+counter+\']" rel="\'+counter+\'" class="msAdminProductsFeedSelectField">';
 		foreach ($array as $key => $option) {
 			$content.='<option value="'.$key.'">'.htmlspecialchars($option).'</option>';
 		}
 		$content.='</select><input class="delete_field msadmin_button" name="delete_field" type="button" value="'.htmlspecialchars($this->pi_getLL('delete')).'" /></div></div>\';
-				jQuery(\'#product_feed_fields\').append(item);
+				$(\'#product_feed_fields\').append(item);
 			});
-			jQuery(".delete_field").live(\'click\', function() {
+			$(document).on("click", ".delete_field", function() {
 				jQuery(this).parent().remove();
 			});
-			jQuery(".msAdminProductsFeedSelectField").live(\'change\', function() {
+			$(document).on("change", ".msAdminProductsFeedSelectField", function() {
 				var selected=$(this).val();
 				var counter=$(this).attr("rel");
 				if(selected==\'custom_field\') {
@@ -344,6 +357,6 @@ if ($this->ms['show_main']) {
 	} else {
 		$content.='<h3>'.htmlspecialchars($this->pi_getLL('currently_there_are_no_product_feeds_created')).'</h3>';
 	}
-	$content.='<a href="'.mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]='.$this->ms['page'].'&section=add').'" class="msadmin_button float_right">'.htmlspecialchars($this->pi_getLL('add')).'</a>';
+	$content.='<a href="'.mslib_fe::typolink(',2003','&tx_multishop_pi1[page_section]='.$this->ms['page'].'&section=add').'" class="msBackendButton continueState arrowRight arrowPosLeft float_right"><span>'.htmlspecialchars($this->pi_getLL('add')).'</span></a>';
 }
 ?>

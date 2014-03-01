@@ -524,28 +524,22 @@ if (count($shipping_methods) > 0) {
 			}
 		}
 	}
-				
 	function decimalCrop(float) {
 		var numbers = float.toString().split(".");
-		var prime 	= numbers[0];
-						
+		var prime 	= numbers[0];				
 		if (numbers[1] > 0 && numbers[1] != "undefined") {
 			var decimal = new String(numbers[1]);
 		} else {
 			var decimal = "00";			
 		}
-		
-		var number = prime + "." + decimal.substr(0, 2);
-		
+		var number = prime + "." + decimal.substr(0, 2);	
 		return number;
-	}
-									
-	jQuery(".msProductsPriceExcludingVat").live("change", function() {
+	}							
+	$(document).on("change", ".msProductsPriceExcludingVat", function() {
 		productPrice(true, jQuery(this));
-	});
-		
-	jQuery(".msProductsPriceIncludingVat").live("change", function() {
-		productPrice(false, jQuery(this));
+	});	
+	$(document).on("change", ".msProductsPriceIncludingVat", function() {
+		productPrice(false, $(this));
 	});			
 });
 </script>';	

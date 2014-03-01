@@ -270,8 +270,11 @@ class tx_multishop_pi1 extends tslib_pibase {
 			break;
 			case 'search':
 				// setting coming from typoscript or from flexform
-				if ($this->conf['contentType']) $this->contentType = $this->conf['contentType'];
-				else $this->contentType = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'contentType', 's_search');
+				if ($this->conf['contentType']) {
+					$this->contentType = $this->conf['contentType'];
+				} else {
+					$this->contentType = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'contentType', 's_search');
+				}
 				switch ($this->contentType) {
 					case 'searchform_with_keyword_and_category_dropdown_menu':
 						require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/content_elements/searchform_with_keyword_and_category_dropdown_menu.php');
@@ -343,7 +346,11 @@ class tx_multishop_pi1 extends tslib_pibase {
 				}
 			break;
 			case 'misc':
-				$this->contentMisc = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'contentType', 's_misc');
+				if ($this->conf['contentMisc']) {
+					$this->contentMisc = $this->conf['contentMisc'];
+				} else {
+					$this->contentMisc = $this->pi_getFFvalue($this->cObj->data['pi_flexform'], 'contentType', 's_misc');
+				}			
 				switch ($this->contentMisc) {		
 					case 'shopping_cart':
 						$content.='<div id="tx_multishop_pi1_core">';

@@ -107,12 +107,12 @@ foreach ($products as $current_product) {
 
 // fill the row marker with the expanded rows
 if ($current['content']) {
-	$subpartArray['###CURRENT_CATEGORIES_TOP_DESCRIPTION###'] 					= trim($current['content']);
+	$subpartArray['###CURRENT_CATEGORIES_TOP_DESCRIPTION###'] = trim($current['content']);
 } else {
-	$subpartArray['###CURRENT_CATEGORIES_TOP_DESCRIPTION###'] 					= '';
+	$subpartArray['###CURRENT_CATEGORIES_TOP_DESCRIPTION###'] = '';
 }
-$subpartArray['###CURRENT_CATEGORIES_NAME###'] 					= trim($current['categories_name']);
-$subpartArray['###ITEM###'] 									= $contentItem;
+$subpartArray['###CURRENT_CATEGORIES_NAME###'] = trim($current['categories_name']);
+$subpartArray['###ITEM###'] = $contentItem;
 
 $product_listing_form_content = '';
 if ($this->ms['MODULES']['PRODUCTS_LISTING_DISPLAY_PAGINATION_FORM']) {
@@ -228,7 +228,12 @@ if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/fr
 }
 // custom hook that can be controlled by third-party plugin eof
 $content .= $this->cObj->substituteMarkerArrayCached($subparts['template'], null, $subpartArray);	
-if ($this->ms['page'] <> 'products_search' and ($this->ROOTADMIN_USER or ($this->ADMIN_USER and $this->CATALOGADMIN_USER))) {
+$skippedTypes=array();
+$skippedTypes[]='products_modified';
+$skippedTypes[]='products_search';
+$skippedTypes[]='products_news';
+$skippedTypes[]='products_specials';
+if (!in_array($this->ms['page'],$skippedTypes) and ($this->ROOTADMIN_USER or ($this->ADMIN_USER and $this->CATALOGADMIN_USER))) {
 	$content.='					
 	<script>
 	  jQuery(document).ready(function($) {

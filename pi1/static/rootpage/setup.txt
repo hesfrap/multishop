@@ -109,6 +109,9 @@ plugin.tx_multishop_pi1 {
 	tt_address_record_id_store={$plugin.multishop.tt_address_record_id_store}
 	disableFeFromCalculatingVatPrices={$plugin.multishop.disableFeFromCalculatingVatPrices}
 	cart_uid={$plugin.multishop.cart_uid}
+	
+	order_details_table_ajaxProductsToBasket_tmpl_path={$plugin.multishop.order_details_table_ajaxProductsToBasket_tmpl_path}
+	order_details_table_ajaxGetMethodCosts_tmpl_path={$plugin.multishop.order_details_table_ajaxGetMethodCosts_tmpl_path}	
 }
 # LOAD MULTISHOP APPLICATION (HEAD SECTION)
 
@@ -253,7 +256,9 @@ multishop_admin_page {
 page {
   includeJS {
     msGeneral = EXT:multishop/js/general.js
-    msGeneral.compress=1	
+    msGeneral.compress=1
+    #jquerymigrate = EXT:multishop/js/jquery-migrate-1.2.1.js		
+    #jquerymigrate.compress=1	
     jqueryvalidate = EXT:multishop/js/jquery.h5validate.js
     jqueryvalidate.compress=1	
     #jqueryvalidatefunctions = EXT:multishop/js/form-wizard/jquery.validation.functions.js
@@ -262,9 +267,9 @@ page {
     prettycheckboxes.compress=1
     #webshim for fallback html5 attributes support
     webshimsJs = EXT:multishop/js/js-webshim/extras/modernizr-custom.js	
-    #webshimsJs.compress=1
+    webshimsJs.compress=0
     pollyfillerJs = EXT:multishop/js/js-webshim/polyfiller.js	
-    #pollyfillerJs.compress=1
+    pollyfillerJs.compress=0
   }
 }
 multishop_admin_page {

@@ -4,79 +4,134 @@ if (!defined('TYPO3_MODE')) die ('Access denied.');
 $this->ms['page']=$this->get['tx_multishop_pi1']['page_section'];		
 switch ($this->ms['page']) {
 	case 'admin_action_notification_log':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_action_notification_log.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_action_notification_log.php');	
+		}
 	break;	
 	case 'admin_system_clear_multishop_cache':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_clear_multishop_cache.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_clear_multishop_cache.php');	
+		}
 	break;	
 	case 'admin_shipping_countries':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shipping_countries.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shipping_countries.php');	
+		}
 	break;	
 	case 'admin_zone_payment_mappings':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_zone_payment_mappings.php');
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_zone_payment_mappings.php');
+		}
+	break;
+	case 'admin_zone_shipping_mappings':
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_zone_shipping_mappings.php');
+		}
 	break;
 	case 'admin_shipping_payment_mappings':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shipping_payment_mappings.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shipping_payment_mappings.php');	
+		}
 	break;				
 	case 'admin_shipping_costs':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shipping_costs.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shipping_costs.php');	
+		}
 	break;							
 	case 'admin_shipping_zones':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shipping_zones.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shipping_zones.php');	
+		}
 	break;
 	case 'admin_new_order':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/manual_order/admin_new_order.php');
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/manual_order/admin_new_order.php');
+		}
     break;
     case 'admin_proced_manual_order':
-    	if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/manual_order/admin_proced_manual_order.php');
+    	if ($this->ADMIN_USER) {
+    		require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/manual_order/admin_proced_manual_order.php');
+    	}
     break;
 	case 'admin_order_units':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_order_units.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_order_units.php');	
+		}
 	break;
 	case 'admin_shipping_modules':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shipping_modules.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shipping_modules.php');	
+		}
 	break;				
 	case 'admin_payment_modules':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_payment_modules.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_payment_modules.php');	
+		}
 	break;			
 	case 'admin_taxes':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_taxes.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_taxes.php');	
+		}
 	break;			
 	case 'admin_tax_rule_groups':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_tax_rule_groups.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_tax_rule_groups.php');	
+		}
 	break;		
 	case 'admin_tax_rules':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_tax_rules.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_tax_rules.php');	
+		}
 	break;
 	case 'admin_invoices':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_invoices.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_invoices.php');	
+		}
 	break;	
 	case 'admin_orders_status':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_orders_status.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_orders_status.php');	
+		}
 	break;	
 	case 'admin_modules':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_modules.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_modules.php');	
+		}
 	break;	
 	case 'admin_product_attributes':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_product_attributes.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_product_attributes.php');	
+		}
 	break;	
 	case 'admin_manufacturers':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_manufacturers.php');
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_manufacturers.php');
+		}
 	break;
 	case 'admin_coupons':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_coupons.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_coupons.php');	
+		}
 	break;
 	case 'admin_products_search_stats':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_products_search_stats.php');
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_products_search_stats.php');
+		}
 	break;
 	case 'admin_shopping_cart_stats':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shopping_cart_stats.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shopping_cart_stats.php');	
+		}
 	break;		
 	case 'admin_customers':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_customers.php');
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_customers.php');
+		}
 	break;		
 	case 'admin_cms':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_cms.php');
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_cms.php');
+		}
 	break;	
 	case 'admin_products_search_and_edit':
 		if ($this->ADMIN_USER) {
@@ -139,16 +194,24 @@ switch ($this->ms['page']) {
 		}
 	break;
 	case 'admin_stats_orders':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_stats_orders.php');
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_stats_orders.php');
+		}
     break;
     case 'admin_stats_user_agent':
-    	if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_stats_user_agent.php');
+    	if ($this->ADMIN_USER) {
+    		require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_stats_user_agent.php');
+    	}
     break;
 	case 'admin_stats_products':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_stats_products.php');
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_stats_products.php');
+		}
     break;	
 	case 'admin_stats_customers':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_stats_customers.php');
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_stats_customers.php');
+		}
     break;		
 	case 'admin_orders':
 		if ($this->ADMIN_USER) {
@@ -189,13 +252,19 @@ switch ($this->ms['page']) {
 		}
 	break;		
 	case 'admin_product_feeds':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_product_feeds.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_product_feeds.php');	
+		}
 	break;
 	case 'admin_customer_export':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_customer_export.php');		
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_customer_export.php');		
+		}
 	break;
 	case 'admin_useragent_export':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_useragent_export.php');
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_useragent_export.php');
+		}
 	break;
 	case 'admin_customer_import':
 		if ($this->ADMIN_USER) {

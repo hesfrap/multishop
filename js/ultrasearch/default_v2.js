@@ -110,7 +110,7 @@ $(document).ready(function() {
 	$('#msFrontUltrasearchForm').change(function(){
 	   $('#msFrontUltrasearchForm').submit();
 	});
-	$('#ajax_pagination #pagenav_container  a').live('click', function(e) {
+	$('#ajax_pagination #pagenav_container  a').on("click", "selector", function(e) {
 		e.preventDefault();
 		var pageNum = this.id;
 		$('#msFrontUltrasearchForm #pageNum').val(pageNum);

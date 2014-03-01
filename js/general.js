@@ -5,4 +5,3 @@ function CONFIRM(label){
 		return false;
 	}
 }
-

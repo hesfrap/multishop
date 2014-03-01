@@ -22,7 +22,7 @@ if ($this->ms['MODULES']['CACHE_FRONT_END']) {
 		'lifeTime' => $this->ms['MODULES']['CACHE_TIME_OUT_SEARCH_PAGES']
 	);
 	$Cache_Lite = new Cache_Lite($options);
-	$string=md5($this->cObj->data['uid'].'_'.$this->server['REQUEST_URI'].$this->server['QUERY_STRING']);
+	$string=md5($this->cObj->data['uid'].'_'.$this->HTTP_HOST.'_'.$this->server['REQUEST_URI'].$this->server['QUERY_STRING']);
 }
 if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRONT_END'] and !$content=$Cache_Lite->get($string))) {
 	if ($p > 0) {
@@ -170,6 +170,14 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 					$tbl='cd.';			
 					$extra_filter[]=$tbl."categories_name like '%".addslashes($this->get['skeyword'])."%'";
 				}
+			}
+			if ((!is_array($this->get['tx_multishop_pi1']['search_by']) and $this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_NEGATIVE_KEYWORDS']) or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('products_negative_keywords',$this->get['tx_multishop_pi1']['search_by']))) {
+				if ($this->ms['MODULES']['FLAT_DATABASE']) {
+					$tbl='pf.';
+				} else {
+					$tbl='pd.';
+				}
+				$extra_filter[]=$tbl."products_negative_keywords like '%".addslashes($this->get['skeyword'])."%'";
 			}	
 			// attribute values
 			$search_in_option_ids=array();
@@ -299,7 +307,15 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 							$tbl='p.';						
 						}
 						$fields.=",".$tbl."sku_code";
-					}								
+					}
+					if ($this->ms['MODULES']['SEARCH_ALSO_IN_PRODUCTS_NEGATIVE_KEYWORDS'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('products_negative_keywords',$this->get['tx_multishop_pi1']['search_by']))) {
+						if ($this->ms['MODULES']['FLAT_DATABASE']) {
+							$tbl='pf.';
+						} else {
+							$tbl='pd.';
+						}
+						$fields.=",".$tbl."products_negative_keywords";
+					}							
 					if ($this->ms['MODULES']['SEARCH_ALSO_IN_CATEGORIES_NAME'] or (is_array($this->get['tx_multishop_pi1']['search_by']) and in_array('categories_name',$this->get['tx_multishop_pi1']['search_by']))) {
 						if ($this->ms['MODULES']['FLAT_DATABASE']) {
 							$tbl='pf.';

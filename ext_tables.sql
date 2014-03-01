@@ -369,7 +369,7 @@ CREATE TABLE `tx_multishop_manufacturers` (
   `sort_order` int(11) DEFAULT '0',
   `extid` varchar(100) DEFAULT '',
   `icecat_mid` int(5) DEFAULT '0',
-  `manufacturers_extra_cost` decimal(10,4) DEFAULT '0.0000',
+  `manufacturers_extra_cost` decimal(24,14) DEFAULT '0.00000000000000',
   `status` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`manufacturers_id`),
   KEY `IDX_MANUFACTURERS_NAME` (`manufacturers_name`),
@@ -822,6 +822,8 @@ CREATE TABLE `tx_multishop_products` (
   `file_number_of_downloads` int(11) NOT NULL DEFAULT '0',
   `order_unit_id` int(11) NOT NULL DEFAULT '0',
   `imported_product` tinyint(1) NOT NULL DEFAULT '0',
+  `foreign_source_name` varchar(30) NOT NULL DEFAULT '',
+  `foreign_products_id` varchar(30) NOT NULL DEFAULT '',
   `lock_imported_product` tinyint(1) NOT NULL DEFAULT '0',
   `google_taxonomy_id` int(11) DEFAULT '0',
   `import_job_id` int(11) NOT NULL DEFAULT '0',
@@ -853,7 +855,9 @@ CREATE TABLE `tx_multishop_products` (
   KEY `starttime` (`starttime`),  
   KEY `products_date_added` (`products_date_added`),
   KEY `products_last_modified` (`products_last_modified`),
-  KEY `products_date_available` (`products_date_available`)  
+  KEY `products_date_available` (`products_date_available`),
+  KEY `foreign_source_name` (`foreign_source_name`), 
+  KEY `foreign_products_id` (`foreign_products_id`)
 ) ENGINE=MyISAM ;
 
 CREATE TABLE `tx_multishop_products_attributes` (
@@ -863,7 +867,7 @@ CREATE TABLE `tx_multishop_products_attributes` (
   `options_values_id` int(5) NOT NULL DEFAULT '0',
   `options_values_price` decimal(24,14) DEFAULT '0.00000000000000',
   `price_prefix` char(1) NOT NULL DEFAULT '',
-  `dealer_price` decimal(10,4) DEFAULT '0.0000',
+  `dealer_price` decimal(24,14) DEFAULT '0.00000000000000',
   `products_stock` mediumint(4) DEFAULT '0',
   `hide` tinyint(1) DEFAULT '0',
   `price_group_id` int(11) DEFAULT '0',
@@ -1003,11 +1007,18 @@ CREATE TABLE `tx_multishop_products_search_log` (
   `id` int(11) NOT NULL auto_increment,
   `keyword` varchar(150) NOT NULL default '',
   `ip_address` varchar(150) NOT NULL default '',
+  `http_host` varchar(60) NOT NULL default '',
   `crdate` int(11) NOT NULL DEFAULT '0',
   `customer_id` int(11) NOT NULL DEFAULT '0',
+  `page_uid` int(11) NOT NULL DEFAULT '0',
+  `categories_id` int(11) NOT NULL DEFAULT '0',  
   `negative_results` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `keyword` (`keyword`),
+  KEY `crdate` (`crdate`),
+  KEY `http_host` (`http_host`),
+  KEY `page_uid` (`page_uid`),
+  KEY `categories_id` (`categories_id`),
   KEY `customer_id` (`customer_id`),
   KEY `negative_results` (`negative_results`)
 ) ENGINE=MyISAM ;
@@ -1147,7 +1158,7 @@ CREATE TABLE `tx_multishop_shipping_methods_description` (
 CREATE TABLE `tx_multishop_shipping_options` (
   `id` int(4) NOT NULL auto_increment,
   `name` varchar(50) DEFAULT '',
-  `price` decimal(10,4) DEFAULT '0.0000',
+  `price` decimal(24,14) DEFAULT '0.00000000000000',
   `date` int(11) DEFAULT '0',
   `status` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
@@ -1264,7 +1275,7 @@ CREATE TABLE `tx_multishop_undo_products` (
   `products_image2` varchar(250) DEFAULT '',
   `products_image3` varchar(250) DEFAULT '',
   `products_image4` varchar(250) DEFAULT '',
-  `products_price` decimal(10,4) NOT NULL DEFAULT '0.0000',
+  `products_price` decimal(24,14) DEFAULT '0.00000000000000',
   `products_date_added` int(11) DEFAULT '0',
   `products_last_modified` int(11) DEFAULT '0',
   `products_date_available` int(11) DEFAULT '0',
@@ -1280,7 +1291,7 @@ CREATE TABLE `tx_multishop_undo_products` (
   `staffel_price` varchar(250) DEFAULT '',
   `pid` int(11) DEFAULT '0',
   `did` int(11) DEFAULT '0',
-  `product_capital_price` decimal(10,4) DEFAULT '0.0000',
+  `product_capital_price` decimal(24,14) DEFAULT '0.00000000000000',
   `productfeed` tinyint(1) DEFAULT '0',
   `vendor_code` varchar(255) DEFAULT '',
   `ean_code` varchar(13) DEFAULT '',
@@ -1344,3 +1355,17 @@ CREATE TABLE tt_address (
   KEY tx_multishop_default (tx_multishop_default),
   KEY `page_uid` (`page_uid`)  
 ) ENGINE=InnoDB;
+
+CREATE TABLE `tx_multishop_products_locked_fields` (
+  `id` int(11) NOT NULL auto_increment,
+  `products_id` int(11) DEFAULT '0',
+  `field_key` varchar(50) DEFAULT '',
+  `crdate` int(11) NOT NULL default '0',
+  `cruser_id` int(11) NOT NULL default '0',
+  `original_value` text,
+  PRIMARY KEY (`id`),
+  KEY cruser_id (cruser_id),  
+  KEY crdate (crdate),  
+  KEY field_key (field_key),  
+  KEY products_id (products_id)
+) ENGINE=InnoDB ;

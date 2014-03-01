@@ -94,7 +94,10 @@ if ($rows) {
 				$content.=$this->languages[$key]['title'].' <input name="option_names['.$row['products_options_id'].']['.$key.']" type="text" value="'.$value.'"  />';
 			}
 		}			
-		$content.='<a href="#" class="delete_options admin_menu_remove" rel="'.$row['products_options_id'].'">delete</a>&nbsp;<a href="#" class="msadmin_button fetch_attributes_values" id="button_label_'.$row['products_options_id'].'" rel="'.$row['products_options_id'].'">'.$this->pi_getLL('show_attributes_values', 'SHOW VALUES').'</a></h3>
+		$content .= '<a href="#" class="delete_options admin_menu_remove" rel="'.$row['products_options_id'].'">delete</a>&nbsp;';
+		$content .= '<a href="#" class="msadmin_button fetch_attributes_values" id="button_label_'.$row['products_options_id'].'" rel="'.$row['products_options_id'].'">'.$this->pi_getLL('show_attributes_values', 'SHOW VALUES').'</a>&nbsp;';
+		$content .= '<a href="#" class="msadmin_button fetch_options_description" id="button_label_desc_'.$row['products_options_id'].'" rel="'.$row['products_options_id'].'">'.$this->pi_getLL('show_options_description', 'EDIT DESCRIPTION').'</a>';
+		$content .= '</h3>
 		<ul class="attribute_option_values_sortable" rel="'.$row['products_options_id'].'" id="vc_'.$row['products_options_id'].'" style="display:none">';	
 		/* // now load the related values
 		$str2="select * from tx_multishop_products_options_values_to_products_options povp, tx_multishop_products_options_values pov where povp.products_options_id='".$row['products_options_id']."' and povp.products_options_values_id=pov.products_options_values_id and pov.language_id='0' order by povp.sort_order";
@@ -128,6 +131,16 @@ if ($rows) {
 		<br /><input name="Submit" type="submit" value="Save" class="msadmin_button" />
 		</form>
 		
+		<div id="dialog-edit-description" title="Edit options description">
+	  		<div id="description_editor_header"></div>
+			<div id="description_editor"></div>
+		</div>
+			
+		<div id="dialog-edit-options-values-description" title="Edit options values description">
+	  		<div id="description_ov_editor_header"></div>
+			<div id="description_ov_editor"></div>
+		</div>
+			
 		<div id="dialog-confirm" title="WARNING: THIS ACTION IS NOT REVERSIBLE!!">
 	  		<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>Are you sure you want to delete <span id="attributes-name0"></span> attribute(s)?</p>
 		</div>
@@ -150,8 +163,173 @@ if ($rows) {
 	// now load the sortables jQuery code
 	$content .= '<script type="text/javascript">
 	  jQuery(document).ready(function($) {
+		jQuery("#dialog-edit-description").hide();	
+		jQuery("#dialog-edit-options-values-description").hide();	
 		jQuery("#dialog-confirm").hide();
 		jQuery("#dialog-confirm-force").hide();	
+		
+		jQuery(".fetch_options_description").click(function(e) {
+			e.preventDefault();
+			var opt_id = jQuery(this).attr("rel");
+			var dialog_box_id = "#dialog-edit-description";
+			var dialog_box_content_holder = "#description_editor";
+			var dialog_height = "300";
+			var dialog_width = "500";
+			
+			href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=fetch_options_description').'"; 
+			jQuery.ajax({ 
+				type:   "POST", 
+				url:    href, 
+				data:   \'data_id=\' + opt_id,
+				dataType: "json",
+				success: function(r) {
+					if (r.results) {
+						if (r.options_name != "") {
+							jQuery("#description_editor_header").html("");
+							jQuery("#description_editor_header").html("<strong>Option: " + r.options_name + "</strong>");
+						}
+						var values_data = "";
+					
+						if (r.results.length > 1) {
+							dialog_height = parseInt(170 * r.results.length);
+						}
+						
+						jQuery.each(r.results, function(i, v){
+							values_data += \'<li class="description_content">\';
+							values_data += \'<span>\' + v.lang_title + \': </span>\';
+							values_data += \'<textarea name="opt_desc[\' + v.option_id + \'][\' + v.lang_id + \']" id="opt_desc_\' + v.option_id + \'_\' + v.lang_id + \'" rows="8" cols="50">\' + v.description + \'</textarea>\';
+							values_data += \'</li>\';
+						});
+									
+						if (values_data != "") {
+							values_data = "<ul>" + values_data + "</ul>";
+							jQuery(dialog_box_content_holder).html(values_data);
+							
+							jQuery(dialog_box_id).show();	
+					
+							jQuery(dialog_box_id).dialog({
+								resizable: false,
+								height: dialog_height,
+								width: dialog_width,
+								modal: true,
+								buttons: {
+									"Save":{
+										text: "Save",
+										class: \'msOkButton msBackendButton continueState arrowRight arrowPosLeft\',
+										click: function() {
+											href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=save_options_description').'"; 
+											jQuery.ajax({ 
+													type:   "POST", 
+													url:    href, 
+													data:   jQuery("[id^=opt_desc_]").serialize(),
+													dataType: "json",
+													success: function(s) { 
+														
+													} 
+											});
+													
+											jQuery("#description_editor_header").html("");
+											jQuery( dialog_box_content_holder ).html("");
+													
+											jQuery( this ).dialog( "close" );
+											jQuery( this ).hide();
+										}
+									},
+									"Cancel":{
+									text: "Cancel",
+									class: \'msCancelButton msBackendButton prevState arrowLeft arrowPosLeft\',
+									click: function() {
+										jQuery("#description_editor_header").html("");
+										jQuery( dialog_box_content_holder ).html("");
+												
+										jQuery( this ).dialog( "close" );
+										jQuery( this ).hide();
+									}
+									}
+								}
+							});
+						}
+					}
+				} 
+			});
+		});												
+		$(document).on("click", ".fetch_options_values_description", function(e) {
+			e.preventDefault();
+			var opt_id = jQuery(this).attr("rel");
+			var dialog_box_id = "#dialog-edit-options-values-description";
+			var dialog_box_content_holder = "#description_ov_editor";
+			var dialog_height = "300";
+			var dialog_width = "500";
+			
+			href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=fetch_options_values_description').'"; 
+			jQuery.ajax({ 
+				type:   "POST", 
+				url:    href, 
+				data:   \'data_id=\' + opt_id,
+				dataType: "json",
+				success: function(r) {
+					if (r.results) {
+						if (r.options_name != "") {
+							jQuery("#description_ov_editor_header").html("");
+							jQuery("#description_ov_editor_header").html("<strong>" + r.options_name + ": " + r.options_values_name + "</strong>");
+						}
+						var values_data = "";
+					
+						if (r.results.length > 1) {
+							dialog_height = parseInt(170 * r.results.length);
+						}
+						
+						jQuery.each(r.results, function(i, v){
+							values_data += \'<li class="ov_description_content">\';
+							values_data += \'<span>\' + v.lang_title + \': </span>\';
+							values_data += \'<textarea name="ov_desc[\' + v.pov2po_id + \'][\' + v.lang_id + \']" id="ov_desc_\' + v.pov2po_id + \'_\' + v.lang_id + \'" rows="8" cols="50">\' + v.description + \'</textarea>\';
+							values_data += \'</li>\';
+						});
+									
+						if (values_data != "") {
+							values_data = "<ul>" + values_data + "</ul>";
+							jQuery(dialog_box_content_holder).html(values_data);
+							
+							jQuery(dialog_box_id).show();	
+					
+							jQuery(dialog_box_id).dialog({
+								resizable: false,
+								height: dialog_height,
+								width: dialog_width,
+								modal: true,
+								buttons: {
+									"Save": function() {
+										href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=save_options_values_description').'"; 
+										jQuery.ajax({ 
+												type:   "POST", 
+												url:    href, 
+												data:   jQuery("[id^=ov_desc_]").serialize(),
+												dataType: "json",
+												success: function(s) { 
+													
+												} 
+										});
+												
+										jQuery("#description_ov_editor_header").html("");
+										jQuery( dialog_box_content_holder ).html("");
+												
+										jQuery( this ).dialog( "close" );
+										jQuery( this ).hide();
+									},
+									Cancel: function() {
+										jQuery("#description_ov_editor_header").html("");
+										jQuery( dialog_box_content_holder ).html("");
+												
+										jQuery( this ).dialog( "close" );
+										jQuery( this ).hide();
+									}
+								}
+							});
+						}
+					}
+				} 
+			});
+		});
 			
 		jQuery(".fetch_attributes_values").click(function(e) {
 			e.preventDefault();
@@ -177,13 +355,16 @@ if ($rows) {
 									values_data += y.lang_title + \' <input name="option_values[\' + v.values_id + \'][\' + y.lang_id + \']" type="text" value="\' + y.lang_values + \'" />\';
 								});
 							
-								values_data += \'<a href="#" class="delete_options admin_menu_remove" rel="\' + opt_id + \':\' + v.values_id + \'">delete</a></li>\';
+								values_data += \'<a href="#" class="delete_options admin_menu_remove" rel="\' + opt_id + \':\' + v.values_id + \'">delete</a>&nbsp;\';
+								values_data += \'<a href="#" class="fetch_options_values_description msadmin_button" rel="\' + v.pov2po_id + \'">'.$this->pi_getLL('show_options_description', 'EDIT VALUES DESCRIPTION').'</a>\';
+								values_data += \'</li>\';
 							});
 
 							values_data += \'<a href="#" class="msadmin_button hide_attributes_values" rel="\' + opt_id + \'">HIDE VALUES</a>\';
 						
 							jQuery(container_id).html(values_data);
 							jQuery(fetched_id).val("1");
+										
 							jQuery(container_id).show();
 							jQuery(button_label_id).html("HIDE VALUES");
 						} else {
@@ -192,36 +373,32 @@ if ($rows) {
 					} 
 				});
 				
-			} else if (jQuery(fetched_id).val() == "1") {
-				if (jQuery(container_id).is(":hidden")) {
-					jQuery(container_id).show();
-					jQuery(button_label_id).html("HIDE VALUES");
+			} else if ($(fetched_id).val() == "1") {
+				if ($(container_id).is(":hidden")) {
+					$(container_id).show();
+					$(button_label_id).html("HIDE VALUES");
 				} else {
-					jQuery(container_id).hide();
-					jQuery(button_label_id).html("SHOW VALUES");
+					$(container_id).hide();
+					$(button_label_id).html("SHOW VALUES");
 				}
 			}
 		});
-						
-		jQuery(".hide_attributes_values").live("click", function(e) {
+		$(document).on("click", ".hide_attributes_values", function(e) {
 			e.preventDefault();
 			var opt_id = jQuery(this).attr("rel");
 			var container_id = "#vc_" + opt_id;
 			var button_label_id = "#button_label_" + opt_id;
-
-			if (jQuery(container_id).is(":hidden")) {
-				jQuery(container_id).show();
-				jQuery(button_label_id).html("HIDE VALUES");
+			if ($(container_id).is(":hidden")) {
+				$(container_id).show();
+				$(button_label_id).html("HIDE VALUES");
 			} else {
-				jQuery(container_id).hide();
-				jQuery(button_label_id).html("SHOW VALUES");
+				$(container_id).hide();
+				$(button_label_id).html("SHOW VALUES");
 			}
-		});
-		
-		jQuery(".delete_options").live("click", function(e) {
+		});		
+		$(document).on("click", ".delete_options", function(e) {
 			e.preventDefault();
-			var opt_id = jQuery(this).attr("rel");
-			
+			var opt_id = $(this).attr("rel");			
 			href = "'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=delete_attributes').'"; 
 			jQuery.ajax({ 
 					type:   "POST", 
@@ -258,7 +435,7 @@ if ($rows) {
 							jQuery(dialog_box_id).show();	
 					
 							jQuery(dialog_box_id).dialog({
-								resizable: true,
+								resizable: false,
 								height:300,
 								width:500,
 								modal: true,

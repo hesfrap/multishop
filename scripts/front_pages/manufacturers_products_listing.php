@@ -24,7 +24,7 @@ if (is_numeric($this->get['manufacturers_id'])) {
 			'lifeTime' => $this->cacheLifeTime
 		);
 		$Cache_Lite = new Cache_Lite($options);
-		$string=$this->cObj->data['uid'].'_'.$this->server['REQUEST_URI'].$this->server['QUERY_STRING'];
+		$string=$this->cObj->data['uid'].'_'.$this->HTTP_HOST.'_'.$this->server['REQUEST_URI'].$this->server['QUERY_STRING'];
 	}
 	if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($string)) {
 		// current manufacturer
@@ -72,6 +72,7 @@ if (is_numeric($this->get['manufacturers_id'])) {
 			}
 			$filter[]	=$tbl."manufacturers_id='".$this->get['manufacturers_id']."'";		
 			$orderby[]	=$tbl."products_last_modified desc";
+			$limit_per_page = $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'];
 			$pageset=mslib_fe::getProductsPageSet($filter,$offset,$this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'],$orderby,$having,$select,$where,0,array(),array(),'manufacturers_products');
 			$products=$pageset['products'];		
 			if ($pageset['total_rows'] > 0) {

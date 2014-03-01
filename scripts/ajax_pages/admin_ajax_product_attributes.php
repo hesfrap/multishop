@@ -37,7 +37,7 @@ if ($_GET['a'] == 'add_option') {
 			$rs_chk = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_chk);
 			$max_optid = $rs_chk['products_options_id'] + 1;
 		
-			$sql_ins = "insert into tx_multishop_products_options (products_options_id, language_id, products_options_name, listtype, attributes_values) values ('".$max_optid."', '0', '".addslashes($_GET['optname'])."', 'pulldownmenu', '0')";
+			$sql_ins = "insert into tx_multishop_products_options (products_options_id, language_id, products_options_name, listtype, attributes_values, sort_order) values ('".$max_optid."', '0', '".addslashes($_GET['optname'])."', 'pulldownmenu', '0', '".$max_optid."')";
 			$GLOBALS['TYPO3_DB']->sql_query($sql_ins);
 			$optid = $max_optid;
 		}

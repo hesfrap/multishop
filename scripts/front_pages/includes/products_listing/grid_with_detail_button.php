@@ -68,7 +68,12 @@ foreach ($products as $current_product) {
 	$content.='</li>';
 }
 $content.='</ul>';
-if ($this->ms['page'] <> 'products_search' and ($this->ROOTADMIN_USER or ($this->ADMIN_USER and $this->CATALOGADMIN_USER))) {
+$skippedTypes=array();
+$skippedTypes[]='products_modified';
+$skippedTypes[]='products_search';
+$skippedTypes[]='products_specials';
+$skippedTypes[]='products_news';
+if (!in_array($this->ms['page'],$skippedTypes) and ($this->ROOTADMIN_USER or ($this->ADMIN_USER and $this->CATALOGADMIN_USER))) {
 	$content.='					
 	<script>
 	  jQuery(document).ready(function($) {
