@@ -122,7 +122,7 @@ if (mslib_fe::loggedin()) {
 				}
 				$tmp.='</table>';
 				// pagination
-				if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['ORDERS_LISTING_LIMIT'])
+				if (!$this->hidePagination and $pageset['total_rows'] > $this->ms['MODULES']['ORDERS_LISTING_LIMIT'])
 				{
 					$tmp.='<table id="pagenav_container">
 					<tr>

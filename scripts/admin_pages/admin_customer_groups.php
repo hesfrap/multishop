@@ -166,6 +166,7 @@ if ($pageset['total_rows'] > 0) {
 	// pagination
 	if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['ADMIN_CUSTOMERS_LISTING_LIMIT']) {
 		require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_pagination.php');	
+		$content.=$tmp;
 	}
 	// pagination eof	
 }

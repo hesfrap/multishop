@@ -121,7 +121,7 @@ if ($contentType=='specials_listing_page') {
 				}
 			}		
 			// pagination
-			if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->limit) {
+			if (!$this->hidePagination and $pageset['total_rows'] > $this->limit) {
 				if (!isset($this->ms['MODULES']['PRODUCTS_LISTING_PAGINATION_TYPE']) || $this->ms['MODULES']['PRODUCTS_LISTING_PAGINATION_TYPE'] == 'default') {
 					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination.php');
 				} else {

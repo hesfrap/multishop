@@ -21,12 +21,18 @@ if ($this->post and $_FILES) {
 	if ($this->post['products_name'][0]) $this->post['products_name'][0]=trim($this->post['products_name'][0]);
 	$update_product_files=array();
 	$update_product_images=array();
-	if (!$this->ms['MODULES']['NUMBER_OF_PRODUCT_IMAGES']) $this->ms['MODULES']['NUMBER_OF_PRODUCT_IMAGES']=5;
+	if (!$this->ms['MODULES']['NUMBER_OF_PRODUCT_IMAGES']) {
+		$this->ms['MODULES']['NUMBER_OF_PRODUCT_IMAGES']=5;
+	}
 	for ($x=0;$x<$this->ms['MODULES']['NUMBER_OF_PRODUCT_IMAGES'];$x++) {
 		// hidden filename that is retrieved from the ajax upload
 		$i=$x;
-		if ($i==0) $i='';	
-		if ($this->post['ajax_products_image'.$i])	$update_product_images['products_image'.$i]=$this->post['ajax_products_image'.$i];
+		if ($i==0) {
+			$i='';
+		}
+		if ($this->post['ajax_products_image'.$i]) {
+			$update_product_images['products_image'.$i]=$this->post['ajax_products_image'.$i];
+		}
 	}
 	if (is_array($_FILES) and count($_FILES)) {
 		foreach ($_FILES as $key => $file) {
@@ -115,13 +121,13 @@ if ($this->post) {
 		$updateArray['products_multiplication']	= $this->post['products_multiplication'];
 	}
 	if (strstr($this->post['product_capital_price'],",")) {
-		$this->post['product_capital_price'] 		= str_replace(",",".",$this->post['product_capital_price']);	
+		$this->post['product_capital_price'] = str_replace(",",".",$this->post['product_capital_price']);	
 	}	
 	if (strstr($this->post['products_price'],",")) {
-		$this->post['products_price'] 				= str_replace(",",".",$this->post['products_price']);
+		$this->post['products_price'] = str_replace(",",".",$this->post['products_price']);
 	}
 	if ($this->post['specials_new_products_price'] and strstr($this->post['specials_new_products_price'],",")) {
-		$this->post['specials_new_products_price'] 	= str_replace(",",".",$this->post['specials_new_products_price']);	
+		$this->post['specials_new_products_price'] = str_replace(",",".",$this->post['specials_new_products_price']);	
 	}
 	if ($this->post['products_date_available']) {
 		$updateArray['products_date_available']	= strtotime($this->post['products_date_available']);
@@ -144,46 +150,45 @@ if ($this->post) {
 		$updateArray['endtime']=strtotime($this->post['endtime']);
 	}	
 	$updateArray['alert_quantity_threshold'] = $this->post['alert_quantity_threshold'];
-	$updateArray['custom_settings']				= $this->post['custom_settings'];
-	$updateArray['products_model']				= $this->post['products_model'];
-	$updateArray['products_quantity']			= $this->post['products_quantity'];
-	$updateArray['product_capital_price'] 		= $this->post['product_capital_price'];
-	$updateArray['products_condition']			=$this->post['products_condition'];
-	$updateArray['sku_code']					=$this->post['sku_code'];
-	$updateArray['products_price']				=$this->post['products_price'];		
-	$updateArray['products_weight']				=$this->post['products_weight'];
-	$updateArray['products_status']				=$this->post['products_status'];
-	$updateArray['order_unit_id']				=$this->post['order_unit_id'];
-	$updateArray['tax_id']						=$this->post['tax_id'];
-	$updateArray['file_number_of_downloads']	=$this->post['file_number_of_downloads'];
-
+	$updateArray['custom_settings'] = $this->post['custom_settings'];
+	$updateArray['products_model'] = $this->post['products_model'];
+	$updateArray['products_quantity'] = $this->post['products_quantity'];
+	$updateArray['product_capital_price'] = $this->post['product_capital_price'];
+	$updateArray['products_condition'] = $this->post['products_condition'];
+	$updateArray['sku_code'] = $this->post['sku_code'];
+	$updateArray['products_price'] = $this->post['products_price'];		
+	$updateArray['products_weight'] = $this->post['products_weight'];
+	$updateArray['products_status'] = $this->post['products_status'];
+	$updateArray['order_unit_id'] = $this->post['order_unit_id'];
+	$updateArray['tax_id'] = $this->post['tax_id'];
+	$updateArray['file_number_of_downloads'] = $this->post['file_number_of_downloads'];
 	if ($this->post['manufacturers_name'] != '') {
 		$manufacturer=mslib_fe::getManufacturer($this->post['manufacturers_name'],'manufacturers_name');
 		if ($manufacturer['manufacturers_id']) {
 			$updateArray['manufacturers_id']=$manufacturer['manufacturers_id'];
 		} else {
 			$updateArray2=array();		
-			$updateArray2['manufacturers_name']		=$this->post['manufacturers_name'];
-			$updateArray2['date_added']				=time();
-			$updateArray2['status']					=1;
+			$updateArray2['manufacturers_name'] = $this->post['manufacturers_name'];
+			$updateArray2['date_added'] = time();
+			$updateArray2['status'] = 1;
 			$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_manufacturers',$updateArray2);
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 			$manufacturers_id=$GLOBALS['TYPO3_DB']->sql_insert_id();
 			if ($manufacturers_id) {
 				$updateArray2=array();		
-				$updateArray2['manufacturers_id']		=$manufacturers_id;
-				$updateArray2['language_id']			=$this->sys_language_uid;
+				$updateArray2['manufacturers_id'] = $manufacturers_id;
+				$updateArray2['language_id'] = $this->sys_language_uid;
 				$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_manufacturers_info',$updateArray2);
 				$res = $GLOBALS['TYPO3_DB']->sql_query($query);			
-				$updateArray['manufacturers_id']		=$manufacturers_id;			
+				$updateArray['manufacturers_id'] = $manufacturers_id;			
 			}			
 		}		
 	} else {
-		$updateArray['manufacturers_id']			=$this->post['manufacturers_id'];
+		$updateArray['manufacturers_id'] = $this->post['manufacturers_id'];
 	}
 	if ($update_product_images) {
 		foreach ($update_product_images as $key => $value) {
-			$updateArray[$key] =$value;	
+			$updateArray[$key] = $value;	
 		}
 	}
 	if ($updateArray['products_image']) {
@@ -226,21 +231,19 @@ if ($this->post) {
 				$updateArray['contains_image'] = 1;
 			}
 			$updateArray['page_uid'] = $this->showCatalogFromPage;
-			$updateArray['cruser_id'] = $GLOBALS['TSFE']->fe_user->user['uid'];
-			
-			$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products',$updateArray);
-			
+			$updateArray['cruser_id'] = $GLOBALS['TSFE']->fe_user->user['uid'];			
+			$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products',$updateArray);			
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 			$prodid=$GLOBALS['TYPO3_DB']->sql_insert_id();
 			$updateArray=array();
-			$updateArray['categories_id']				=$_REQUEST['categories_id'];
-			$updateArray['products_id']					=$prodid;
-			$updateArray['sort_order']					=time();
+			$updateArray['categories_id'] = $_REQUEST['categories_id'];
+			$updateArray['products_id'] = $prodid;
+			$updateArray['sort_order'] = time();
 			$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_to_categories',$updateArray);
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 		} else {
 			$prodid=$this->post['pid'];			
-			$updateArray['products_last_modified']		= time();
+			$updateArray['products_last_modified'] = time();
 			// if product is originally coming from products importer we have to define that the merchant changed it
 			$filter=array();
 			$filter[]='products_id='.$prodid;
@@ -249,8 +252,7 @@ if ($this->post) {
 				mslib_befe::updateImportedProductsLockedFields($prodid,'tx_multishop_products',$updateArray);				
 			}
 			$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products', 'products_id=\''.$prodid.'\'',$updateArray);
-			$res = $GLOBALS['TYPO3_DB']->sql_query($query);
-			
+			$res = $GLOBALS['TYPO3_DB']->sql_query($query);			
 			if (!$updateArray['products_status']) {
 				// call disable method cause that one also removes possible flat database record
 				mslib_befe::disableProduct($row['products_id']);
@@ -267,9 +269,9 @@ if ($this->post) {
 					$query = $GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_products_to_categories', 'products_id=\''.$prodid.'\' and categories_id=\''.$this->post['old_categories_id'].'\'');
 					$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 					$updateArray=array();
-					$updateArray['categories_id']				=$this->post['categories_id'];
-					$updateArray['products_id']					=$prodid;
-					$updateArray['sort_order']					=time();
+					$updateArray['categories_id'] = $this->post['categories_id'];
+					$updateArray['products_id'] = $prodid;
+					$updateArray['sort_order'] = time();
 					$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_to_categories',$updateArray);
 					$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 				}
@@ -282,9 +284,9 @@ if ($this->post) {
 		$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 		$prodid=$GLOBALS['TYPO3_DB']->sql_insert_id();	
 		$updateArray=array();
-		$updateArray['categories_id']				=$_REQUEST['categories_id'];
-		$updateArray['products_id']					=$prodid;
-		$updateArray['sort_order']					=time();
+		$updateArray['categories_id'] = $_REQUEST['categories_id'];
+		$updateArray['products_id'] = $prodid;
+		$updateArray['sort_order'] = time();
 		$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_to_categories',$updateArray);
 		$res = $GLOBALS['TYPO3_DB']->sql_query($query);			
 	}
@@ -296,9 +298,9 @@ if ($this->post) {
 			if (is_array($this->post['payment_method']) and count($this->post['payment_method'])) {
 				foreach ($this->post['payment_method'] as $value) {	
 					$updateArray=array();
-					$updateArray['products_id']				=$prodid;	
-					$updateArray['method_id']				=$value;					
-					$updateArray['type']					='payment';
+					$updateArray['products_id'] = $prodid;	
+					$updateArray['method_id'] = $value;					
+					$updateArray['type'] = 'payment';
 					$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_method_mappings', $updateArray);
 					$res = $GLOBALS['TYPO3_DB']->sql_query($query);				
 				}
@@ -306,9 +308,9 @@ if ($this->post) {
 			if (is_array($this->post['shipping_method']) and count($this->post['shipping_method'])) {
 				foreach ($this->post['shipping_method'] as $value) {
 					$updateArray=array();
-					$updateArray['products_id']				=$prodid;	
-					$updateArray['method_id']				=$value;					
-					$updateArray['type']					='shipping';
+					$updateArray['products_id'] = $prodid;	
+					$updateArray['method_id'] = $value;					
+					$updateArray['type'] = 'shipping';
 					$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_method_mappings', $updateArray);
 					$res = $GLOBALS['TYPO3_DB']->sql_query($query);				
 				}
@@ -320,23 +322,23 @@ if ($this->post) {
 				$str="select 1 from tx_multishop_products_description where products_id='".$prodid."' and language_id='".$key."'";
 				$qry=$GLOBALS['TYPO3_DB']->sql_query($str);		
 				$updateArray=array();
-				$updateArray['products_name']				=$this->post['products_name'][$key];	
-				$updateArray['delivery_time']				=$this->post['delivery_time'][$key];	
-				$updateArray['products_shortdescription']	=$this->post['products_shortdescription'][$key];	
-				$updateArray['products_description']		=$this->post['products_description'][$key];	
-				$updateArray['products_meta_keywords']		=$this->post['products_meta_keywords'][$key];	
-				$updateArray['products_meta_title']			=$this->post['products_meta_title'][$key];	
-				$updateArray['products_meta_keywords']		=$this->post['products_meta_keywords'][$key];	
-				$updateArray['products_meta_description']	=$this->post['products_meta_description'][$key];
-				$updateArray['products_negative_keywords']	=$this->post['products_negative_keywords'][$key];
-				$updateArray['products_url']				=$this->post['products_url'][$key];		
+				$updateArray['products_name'] = $this->post['products_name'][$key];	
+				$updateArray['delivery_time'] = $this->post['delivery_time'][$key];	
+				$updateArray['products_shortdescription'] = $this->post['products_shortdescription'][$key];	
+				$updateArray['products_description'] = $this->post['products_description'][$key];	
+				$updateArray['products_meta_keywords'] = $this->post['products_meta_keywords'][$key];	
+				$updateArray['products_meta_title'] = $this->post['products_meta_title'][$key];	
+				$updateArray['products_meta_keywords'] = $this->post['products_meta_keywords'][$key];	
+				$updateArray['products_meta_description'] = $this->post['products_meta_description'][$key];
+				$updateArray['products_negative_keywords'] = $this->post['products_negative_keywords'][$key];
+				$updateArray['products_url'] = $this->post['products_url'][$key];		
 				if ($update_product_files[$key]['file_label']) {
 					$updateArray['file_label']=$update_product_files[$key]['file_label'];
 				}
 				if ($update_product_files[$key]['file_location']) {
-					$updateArray['file_location']=$update_product_files[$key]['file_location'];
+					$updateArray['file_location'] = $update_product_files[$key]['file_location'];
 				}
-				$updateArray['file_remote_location']		=$this->post['file_remote_location'][$key];		
+				$updateArray['file_remote_location'] = $this->post['file_remote_location'][$key];		
 				
 				// EXTRA TAB CONTENT
 				if ($this->ms['MODULES']['PRODUCTS_DETAIL_NUMBER_OF_TABS']) {
@@ -345,8 +347,7 @@ if ($this->post) {
 						$updateArray['products_description_tab_content_'.$i] = $this->post['products_description_tab_content_'.$i][$key];	
 					}
 				}
-				// EXTRA TAB CONTENT EOF
-				
+				// EXTRA TAB CONTENT EOF				
 				if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry) > 0) {
 					// if product is originally coming from products importer we have to define that the merchant changed it
 					$filter=array();
@@ -359,7 +360,7 @@ if ($this->post) {
 					$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 				} else {
 					if (isset($this->post['save_as_new'])) {
-						if (strpos($updateArray['products_name'], '(copy') === false) {
+						if (strpos($updateArray['products_name'],'(copy') === false) {
 							$updateArray['products_name'] .= ' (copy '.$prodid.')';
 						} else {
 							if (strpos($updateArray['products_name'], '(copy '.$prodid.')') !== false) {
@@ -369,8 +370,8 @@ if ($this->post) {
 							}
 						}
 					}
-					$updateArray['products_id']				=$prodid;	
-					$updateArray['language_id']				=$key;					
+					$updateArray['products_id'] = $prodid;	
+					$updateArray['language_id'] = $key;					
 					$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_description', $updateArray);
 					$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
 				}
@@ -392,7 +393,7 @@ if ($this->post) {
 				$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
 				$specials_id=$row['specials_id'];				
 				$updateArray=array();
-				$updateArray['specials_new_products_price']				=$this->post['specials_new_products_price'];
+				$updateArray['specials_new_products_price'] = $this->post['specials_new_products_price'];
 				$updateArray['start_date'] = $specials_start_date;
 				$updateArray['expires_date'] = $specials_expired_date;
 				/* if ($this->post['tax_id'])
@@ -406,8 +407,8 @@ if ($this->post) {
 				$res = $GLOBALS['TYPO3_DB']->sql_query($query);
 			} else {
 				$updateArray=array();
-				$updateArray['products_id']								=$prodid;
-				$updateArray['specials_new_products_price']				=$this->post['specials_new_products_price'];
+				$updateArray['products_id'] = $prodid;
+				$updateArray['specials_new_products_price'] = $this->post['specials_new_products_price'];
 				$updateArray['start_date'] = $specials_start_date;
 				$updateArray['expires_date'] = $specials_expired_date;
 				/* if ($this->post['tax_id'])
@@ -429,15 +430,15 @@ if ($this->post) {
 			if ($specials_id and is_array($this->post['specials_sections'])) {
 				foreach ($this->post['specials_sections'] as $section) {
 					$updateArray=array();
-					$updateArray['status']									=1;
-					$updateArray['specials_id']								=$specials_id;
-					$updateArray['name']									=$section;
-					$updateArray['date']									=time();
+					$updateArray['status'] = 1;
+					$updateArray['specials_id'] = $specials_id;
+					$updateArray['name'] = $section;
+					$updateArray['date'] = time();
 					$query = $GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_specials_sections',$updateArray);
 					$res = $GLOBALS['TYPO3_DB']->sql_query($query);					
 				}
 			}				
-		} else if($_REQUEST['action']=='edit_product') {
+		} elseif($_REQUEST['action']=='edit_product') {
 			$query = $GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_specials','products_id=\''.$prodid.'\'');
 			$res = $GLOBALS['TYPO3_DB']->sql_query($query);			
 		}
@@ -804,7 +805,7 @@ if ($this->post) {
 								elem += \'<input type="button" value="x" onclick="remStaffelInput(\' + counter_data + \')"  class="msadmin_button" />\';
 								elem += \'</td>\';
 								elem += \'</tr>\';
-								jQuery(\'#sp_end_row\').before(elem, function(){});
+								jQuery(\'#sp_end_row\').before(elem);
 							} else {
 								counter_data = counter_data + 1;
 								//alert(\'sp_\' + counter_col + \'_qty_2\');
@@ -830,7 +831,7 @@ if ($this->post) {
 								elem += \'<input type="button" value="x" onclick="remStaffelInput(\' + counter_data + \')"  class="msadmin_button" />\';
 								elem += \'</td>\';
 								elem += \'</tr>\';
-								jQuery(\'#sp_end_row\').before(elem, function(){});
+								jQuery(\'#sp_end_row\').before(elem);
 							}
 							jQuery(\'#sp_row_counter\').val(counter_data);
 						//}
@@ -1116,56 +1117,49 @@ if ($this->post) {
 		*/
 		$attributes_tab_block = '';
 		// product Attribute
-		if (! $this->ms ['MODULES'] ['DISABLE_PRODUCT_ATTRIBUTES_TAB_IN_EDITOR']) {
+		if (!$this->ms['MODULES']['DISABLE_PRODUCT_ATTRIBUTES_TAB_IN_EDITOR']) {
 			$attributes_tab_block .= '
 			<input name="options_form" type="hidden" value="1" />
 			<script>
 			jQuery(document).ready(function($) {
-				jQuery("#addAttributes").click(function(event)
-				{
-					var counter_data = parseInt(document.getElementById(\'option_row_counter\').value) + 1;
-			
-					jQuery(\'#add_attributes_button\').before(\'<tr id="attributes_select_box_\' + counter_data + \'_a"><td colspan="5"><div class="wrap-attributes"><table><tr  class="option_row"><td><select name="options[]" id="option_\' + counter_data + \'" onchange="updateAttribute(this.value,\' + counter_data + \');"><option value="">choose option</option></select></td><td><select name="attributes[]" id="attribute_\' + counter_data + \'"><option value="">choose attribute</option></select></select></td><td><input type="text" name="prefix[]" value="+" /></td><td><div class="msAttributesField"><input type="text" name="display_name" id="display_name" class="msAttributesPriceExcludingVat"><label for="display_name">Excl. VAT</label></div><div class="msAttributesField"><input type="text" name="display_name" id="display_name" class="msAttributesPriceIncludingVat"><label for="display_name">Incl. VAT</label></div><div class="msAttributesField hidden"><input type="hidden" name="price[]" /></div></td><td><input type="button" value="' . htmlspecialchars ( $this->pi_getLL ( 'delete' ) ) . '" class="msadmin_button" onclick="removeAttributeRow(\' + counter_data + \')"></td></tr><tr id="attributes_select_box_\' + counter_data + \'_b" class="option_row"><td>&nbsp;</td><td><input type="text" name="manual_attributes[]" /></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></table></div></td></tr>\', function(){});
-					jQuery.get(\'' . mslib_fe::typolink ( ',2002', '&tx_multishop_pi1[page_section]=admin_ajax_product_attributes&a=update_options' ) . '\', function(data){ jQuery(data).appendTo(\'#option_\' + counter_data); });
-			
+				jQuery("#addAttributes").click(function(event) {
+					var counter_data = parseInt(document.getElementById(\'option_row_counter\').value) + 1;			
+					$(\'#add_attributes_button\').before(\'<tr id="attributes_select_box_\'+counter_data+\'_a"><td colspan="5"><div class="wrap-attributes"><table><tr class="option_row"><td><select name="options[]" id="option_\' + counter_data + \'" onchange="updateAttribute(this.value,\' + counter_data + \');"><option value="">choose option</option></select></td><td><select name="attributes[]" id="attribute_\' + counter_data + \'"><option value="">choose attribute</option></select></select></td><td><input type="text" name="prefix[]" value="+" /></td><td><div class="msAttributesField"><input type="text" name="display_name" id="display_name" class="msAttributesPriceExcludingVat"><label for="display_name">Excl. VAT</label></div><div class="msAttributesField"><input type="text" name="display_name" id="display_name" class="msAttributesPriceIncludingVat"><label for="display_name">Incl. VAT</label></div><div class="msAttributesField hidden"><input type="hidden" name="price[]" /></div></td><td><input type="button" value="' . htmlspecialchars($this->pi_getLL('delete')).'" class="msadmin_button" onclick="removeAttributeRow(\' + counter_data + \')"></td></tr><tr id="attributes_select_box_\' + counter_data + \'_b" class="option_row"><td>&nbsp;</td><td><input type="text" name="manual_attributes[]" /></td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></table></div></td></tr>\');
+					$.get(\'' . mslib_fe::typolink ( ',2002', '&tx_multishop_pi1[page_section]=admin_ajax_product_attributes&a=update_options').'\', function(data) {
+						$(data).appendTo(\'#option_\' + counter_data);
+					});
 					document.getElementById(\'option_row_counter\').value = counter_data;
 					jQuery("#attributes_header").show();
 					event.preventDefault();
 				});
-				jQuery("#manual_button").click(function(event)
-				{
+				jQuery("#manual_button").click(function(event) {
 				jQuery("#attributes_header").show();
-				});
-			
+				});			
 			});
-			
 			var updateAttribute = function (b,c) {
 				jQuery.get(\'' . mslib_fe::typolink ( ',2002', '&tx_multishop_pi1[page_section]=admin_ajax_product_attributes&a=update_attributes&opid=' ) . '\' + b, function(data){ jQuery(\'#attribute_\' + c).empty(); jQuery(\'<option value="">choose attribute</option>\' + data).appendTo(\'#attribute_\' + c); });
-			}
-			
+			}			
 			var removeAttributeRow = function(c) {
 				jQuery(\'#attributes_select_box_\' + c + \'_a\').remove();
 				jQuery(\'#attributes_select_box_\' + c + \'_b\').remove();
 			}
-			
 			var addOption = function (b, c, d) {
 				jQuery.get(\'' . mslib_fe::typolink ( ',2002', '&tx_multishop_pi1[page_section]=admin_ajax_product_attributes&a=add_option' ) . '&optname=\' + b + \'&optval=\' + c + \'&rowid=\' + d, function(data){
 					var counter_data = parseInt(document.getElementById(\'option_row_counter\').value) + 1;
 					document.getElementById(\'option_row_counter\').value = counter_data;
-					jQuery(\'#add_attributes_button\').before(data, function(){});
+					jQuery(\'#add_attributes_button\').before(data);
 					//alert(data);
 				});
 			}
 			</script>
-			<h1>' . $this->pi_getLL ( 'admin_product_attributes' ) . '</h1>
+			<h1>' . $this->pi_getLL('admin_product_attributes') . '</h1>
 			';
-			
-				if ($this->get ['cid']) {
+				if ($this->get['cid']) {
 					// optional predefined attributes menu
-					$catCustomSettings = mslib_fe::loadInherentCustomSettingsByCategory ( $this->get ['cid'] );
+					$catCustomSettings = mslib_fe::loadInherentCustomSettingsByCategory($this->get['cid']);
 					$productOptions = array ();
 					if ($product['products_id']) {
-						$productOptions = mslib_fe::getProductOptions ( $product['products_id'] );
+						$productOptions = mslib_fe::getProductOptions($product['products_id']);
 					}
 					// ADMIN_PREDEFINED_ATTRIBUTE_FIELDS
 					if ($catCustomSettings ['ADMIN_PREDEFINED_ATTRIBUTE_FIELDS']) {

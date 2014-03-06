@@ -387,13 +387,13 @@ if ($this->get['feed_hash']) {
 					break;
 					case 'categories_content_top':
 						if ($row['content']) {
-							$string=strip_tags(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['content']));
+							$string=preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['content']);
 							$tmpcontent .= $string;
 						}
 					break;
 					case 'categories_content_bottom':
 						if ($row['content_footer']) {
-							$string=strip_tags(preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['content_footer']));
+							$string=preg_replace("/\r\n|\n|".$feed['delimiter']."/"," ",$row['content_footer']);
 							$tmpcontent .= $string;
 						}
 					break;
@@ -699,6 +699,13 @@ if ($this->get['feed_hash']) {
 					case 'manufacturers_products_id':
 						$tmpcontent.= $row['vendor_code'];
 					break;
+					case 'foreign_products_id':
+						if ($this->ms['MODULES']['FLAT_DATABASE']) {				
+							$row2=mslib_befe::getRecord($row['products_id'], 'tx_multishop_products', 'products_id');
+							$row['foreign_products_id']=$row2['foreign_products_id'];					
+						}
+						$tmpcontent.= $row['foreign_products_id'];
+					break;					
 					case 'products_url':
 						$where='';
 						if ($row['categories_id']) {

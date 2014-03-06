@@ -130,41 +130,64 @@ switch ($this->ms['page']) {
 		require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/manufacturers.php');	
 	break;			
 	case 'admin_sitemap_generator':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_sitemap_generator.php');			
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_sitemap_generator.php');			
+		}
 	break;
 	case 'admin_system_clear_database':
-		if ($this->ROOTADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_clear_database.php');	
+		if ($this->ROOTADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_clear_database.php');	
+		}
 	break;
 	case 'admin_system_consistency_checker':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_consistency_checker.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_consistency_checker.php');	
+		}
 	break;
 	case 'admin_system_images_update':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_images_update.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_images_update.php');	
+		}
 	break;
 	case 'admin_system_clear_cooluri_cache':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_clear_cooluri_cache.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_clear_cooluri_cache.php');	
+		}
 	break;
 	case 'admin_system_rebuild_flat_database':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_rebuild_flat_database.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_rebuild_flat_database.php');	
+		}
 	break;
 	case 'admin_system_orphan_files':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_orphan_files.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_system_orphan_files.php');	
+		}
 	break;
 	case 'admin_mass_product_updater':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_mass_product_updater.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_mass_product_updater.php');	
+		}
 	break;	
-
 	case 'admin_list_manual_orders':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/manual_order/admin_list_manual_orders.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/manual_order/admin_list_manual_orders.php');	
+		}
 	break;
 	case 'admin_proced_manual_order':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/manual_order/admin_proced_manual_order.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/manual_order/admin_proced_manual_order.php');	
+		}
 	break;
 	case 'admin_shipping_options':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shipping_options.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_shipping_options.php');	
+		}
 	break;
 	case 'admin_add_order':
-		if ($this->ADMIN_USER) require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_add_order.php');	
+		if ($this->ADMIN_USER) {
+			require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/admin_add_order.php');	
+		}
 	break;
 	case 'psp_accepturl':
 	case 'psp_pendingurl':
@@ -436,7 +459,7 @@ switch ($this->ms['page']) {
 		}
 	break;
 	case 'custom_page':
-	// custom page hook that can be controlled by third-party plugin
+		// custom page hook that can be controlled by third-party plugin
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['customPage'])) {
 			$params = array (
 				'content' => &$content
@@ -445,7 +468,7 @@ switch ($this->ms['page']) {
 				t3lib_div::callUserFunction($funcRef, $params, $this);
 			}
 		}	
-	// custom page hook that can be controlled by third-party plugin eof
+		// custom page hook that can be controlled by third-party plugin eof
 	break;
 	default:
 		$this->ms['page']='home';

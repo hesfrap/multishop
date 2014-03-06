@@ -19,7 +19,6 @@ for ($i=1;$i<6;$i++) {
 	$array['categories_content_bottom_'.$i] ='Categories content bottom (level: '.$i.')';	
 	$array['categories_name_'.$i] ='Categories name (level: '.$i.')';	
 }
-
 $array['products_id'] ='Products id';
 $array['products_url'] ='Products link';
 $array['products_external_url'] ='Products external URL';
@@ -36,6 +35,8 @@ $array['products_image_normal'] ='Products image (enlarged)';
 $array['products_image_original'] ='Products image (biggest / original)';
 $array['products_ean'] ='Products EAN code';
 $array['products_sku'] ='Products SKU code';
+$array['foreign_products_id'] ='Foreign products id (imported product feeds unique identifier)';
+
 $array['products_quantity'] ='Products quantity';
 $array['products_old_price'] ='Products old price (incl. VAT)';
 $array['products_old_price_excluding_vat'] ='Products old price (excl. VAT)';

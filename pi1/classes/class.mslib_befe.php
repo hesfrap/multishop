@@ -195,8 +195,22 @@ class mslib_befe {
 					foreach ($commands as $command) {
 						exec($command);
 					}
-				}	
+				}				
 			}
+			//hook to let other plugins further manipulate the method
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['resizeCategoryImagePostProc'])) {
+				$params = array (
+					'original_path' => $original_path,
+					'folder' => &$folder,
+					'filename' => &$filename,						
+					'target' => $target,
+					'module_path' => $module_path,
+					'commands' => $commands
+				); 
+				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['resizeCategoryImagePostProc'] as $funcRef) {
+					t3lib_div::callUserFunction($funcRef, $params, $this);
+				}
+			}			
 			return $filename;
 		}
 	}
@@ -251,8 +265,22 @@ class mslib_befe {
 					foreach ($commands as $command) {
 						exec($command);
 					}
-				}
+				}				
 			}
+			//hook to let other plugins further manipulate the method
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['resizeManufacturerImagePostProc'])) {
+				$params = array (
+					'original_path' => $original_path,
+					'folder' => &$folder,
+					'filename' => &$filename,						
+					'target' => $target,
+					'module_path' => $module_path,
+					'commands' => $commands
+				); 
+				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['resizeManufacturerImagePostProc'] as $funcRef) {
+					t3lib_div::callUserFunction($funcRef, $params, $this);
+				}
+			}			
 			return $filename;
 		}
 	}
@@ -448,8 +476,22 @@ class mslib_befe {
 					foreach ($commands as $command) {
 						exec($command);
 					}
-				}					
+				}				
 			}
+			//hook to let other plugins further manipulate the method
+			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['resizeProductImagePostProc'])) {
+				$params = array (
+					'original_path' => $original_path,
+					'folder' => &$folder,
+					'filename' => &$filename,						
+					'target' => $target,
+					'module_path' => $module_path,
+					'commands' => $commands
+				); 
+				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['resizeProductImagePostProc'] as $funcRef) {
+					t3lib_div::callUserFunction($funcRef, $params, $this);
+				}
+			}			
 			return $filename;
 		}
 	} 
@@ -1477,7 +1519,7 @@ class mslib_befe {
 		  FULLTEXT KEY `products_model_2` (`products_model`),
 		  FULLTEXT KEY `products_model_3` (`products_model`,`products_name`)
 		  
-		) ENGINE=MyISAM;
+		) ENGINE=MyISAM DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci; 
 		";		
 		//hook to let other plugins further manipulate the create table query
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_befe.php']['rebuildFlatDatabasePreHook'])) {
@@ -2774,15 +2816,15 @@ class mslib_befe {
 			return $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res);
 		}
 	}		
-	public function getRecords($value, $table, $field, $additional_where=array()) {
+	public function getRecords($value, $table, $field, $additional_where=array(),$groupBy='',$orderBy='',$limit='') {
 		if (isset($value) and $table and $field) {
 			$query = $GLOBALS['TYPO3_DB']->SELECTquery(
 				'*',         // SELECT ...
 				$table,     // FROM ...
 				$field.'="'.addslashes($value).'"'.(count($additional_where) ? ' AND '.implode(' AND ',$additional_where):''),    // WHERE...
-				'',            // GROUP BY...
-				'',    // ORDER BY...
-				''            // LIMIT ...
+				$groupBy,            // GROUP BY...
+				$orderBy,    // ORDER BY...
+				$limit            // LIMIT ...
 			);
 			if ($this->msDebug) {
 				return $query;
@@ -2912,6 +2954,58 @@ class mslib_befe {
 	// utf-8 support
 	public function strlen($value) {
 		return $GLOBALS['LANG']->csConvObj->strlen($GLOBALS['LANG']->charSet, $value);
+	}
+	// weight list for shipping costs page
+	public function createSelectboxWeightsList($selected = '', $start_value = '', $weights_list = array()) {
+		if (!count($weights_list)) {
+			// default weights list
+			$weights_list = array('0.02' => '0,02', '0.05' => '0,05', '0.1' => '0,1', '0.25' => '0,25',
+			'0.35' => '0,35', '0.5' => '0,5', '0.75' => '0,75', '1' => '1',
+			'1.25' => '1,25', '1.5' => '1,5', '1.75' => '1,75', '2' => '2',
+			'2.25' => '2,25', '2.5' => '2,5', '2.75' => '2,75', '3' => '3',
+			'3.25' => '3,25', '3.5' => '3,5', '3.75' => '3,75', '4' => '4',
+			'4.25' => '4,25', '4.5' => '4,5', '4.75' => '4,75', '5' => '5',
+			'6' => '6', '7' => '7', '8' => '8', '9' => '9',
+			'10' => '10', '15' => '15', '20' => '20', '25' => '25',
+			'30' => '30', '35' => '35', '40' => '40', '45' => '45',
+			'50' => '50', '100' => '100', '101' => 'End');
+		}
+		$selectbox_options = array();
+		foreach ($weights_list as $weight_value => $weight_label) {
+			if (!empty($start_value) && $start_value < 101) {
+				if ($weight_value >= $start_value) {
+					if (empty($selected)) {
+						if ($weight_value == 101) {
+							$selectbox_options[] = '<option value="'.$weight_value.'" selected="selected">'.$weight_label.'</option>';
+						} else {
+							$selectbox_options[] = '<option value="'.$weight_value.'">'.$weight_label.'</option>';
+						}
+					} else {
+						if ($selected == $weight_value) {
+							$selectbox_options[] = '<option value="'.$weight_value.'" selected="selected">'.$weight_label.'</option>';
+						} else {
+							$selectbox_options[] = '<option value="'.$weight_value.'">'.$weight_label.'</option>';
+						}
+					}
+				}
+			} else {
+				if (empty($selected)) {
+					if ($weight_value == 101) {
+						$selectbox_options[] = '<option value="'.$weight_value.'" selected="selected">'.$weight_label.'</option>';
+					} else {
+						$selectbox_options[] = '<option value="'.$weight_value.'">'.$weight_label.'</option>';
+					}
+				} else {
+					if ($selected == $weight_value) {
+						$selectbox_options[] = '<option value="'.$weight_value.'" selected="selected">'.$weight_label.'</option>';
+					} else {
+						$selectbox_options[] = '<option value="'.$weight_value.'">'.$weight_label.'</option>';
+					}
+				}
+			}
+		}
+		$selectbox_str = implode("\n", $selectbox_options);
+		return $selectbox_str;
 	}
 }
 if (defined("TYPO3_MODE") && $TYPO3_CONF_VARS[TYPO3_MODE]["XCLASS"]["ext/multishop/pi1/classes/class.mslib_befe.php"])	{

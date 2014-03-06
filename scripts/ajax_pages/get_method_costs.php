@@ -55,7 +55,19 @@ $available_sid = array();
 $str_s2p = "select * from tx_multishop_payment_shipping_mappings where payment_method = '".addslashes($this->post['tx_multishop_pi1']['pid'])."'";
 $qry_s2p = $GLOBALS['TYPO3_DB']->sql_query($str_s2p);
 while($row_s2p = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_s2p)) {
-	$available_sid[] = $row_s2p['shipping_method'];
+	$str3 = "SELECT * from static_countries where cn_short_en='".addslashes($this->post['cc'])."'";
+	$qry3 = $GLOBALS['TYPO3_DB']->sql_query($str3);
+	$row3 = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry3);
+	$user_country = $row3['cn_iso_nr'];
+	
+	$str="SELECT c2z.id as c2z_id, s.* from tx_multishop_shipping_methods s, tx_multishop_countries_to_zones c2z, tx_multishop_shipping_methods_to_zones p2z where ";
+	$str.="s.status=1 and ";
+	$str.="c2z.cn_iso_nr = ".$user_country." and c2z.zone_id = p2z.zone_id and p2z.shipping_method_id = s.id and s.id=".$row_s2p['shipping_method'];
+	$qry_s2z = $GLOBALS['TYPO3_DB']->sql_query($str);
+	
+	if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry_s2z)) {
+		$available_sid[] = $row_s2p['shipping_method'];
+	}
 }
 
 if (count($available_sid) > 0) {

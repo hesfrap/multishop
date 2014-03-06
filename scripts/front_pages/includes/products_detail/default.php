@@ -274,6 +274,7 @@ if (!$product['products_id']) {
 	$markerArray['###PRODUCTS_CATEGORY###'] 		= $output['products_category']; 
 	$markerArray['###PRODUCTS_ATTRIBUTES###'] 		= $output['product_attributes']; 
 	$markerArray['###PRODUCTS_RELATIVES###'] 		= $output['products_relatives']; 
+	$markerArray['###PRODUCTS_DELIVERY_TIME###']	= $product['delivery_time']; 
 	$markerArray['###PRODUCTS_IMAGE###'] 			= $output['products_image']; 
 	$markerArray['###PRODUCTS_IMAGE_MORE###'] 		= $output['products_image_more']; 
 	$markerArray['###PRODUCTS_PRICE###'] 			= $output['products_price']; 

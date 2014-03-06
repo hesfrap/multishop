@@ -271,7 +271,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 				}
 			}			
 			// pagination
-			if (!$this->hidePagination and (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'])) {
+			if (!$this->hidePagination and ($pageset['total_rows'] > $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'])) {
 				if (!isset($this->ms['MODULES']['PRODUCTS_LISTING_PAGINATION_TYPE']) || $this->ms['MODULES']['PRODUCTS_LISTING_PAGINATION_TYPE'] == 'default') {
 					require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination.php');	
 				} else {

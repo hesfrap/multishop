@@ -1,15 +1,18 @@
 <?php
-if (!defined('TYPO3_MODE')) die ('Access denied.');
-
+if (!defined('TYPO3_MODE')) {
+	die('Access denied.');
+}
 $disable_checkout = false;
 $output = array();
-
 // now parse all the objects in the tmpl file
-if ($this->conf['shopping_cart_tmpl_path'])  	$template = $this->cObj->fileResource($this->conf['shopping_cart_tmpl_path']);
-elseif ($this->conf['shopping_cart_tmpl'])  	$template = $this->cObj->fileResource($this->conf['shopping_cart_tmpl']);
-else											$template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath($this->extKey).'templates/shopping_cart.tmpl');
+if ($this->conf['shopping_cart_tmpl_path']) {
+	$template = $this->cObj->fileResource($this->conf['shopping_cart_tmpl_path']);
+} elseif ($this->conf['shopping_cart_tmpl']) {
+	$template = $this->cObj->fileResource($this->conf['shopping_cart_tmpl']);
+} else {
+	$template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath($this->extKey).'templates/shopping_cart.tmpl');
+}
 // Extract the subparts from the template
-
 $subparts=array();
 $subparts['template'] 	= $this->cObj->getSubpart($template, '###TEMPLATE###');
 $subparts['item']		= $this->cObj->getSubpart($subparts['template'], '###ITEM###');

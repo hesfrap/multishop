@@ -267,13 +267,14 @@ $select[]='*, i.hash';
 $orderby[]='i.id desc';
 $pageset=mslib_fe::getInvoicesPageSet($filter,$offset,$this->get['limit'],$orderby,$having,$select,$where,$from);
 $invoices=$pageset['invoices'];		
-if ($pageset['total_rows'] > 0)
-{
+if ($pageset['total_rows'] > 0) {
+	$this->ms['MODULES']['PAGESET_LIMIT']=$this->ms['MODULES']['ORDERS_LISTING_LIMIT'];
 	require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/invoices/invoices_listing_table.php');
 	// pagination
-	if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['ORDERS_LISTING_LIMIT'])
-	{
-		require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/invoices/pagination.php');
+	if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['ORDERS_LISTING_LIMIT']) {
+		//require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/invoices/pagination.php');
+		require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_pagination.php');
+		$content.=$tmp;
 	}
 	// pagination eof	
 }

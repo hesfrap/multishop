@@ -100,6 +100,7 @@ $coltypes['categories_id']='Categories id';
 $coltypes['category_group']='Category group';
 $coltypes['manufacturers_name']='Manufacturers name';
 $coltypes['manufacturers_image']='Manufacturers image';
+$coltypes['manufacturers_products_id'] ='Manufacturers products id';
 $coltypes['attribute_option_name']='Attribute option name';
 $coltypes['attribute_option_value']='Attribute option value (specify option name in the aux field or also define attribute option name field)'; 
 //$total_static_coltypes=count($coltypes);
@@ -204,7 +205,7 @@ if (is_numeric($this->get['job_id']) and is_numeric($this->get['status'])) {
 	$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
 	// update the status of a job eof
 }
-$ajax_html='
+$GLOBALS['TSFE']->additionalHeaderData[] = '
 	<script type="text/javascript">
 	jQuery(document).ready(function($){
 		$(document).on("click", ".hide_advanced_import_radio", function() {
@@ -661,7 +662,7 @@ elseif ($this->post['action'] == 'product-import-preview' or (is_numeric($_REQUE
 		</div>
 		<div class="account-field">					
 		<label>&nbsp;</label>
-		<input name="fetch_existing_product_by_direct_field" type="checkbox" value="1" '.(($this->post['fetch_existing_product_by_direct_field']==1)?'checked':'').' /> '.$this->pi_getLL('fetch_existing_product_by_direct_field','Fetch existing product by db field (i.e. products_sku, products_ean) instead of hashed extid field.').'
+		<input name="fetch_existing_product_by_direct_field" type="checkbox" value="1" '.(($this->post['fetch_existing_product_by_direct_field']==1)?'checked':'').' /> '.$this->pi_getLL('fetch_existing_product_by_direct_field','Fetch existing product by db field (i.e. products_id, products_sku, products_ean) instead of hashed extid field.').'
 		</div>			
 		<input name="database_name" type="hidden" value="'.$this->post['database_name'].'" />							
 		<input name="cron_data" type="hidden" value="'.htmlspecialchars(serialize($this->post)).'" />
@@ -1148,8 +1149,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								}
 								for ($x=1;$x<=$max_category_level;$x++) {
 									$field='categories_image'.$x;
-									if ($this->post['select'][$i]==$field)
-									{
+									if ($this->post['select'][$i]==$field) {
 										// if aux contains prefixed path or url add it							
 										if ($this->post['input'][$i]) {
 											$item[$this->post['select'][$i]]=$this->post['input'][$i].'/'.$tmpitem[$i];
@@ -1272,7 +1272,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 									$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
 									$this->ms['sqls'][]=$query;
 									$stats['categories_added']++;
-								}
+								}								
 								if ($this->ms['target-cid']) {
 									$updateArray=array();
 									if (isset($item['categories_content'.$x])) {
@@ -1319,8 +1319,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 													do {		
 														$filename=mslib_fe::rewritenamein($categories_name).($ix > 0?'-'.$ix:'').'.'.$ext;	
 														$folder=mslib_befe::getImagePrefixFolder($filename);									
-														if (!is_dir(PATH_site.$this->ms['image_paths']['categories']['original'].'/'.$folder))
-														{
+														if (!is_dir(PATH_site.$this->ms['image_paths']['categories']['original'].'/'.$folder)) {
 															t3lib_div::mkdir(PATH_site.$this->ms['image_paths']['categories']['original'].'/'.$folder);
 														}
 														$folder.='/';
@@ -1642,12 +1641,15 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 								}							
 								if (isset($item['products_quantity']) and (!$item['imported_product'] or ($item['imported_product'] and !in_array('products_quantity',$importedProductsLockedFields)))) {
 									$updateArray['products_quantity'] = $item['products_quantity'];
-								}
+								}								
 								if ($item['products_model']) {
 									$updateArray['products_model'] = $item['products_model'];
 								}
 								if (isset($item['products_sku'])) {
 									$updateArray['sku_code'] = $item['products_sku'];								
+								}
+								if (isset($item['manufacturers_products_id'])) {
+									$updateArray['vendor_code'] = $item['manufacturers_products_id'];
 								}
 								if (isset($item['order_unit_id'])) {
 									$updateArray['order_unit_id'] =	$item['order_unit_id'];								
@@ -1688,7 +1690,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 											t3lib_div::callUserFunction($funcRef, $params, $this);
 										}
 									}	
-									// custom hook that can be controlled by third-party plugin eof											
+									// custom hook that can be controlled by third-party plugin eof
 									$query = $GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products', "page_uid=".$this->showCatalogFromPage." and products_id=".$item['updated_products_id'],$updateArray);
 									$res = $GLOBALS['TYPO3_DB']->sql_query($query);	
 									$stats['products_updated']++;
@@ -1851,8 +1853,8 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 										$res = $GLOBALS['TYPO3_DB']->sql_query($query);																			
 									}
 									$updateArray=array();
-									$updateArray['products_id']						=$item['updated_products_id'];									
-									$updateArray['categories_id']					=$this->ms['target-cid'];
+									$updateArray['products_id'] = $item['updated_products_id'];									
+									$updateArray['categories_id'] = $this->ms['target-cid'];
 									if (isset($item['products_sort_order'])) {
 										$updateArray['sort_order']=$item['products_sort_order'];
 									} else {
@@ -1896,9 +1898,12 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 									$updateArray['tax_id']=$item['tax_id'];
 								}
 								if ($item['products_id']) $updateArray['products_id'] =$item['products_id'];
-								$updateArray['products_model']			=$item['products_model'];
-								$updateArray['products_status']			=$item['products_status'];
-								$updateArray['sku_code']				=$item['products_sku'];
+								$updateArray['products_model'] = $item['products_model'];
+								$updateArray['products_status'] = $item['products_status'];
+								$updateArray['sku_code'] = $item['products_sku'];
+								if (isset($item['manufacturers_products_id'])) {
+									$updateArray['vendor_code'] = $item['manufacturers_products_id'];
+								}								
 								if (isset($item['order_unit_id'])) {
 									$updateArray['order_unit_id'] =	$item['order_unit_id'];		
 								}
@@ -1949,6 +1954,7 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 									$updateArray['import_job_id'] =$this->get['job_id'];
 									if ($item['products_unique_identifier']) {
 										// save also the feed products_id, maybe we need it later
+										$updateArray['foreign_products_id']=$item['products_unique_identifier'];
 										$updateArray['foreign_products_id']=$item['products_unique_identifier'];
 									}
 									if ($this->post['prefix_source_name']) {
@@ -2413,17 +2419,15 @@ if ($this->post['action'] != 'product-import-preview')
 			$schedule_content.='</table>
 			</fieldset>
 			<script type="text/javascript">
-			jQuery(document).ready(function($)
-			{
-				$(".copy_to_clipboard").click(function(event)
-				{				
+			jQuery(document).ready(function($) {
+				$(".copy_to_clipboard").click(function(event) {				
 					event.preventDefault();
 					var string=$(this).attr("rel");	
 					$.blockUI({ 
-					theme:     true, 
-					title:    \''.addslashes($this->pi_getLL('copy_below_text_and_add_it_to_crontab')).'\', 
-					message:  \'<p>\'+string+\'</p>\', 
-					timeout:   8000 
+						theme:     true, 
+						title:    \''.addslashes($this->pi_getLL('copy_below_text_and_add_it_to_crontab')).'\', 
+						message:  \'<p>\'+string+\'</p>\', 
+						timeout:   8000 
 					}); 
 				});	
 			});	

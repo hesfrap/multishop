@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cooluri>
-  <cooluris>1</cooluris>
-  
+  <cooluris>1</cooluris> 
   <cache>
     <usecache>1</usecache>
     <params2cool>
@@ -12,13 +11,11 @@
       <oldlinksvalidfor>365</oldlinksvalidfor>
     </cool2params>
     <cacheparams>0</cacheparams>
-    
     <pagenotfound>
       <status>HTTP/1.0 404 Not Found</status>
       <behavior type="userfunc">tx_cooluri->pageNotFound</behavior>
     </pagenotfound>
   </cache>
-
   <pagepath>
     <title>tx_realurl_pathsegment,alias,subtitle,title</title>
     <saveto>id</saveto>
@@ -26,7 +23,6 @@
     <userfunc>tx_cooluri->getPageTitle</userfunc>
     <t3conv>1</t3conv>
   </pagepath>
- 
   <uriparts>
 	<part pagepath="1">
 	  <parameter>p1</parameter>

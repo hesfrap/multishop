@@ -718,9 +718,9 @@ if ($pageset['total_rows'] > 0) {
 	// pagination
 	if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['PAGESET_LIMIT']) {
 		require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_pagination.php');
+		$pagination=$tmp;
 	}
 	// pagination eof
-	$pagination = $content;
 	$content = '';
 	
 	$subpartArray['###PAGE_NUMBER###'] 						= $this->get['p'];

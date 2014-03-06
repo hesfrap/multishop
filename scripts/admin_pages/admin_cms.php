@@ -234,8 +234,7 @@ if (!count($pageset['dataset'])) {
 	if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['PAGESET_LIMIT']) {
 		$content = '';
 		require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/admin_pagination.php');
-		$results .= $content;
-		$content = '';
+		$results.=$tmp;
 	}
 	// pagination eof
 }

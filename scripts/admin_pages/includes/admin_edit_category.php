@@ -1,6 +1,7 @@
 <?php
-if (!defined('TYPO3_MODE')) die ('Access denied.');
-
+if (!defined('TYPO3_MODE')) {
+	die('Access denied.');
+}
 $GLOBALS['TSFE']->additionalHeaderData[] = '
 <script type="text/javascript">
 window.onload = function(){
@@ -56,18 +57,16 @@ if ($this->post and is_array($_FILES) and count($_FILES)) {
 		}
 	}
 }
-
 if ($this->post) {
 	// sometimes the categories startingpoint is not zero. To protect merchants configure a category that is member of itself we reset the parent_id to zero
 	if ($this->post['parent_id']==$this->post['cid']) {
 		$this->post['parent_id']=0;
 	}
 	$updateArray=array();
-	$updateArray['custom_settings']				= $this->post['custom_settings'];
-	$updateArray['parent_id']					=$this->post['parent_id'];
-	$updateArray['categories_url']				=$this->post['categories_url'];	
-	$updateArray['status']						=$this->post['status'];
-
+	$updateArray['custom_settings'] = $this->post['custom_settings'];
+	$updateArray['parent_id'] = $this->post['parent_id'];
+	$updateArray['categories_url'] = $this->post['categories_url'];	
+	$updateArray['status'] = $this->post['status'];
 	if ($update_category_image) {
 		$updateArray['categories_image'] =$update_category_image;
 	}
@@ -104,7 +103,6 @@ if ($this->post) {
 			}
 		}		
 	}
-	
 	if ($catid) {
 		foreach ($this->post['categories_name'] as $key => $value) {		
 			$str="select 1 from tx_multishop_categories_description where categories_id='".$catid."' and language_id='".$key."'";
@@ -171,7 +169,6 @@ if ($this->post) {
 			$lngcat[$row['language_id']]=$row;
 		}	
 	}
-	
 	if ($category['categories_id'] or $_REQUEST['action']=='add_category') {
 		// now parse all the objects in the tmpl file
 		if ($this->conf['admin_edit_category_tmpl_path']) {
@@ -179,22 +176,17 @@ if ($this->post) {
 		} else {
 			$template = $this->cObj->fileResource(t3lib_extMgm::siteRelPath($this->extKey).'templates/admin_edit_category.tmpl');
 		}
-		
 		// Extract the subparts from the template
 		$subparts=array();
-		$subparts['template'] 		= $this->cObj->getSubpart($template, '###TEMPLATE###');
-		
-		
+		$subparts['template'] = $this->cObj->getSubpart($template, '###TEMPLATE###');
 		if (!$category['parent_id']) {
 			$category['parent_id']=$this->get['cid'];
 		}
-		
 		if ($_REQUEST['action']=='add_category') {
 			$heading_page ='<div class="main-heading"><h1>'.$this->pi_getLL('add_category').'</h1></div>';
 		} else if ($_REQUEST['action']=='edit_category') {
 			$level=0;
 			$cats=mslib_fe::Crumbar($category['categories_id']);
-			
 			$cats=array_reverse($cats);
 			$where='';
 			if (count($cats) > 0) {
@@ -208,7 +200,6 @@ if ($this->post) {
 			$details_link = mslib_fe::typolink($this->conf['products_listing_page_pid'],$where.'&tx_multishop_pi1[page_section]=products_listing');
 			$heading_page ='<div class="main-heading"><h1>'.$this->pi_getLL('edit_category').' (ID: '.$category['categories_id'].')</h1><span class="viewfront"><a href="'.$details_link.'" target="_blank">'.$this->pi_getLL('admin_edit_view_front_category', 'View in front').'</a></span></div>';
 		}
-		
 		$category_name_block = '';
 		foreach ($this->languages as $key => $language) {
 			$category_name_block	.='
@@ -235,20 +226,16 @@ if ($this->post) {
 			}
 			$skip_ids[]=$category['categories_id'];
 		}
-		
 		$category_tree	='		
-			<div class="account-field" id="msEditCategoryInputParent">
-				<label for="parent_id">'.$this->pi_getLL('admin_parent').'</label>	
-				'. mslib_fe::tx_multishop_draw_pull_down_menu('parent_id', mslib_fe::tx_multishop_get_category_tree('','',$skip_ids), $category['parent_id']).'
-			</div>';
-		
-		
+		<div class="account-field" id="msEditCategoryInputParent">
+			<label for="parent_id">'.$this->pi_getLL('admin_parent').'</label>	
+			'. mslib_fe::tx_multishop_draw_pull_down_menu('parent_id', mslib_fe::tx_multishop_get_category_tree('','',$skip_ids), $category['parent_id']).'
+		</div>';
 		$categories_image = '';
 		if ($_REQUEST['action'] =='edit_category' and $category['categories_image']) {
 			$categories_image.='<img src="'.mslib_befe::getImagePath($category['categories_image'],'categories','normal').'">';
 			$categories_image.=' <a href="'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&cid='.$_REQUEST['cid'].'&action=edit_category&delete_image=categories_image').'" onclick="return confirm(\'Are you sure?\')"><img src="'.$this->FULL_HTTP_URL_MS.'templates/images/icons/delete2.png" border="0" alt="delete image"></a>';			
 		}
-		
 		// custom hook that can be controlled by third-party plugin
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_edit_category.php']['addItemsToTabDetails'])) {
 			$params = array (
@@ -260,8 +247,6 @@ if ($this->post) {
 			}
 		}	
 		// custom hook that can be controlled by third-party plugin eof
-		
-		
 		$categories_content_block='';
 		foreach ($this->languages as $key => $language) {
 			$categories_content_block	.='
@@ -279,7 +264,6 @@ if ($this->post) {
 						<textarea spellcheck="true" name="content_footer['.$language['uid'].']" id="content_footer['.$language['uid'].']" class="mceEditor" rows="4">'.htmlspecialchars($lngcat[$language['uid']]['content_footer']).'</textarea>
 			</div>';
 		}
-		
 		$categories_meta_block='';	
 		foreach ($this->languages as $key => $language) {
 			$categories_meta_block	.='
@@ -301,7 +285,6 @@ if ($this->post) {
 				<input type="text" class="text" name="meta_description['.$language['uid'].']" id="meta_description['.$language['uid'].']" value="'.htmlspecialchars($lngcat[$language['uid']]['meta_description']).'">
 			</div>';
 		}
-		
 		$subpartArray = array();
 		$subpartArray['###CATEGORIES_ID0###'] 					= $category['categories_id'];
 		$subpartArray['###CATEGORIES_ID1###'] 					= $category['categories_id'];
@@ -311,50 +294,39 @@ if ($this->post) {
 		$subpartArray['###HEADING_PAGE###'] 					= $heading_page;
 		$subpartArray['###INPUT_CATEGORY_NAME_BLOCK###'] 		= $category_name_block;
 		$subpartArray['###SELECTBOX_CATEGORY_TREE###'] 			= $category_tree;
-		
 		$subpartArray['###LABEL_VISIBILITY###'] 				= $this->pi_getLL('admin_visible');
-		
 		$subpartArray['###CATEGORY_STATUS_YES###'] 				= (($category['status'] or $_REQUEST['action']=='add_category')?'checked':'');
 		$subpartArray['###LABEL_STATUS_YES###'] 				= $this->pi_getLL('admin_yes');
-		
 		$subpartArray['###CATEGORY_STATUS_NO###'] 				= ((!$category['status'] and $_REQUEST['action'] =='edit_category')?'checked':'');
 		$subpartArray['###LABEL_STATUS_NO###'] 					= $this->pi_getLL('admin_no');
-		
 		$subpartArray['###LABEL_IMAGE###'] 						= $this->pi_getLL('admin_image');
 		$subpartArray['###UPLOAD_IMAGE_URL###'] 				= mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_upload_product_images');
 		$subpartArray['###LABEL_CHOOSE_IMAGE###'] 				= addslashes(htmlspecialchars($this->pi_getLL('choose_image')));
 		$subpartArray['###CATEGORIES_IMAGE###'] 				= $categories_image;
-		
 		$subpartArray['###LABEL_CATEGORIES_EXTERNAL_URL###'] 	= $this->pi_getLL('admin_external_url');
 		$subpartArray['###VALUE_CATEGORIES_EXTERNAL_URL###'] 	= htmlspecialchars($category['categories_url']);
 		$subpartArray['###EXTRA_DETAILS_FIELDS###'] 			= $extra_fields;
-		
 		$subpartArray['###CATEGORIES_CONTENT_BLOCK###'] 		= $categories_content_block;
-		
 		$subpartArray['###CATEGORIES_META_BLOCK###'] 			= $categories_meta_block;
 		$subpartArray['###LABEL_ADVANCED_SETTINGS###'] 			= $this->pi_getLL('admin_custom_configuration');
 		$subpartArray['###VALUE_ADVANCED_SETTINGS###'] 			= htmlspecialchars($category['custom_settings']);
-		
 		$subpartArray['###LABEL_BUTTON_CANCEL_FOOTER###'] 		= $this->pi_getLL('cancel');
 		$subpartArray['###LABEL_BUTTON_SAVE_FOOTER###'] 		= $this->pi_getLL('save');
 		$subpartArray['###CATEGORIES_ID_FOOTER0###'] 			= $category['categories_id'];
 		$subpartArray['###PAGE_ACTION###'] 						= $_REQUEST['action'];
 		$subpartArray['###CATEGORIES_ID_FOOTER1###'] 			= $category['categories_id'];
-		
 		// custom page hook that can be controlled by third-party plugin
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_category.php']['adminEditCategoryPreProc'])) {
 			$params = array (
-					'subpartArray' => &$subpartArray,
-					'category' => &$category
+				'subpartArray' => &$subpartArray,
+				'category' => &$category
 			);
 			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_category.php']['adminEditCategoryPreProc'] as $funcRef) {
 				t3lib_div::callUserFunction($funcRef, $params, $this);
 			}
 		}
 		// custom page hook that can be controlled by third-party plugin eof
-		
 		$content .= $this->cObj->substituteMarkerArrayCached($subparts['template'], array(), $subpartArray);
-		
 	}
 }
 ?>

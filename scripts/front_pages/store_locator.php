@@ -132,7 +132,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 				else	require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/stores_listing/'.$this->ms['MODULES']['STORES_LISTING_TYPE'].'.php');	
 			}	
 			// pagination
-			if (!$this->ms['nopagenav'] and $pageset['total_rows'] > $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'])
+			if (!$this->hidePagination and $pageset['total_rows'] > $this->ms['MODULES']['PRODUCTS_LISTING_LIMIT'])
 			{
 //				require(t3lib_extMgm::extPath('multishop').'scripts/front_pages/includes/products_listing_pagination.php');	
 			}

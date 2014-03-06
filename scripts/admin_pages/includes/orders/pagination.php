@@ -1,4 +1,6 @@
 <?php
+// orphan, we use 1 pagination for all now (admin_pagination.php
+die();
 if (!defined('TYPO3_MODE')) die ('Access denied.');
 
 $total_pages = ceil(($pageset['total_rows']/$this->ms['MODULES']['ORDERS_LISTING_LIMIT']));
