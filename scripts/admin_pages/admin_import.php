@@ -1687,9 +1687,10 @@ elseif ((is_numeric($this->get['job_id']) and $this->get['action']=='run_job') o
 									// custom hook that can be controlled by third-party plugin
 									if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_import.php']['updateProductPreHook'])) {
 										$params = array (
-											'updateArray' 			=> &$updateArray,
-											'item' 					=> &$item,											
-											'prefix_source_name'	=> $this->post['prefix_source_name']
+											'updateArray' => &$updateArray,
+											'item' => &$item,											
+											'prefix_source_name' => $this->post['prefix_source_name'],
+											'old_product' => &$old_product
 										);
 										foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_import.php']['updateProductPreHook'] as $funcRef) {
 											t3lib_div::callUserFunction($funcRef, $params, $this);

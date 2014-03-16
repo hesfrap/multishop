@@ -7,7 +7,6 @@ if ($this->ADMIN_USER) {
 	$include_disabled_products = 0;
 }
 $product = mslib_fe::getProduct($this->get['products_id'], $this->get['categories_id'], '', $include_disabled_products);
-//print_r($product);
 if (!$product['products_id']) {
 	header('HTTP/1.0 404 Not Found');
 	$output_array['http_header']='HTTP/1.0 404 Not Found';

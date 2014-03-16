@@ -2248,7 +2248,7 @@ class mslib_fe
 			if ($this->msDebug) {
 				$this->msDebugInfo.=$str."\n\n";
 			}
-			//echo $str;
+			//echo $str.'<br>';
 			//die();
 			// error_log($str);
 			// die();
@@ -2265,7 +2265,7 @@ class mslib_fe
 				$orderby_clause,    // ORDER BY...
 				$limit_clause            // LIMIT ...
 			);
-			//echo $str;
+			//echo $str.'<br>';
 			//error_log($str);
 			//die();
 			if ($this->msDebug) {
@@ -3079,6 +3079,12 @@ class mslib_fe
 		$output='<span class="amount">';
 		if ($include_currency_symbol) {
 			$output.=mslib_fe::currency(1,$customer_currency);
+		}
+		if ($array[1]=='00') {
+			$array[1]='-';
+		}
+		if ($array[1]==',00') {
+			$array[1]=',-';
 		}
 		$output.=$array[0].$cu_decimal_point.'</span><span class="amount_cents">'.$array[1].'</span>';
 		return $output;
@@ -4764,6 +4770,22 @@ class mslib_fe
 				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products']['subs']['admin_sort_products_date_available_desc']['label']=$this->pi_getLL('admin_sort_by_date_descending', 'sort on date available (desc)');
 				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products']['subs']['admin_sort_products_date_available_desc']['link']=mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_system_sort_catalog&tx_multishop_pi1[sortItem]=products&tx_multishop_pi1[sortByField]=products_date_added&tx_multishop_pi1[orderBy]=desc');
 				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products']['subs']['admin_sort_products_date_available_desc']['link_params']='onClick="return CONFIRM(\''.$this->pi_getLL('admin_are_you_sure_you_want_to_sort_products_date_desc', 'Are you sure want to sort products date added descending').'?\')"';
+
+				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products_attributes']['label']=$this->pi_getLL('admin_sort_products_attributes', 'Products attributes');
+				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products_attributes']['subs']['admin_sort_products_attributes_alphabet_asc']['label']=$this->pi_getLL('admin_sort_products_attributes_alphabet_asc', 'sort on alfabet (asc)');
+				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products_attributes']['subs']['admin_sort_products_attributes_alphabet_asc']['link']=mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_system_sort_catalog&tx_multishop_pi1[sortItem]=attribute_values&tx_multishop_pi1[sortByField]=products_options_values_name&tx_multishop_pi1[orderBy]=asc');
+				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products_attributes']['subs']['admin_sort_products_attributes_alphabet_asc']['link_params']='onClick="return CONFIRM(\''.$this->pi_getLL('admin_are_you_sure_you_want_to_sort_products_asc', 'Are you sure want to sort products attributes ascending').'?\')"';
+				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products_attributes']['subs']['admin_sort_products_attributes_alphabet_desc']['label']=$this->pi_getLL('admin_sort_products_attributes_alphabet_desc', 'sort on alfabet (desc)');
+				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products_attributes']['subs']['admin_sort_products_attributes_alphabet_desc']['link']=mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_system_sort_catalog&tx_multishop_pi1[sortItem]=attribute_values&tx_multishop_pi1[sortByField]=products_options_values_name&tx_multishop_pi1[orderBy]=desc');
+				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products_attributes']['subs']['admin_sort_products_attributes_alphabet_desc']['link_params']='onClick="return CONFIRM(\''.$this->pi_getLL('admin_are_you_sure_you_want_to_sort_products_desc', 'Are you sure want to sort products attributes descending').'?\')"';
+/*
+				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products_attributes']['subs']['admin_sort_products_attributes_price_asc']['label']=$this->pi_getLL('admin_sort_products_attributes_price_asc', 'sort on price (asc)');
+				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products_attributes']['subs']['admin_sort_products_attributes_price_asc']['link']=mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_system_sort_catalog&tx_multishop_pi1[sortItem]=attribute_values&tx_multishop_pi1[sortByField]=products_price&tx_multishop_pi1[orderBy]=asc');
+				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products_attributes']['subs']['admin_sort_products_attributes_price_asc']['link_params']='onClick="return CONFIRM(\''.$this->pi_getLL('admin_are_you_sure_you_want_to_sort_products_price_asc', 'Are you sure want to sort products attributes price ascending').'?\')"';	
+				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products_attributes']['subs']['admin_sort_products_attributes_price_desc']['label']=$this->pi_getLL('admin_sort_products_attributes_price_desc', 'sort on price (desc)');
+				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products_attributes']['subs']['admin_sort_products_attributes_price_desc']['link']=mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_system_sort_catalog&tx_multishop_pi1[sortItem]=attribute_values&tx_multishop_pi1[sortByField]=products_price&tx_multishop_pi1[orderBy]=desc');
+				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_products_attributes']['subs']['admin_sort_products_attributes_price_desc']['link_params']='onClick="return CONFIRM(\''.$this->pi_getLL('admin_are_you_sure_you_want_to_sort_products_price_desc', 'Are you sure want to sort products attributes price descending').'?\')"';
+*/
 				
 				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_complete']['label']=$this->pi_getLL('admin_sort_complete', 'Sort all on alphabet');
 				$ms_menu['footer']['ms_admin_system']['subs']['admin_sort']['subs']['admin_sort_complete']['link']=mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_system_sort_catalog&tx_multishop_pi1[sortItem]=catalog&tx_multishop_pi1[sortByField]=name&tx_multishop_pi1[orderBy]=asc');
