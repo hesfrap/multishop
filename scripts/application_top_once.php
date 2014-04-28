@@ -44,7 +44,9 @@ $paths[]=$this->DOCUMENT_ROOT.'uploads/tx_multishop/images/manufacturers';
 $paths[]=$this->DOCUMENT_ROOT.'uploads/tx_multishop/images/manufacturers/normal';
 $paths[]=$this->DOCUMENT_ROOT.'uploads/tx_multishop/images/manufacturers/original';
 $paths[]=$this->DOCUMENT_ROOT.'uploads/tx_multishop/order_resources';
-foreach ($paths as $path) if (!is_dir($path)) {
-	t3lib_div::mkdir($path);
+foreach ($paths as $path) {
+	if (!is_dir($path)) {
+		t3lib_div::mkdir($path);
+	}
 }
 ?>

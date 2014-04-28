@@ -1,6 +1,7 @@
 <?php
-if (!defined('TYPO3_MODE')) die ('Access denied.');
-
+if (!defined('TYPO3_MODE')) {
+	die ('Access denied.');
+}
 /*
 // clearing typo3 temp files
 $string='					
@@ -58,7 +59,7 @@ $content.='</ul>';
 */
 // if frontend caching is enabled also clear those cache files
 if ($this->ms['MODULES']['GLOBAL_MODULES']['CACHE_FRONT_END'] or $this->conf['cacheConfiguration']) {
-	if ($this->DOCUMENT_ROOT and !strstr($this->DOCUMENT_ROOT,'..')) {
+	if ($this->DOCUMENT_ROOT and !strstr($this->DOCUMENT_ROOT, '..')) {
 		$command="rm -rf ".$this->DOCUMENT_ROOT."uploads/tx_multishop/tmp/cache/*";
 		exec($command);
 		$content.='<br /><p><strong>Multishop cache has been cleared.</strong></p>';

@@ -149,6 +149,7 @@ form#admin_categories_edit_ .account-field option { padding:0 10px 0 0; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content #product_price_fields.account-field { min-width:880px; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content .account-field label { clear:left; float:left; display:block; width:180px; color:#333; text-align:right; text-transform:uppercase; padding:3px 20px 0 0; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content .account-field label.endtime { clear:none; float:none; display:inline-block; width:auto; padding-left:40px; padding-right:20px; }
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content .account-field .msAttributesWrapper { display:block; padding-left:200px; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content .account-field strong { display:block; padding-top:3px; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content .account-field td#order_memo_container div,
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content .account-field td#order_email_container div  { overflow:hidden; width:100%; }
@@ -179,6 +180,7 @@ form#admin_categories_edit_ .account-field option { padding:0 10px 0 0; }
 /* #tx_multishop_pi1_core #tab-container .tab_container .tab_content input[type="text"].text { width:610px; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content textarea { width:610px; } */
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content textarea.mceEditor { width:300px; border:none; padding:0; overflow:hidden; }
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content .redactor_box textarea.mceEditor { overflow:auto; width:100%; border:none; background:none; font-size:13px; font-family:Menlo, Monaco, monospace, sans-serif; color:#333; padding:0; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content input.small_input { width:100px; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content select { border:1px solid #999; background:#fff5f5; font:12px Arial, Helvetica, sans-serif; padding:2px; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content option { padding:0 10px 0 0; }
@@ -679,3 +681,10 @@ span.viewfront a:hover { background:#e2e2e2; }
 #tx_multishop_pi1_core #tab-container .tab_container #product_shippingcost.tab_content fieldset fieldset table { margin-top:10px; }
 
 .redactor_box { float:left; width:639px; }
+
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content ul { list-style:none; margin:10px 0; padding:0; }
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content ul li { background:none; margin:0; padding:0 0 5px; } 
+
+#tx_multishop_pi1_core #tab-container .tab_container #product_relatives_2 ul { margin:10px 0 0; list-style:none; }
+#tx_multishop_pi1_core #tab-container .tab_container #product_relatives_2 ul li { background:none; margin:0; padding:0; line-height:20px; }
+#tx_multishop_pi1_core #tab-container .tab_container #product_relatives_2 ul li input[type="checkbox"] { display:inline-block; margin:0 5px 0 0; }
