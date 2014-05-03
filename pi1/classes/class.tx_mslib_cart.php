@@ -854,12 +854,20 @@ class tx_mslib_cart extends tslib_pibase {
 			$insertArray['tx_multishop_code']=md5(uniqid('', TRUE));
 			$insertArray['tstamp']=time();
 			$insertArray['crdate']=time();
-			$insertArray['tx_multishop_newsletter']=$address['tx_multishop_newsletter'];
+			if (isset($address['tx_multishop_newsletter']) && !empty($address['tx_multishop_newsletter'])) {
+				$insertArray['tx_multishop_newsletter']=$address['tx_multishop_newsletter'];
+			} else {
+				$insertArray['tx_multishop_newsletter']='';
+			}
 			$insertArray['page_uid']=$this->shop_pid;
 			$insertArray['password']=mslib_befe::getHashedPassword(mslib_befe::generateRandomPassword(10));
 			$insertArray['usergroup']=$this->conf['fe_customer_usergroup'];
 			$insertArray['pid']=$this->conf['fe_customer_pid'];
-			$insertArray['http_referer']=$this->cookie['HTTP_REFERER'];
+			if (isset($this->cookie['HTTP_REFERER']) && !empty($this->cookie['HTTP_REFERER'])) {
+				$insertArray['http_referer']=$this->cookie['HTTP_REFERER'];
+			} else {
+				$insertArray['http_referer']='';
+			}
 			$insertArray['ip_address']=$this->server['REMOTE_ADDR'];
 			if ($this->ms['MODULES']['CHECKOUT_DISPLAY_VAT_ID_INPUT'] && !empty($address['tx_multishop_vat_id'])) {
 				$insertArray['tx_multishop_vat_id']=$address['tx_multishop_vat_id'];
@@ -1145,7 +1153,11 @@ class tx_mslib_cart extends tslib_pibase {
 			$insertArray=array();
 			$insertArray['customer_id']=$customer_id;
 			$insertArray['page_uid']=$this->shop_pid;
-			$insertArray['cruser_id']=$GLOBALS['TSFE']->fe_user->user['uid'];
+			if (isset($GLOBALS['TSFE']->fe_user->user['uid']) && !empty($GLOBALS['TSFE']->fe_user->user['uid'])) {
+				$insertArray['cruser_id']=$GLOBALS['TSFE']->fe_user->user['uid'];
+			} else {
+				$insertArray['cruser_id']='';
+			}
 			$insertArray['customer_comments']=$this->post['customer_comments'];
 			$insertArray['billing_company']=$address['company'];
 			$insertArray['billing_first_name']=$address['first_name'];
@@ -1254,19 +1266,31 @@ class tx_mslib_cart extends tslib_pibase {
 			$insertArray['payment_method_costs']=$address['payment_method_costs'];
 			$insertArray['hash']=md5(uniqid('', TRUE));
 			$insertArray['store_currency']=$this->ms['MODULES']['CURRENCY_ARRAY']['cu_iso_3'];
-			$insertArray['customer_currency']=$this->ms['MODULES']['CUSTOMER_ARRAY']['cu_iso_3'];
-			$insertArray['currency_rate']=$this->cookie['currency_rate'];
+			if (isset($this->ms['MODULES']['CUSTOMER_ARRAY']['cu_iso_3']) && !empty($this->ms['MODULES']['CUSTOMER_ARRAY']['cu_iso_3'])) {
+				$insertArray['customer_currency']=$this->ms['MODULES']['CUSTOMER_ARRAY']['cu_iso_3'];
+			} else {
+				$insertArray['customer_currency']='';
+			}
+			if (isset($this->cookie['currency_rate']) && !empty($this->cookie['currency_rate'])) {
+				$insertArray['currency_rate']=$this->cookie['currency_rate'];
+			} else {
+				$insertArray['currency_rate']=1;
+			}
 			$insertArray['language_id']=$this->sys_language_uid;
 			// get default orders status
 			$status=mslib_fe::getDefaultOrdersStatus($this->sys_language_uid);
 			$insertArray['status']=$status['id'];
-			$insertArray['http_referer']=$this->cookie['HTTP_REFERER'];
+			if (isset($this->cookie['HTTP_REFERER']) && !empty($this->cookie['HTTP_REFERER'])) {
+				$insertArray['http_referer']=$this->cookie['HTTP_REFERER'];
+			} else {
+				$insertArray['http_referer']='';
+			}
 			$insertArray['ip_address']=$this->server['REMOTE_ADDR'];
 			$insertArray['user_agent']=$this->server['HTTP_USER_AGENT'];
 			if (isset($address['expected_delivery_date'])) {
 				$insertArray['expected_delivery_date']=$address['expected_delivery_date'];
 			}
-			//$insertArray['orders_tax_data']			=	serialize($orders_tax);			
+			//$insertArray['orders_tax_data']			=	serialize($orders_tax);
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/class.tx_multishop_pi1.php']['insertOrderPreProc'])) {
 				// hook
 				$params=array(
@@ -1280,7 +1304,7 @@ class tx_mslib_cart extends tslib_pibase {
 			}
 			$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_orders', $insertArray);
 			$res=$GLOBALS['TYPO3_DB']->sql_query($query);
-			// now add the order eof		
+			// now add the order eof
 			$orders_id=$GLOBALS['TYPO3_DB']->sql_insert_id();
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/class.tx_multishop_pi1.php']['insertOrderPostProc'])) {
 				// hook
@@ -1318,10 +1342,26 @@ class tx_mslib_cart extends tslib_pibase {
 							}
 						}
 						// get all cats eof						
-						$insertArray['manufacturers_id']=$value['manufacturers_id'];
-						$insertArray['order_unit_id']=$value['order_unit_id'];
-						$insertArray['order_unit_name']=$value['order_unit_name'];
-						$insertArray['order_unit_code']=$value['order_unit_code'];
+						if (isset($value['manufacturers_id']) && !empty($value['manufacturers_id'])) {
+							$insertArray['manufacturers_id']=$value['manufacturers_id'];
+						} else {
+							$insertArray['manufacturers_id']='';
+						}
+						if (isset($value['order_unit_id']) && !empty($value['order_unit_id'])) {
+							$insertArray['order_unit_id']=$value['order_unit_id'];
+						} else {
+							$insertArray['order_unit_id']='';
+						}
+						if (isset($value['order_unit_name']) && !empty($value['order_unit_name'])) {
+							$insertArray['order_unit_name']=$value['order_unit_name'];
+						} else {
+							$insertArray['order_unit_name']='';
+						}
+						if (isset($value['order_unit_code']) && !empty($value['order_unit_code'])) {
+							$insertArray['order_unit_code']=$value['order_unit_code'];
+						} else {
+							$insertArray['order_unit_code']='';
+						}
 						$insertArray['qty']=$value['qty'];
 						$insertArray['products_tax']=($value['tax_rate']*100);
 						$insertArray['products_name']=$value['products_name'];
