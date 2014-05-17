@@ -1,4 +1,5 @@
 <?php
+use TYPO3\CMS\Backend\Utility\BackendUtility;
 /*
 //QUICK LANGUAGE UID FIXER:
 
@@ -827,11 +828,14 @@ switch ($_REQUEST['action']) {
 								}
 							}
 							// older multishop versions has sometimes columnes that are not existing in the newer version. lets filter them out EOF
+							$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = TRUE;
 							$res =$GLOBALS['TYPO3_DB']->exec_INSERTquery($key, $record);
 							if ($GLOBALS['TYPO3_DB']->sql_insert_id() or $GLOBALS['TYPO3_DB']->sql_affected_rows()) {
 								$insert_records++;
+							} else {
+								t3lib_utility_Debug::debug($GLOBALS['TYPO3_DB']->debug_lastBuiltQuery, ' failed');
 							}
-							//error_log($GLOBALS['TYPO3_DB']->sql_insert_id().' inserted by Multishop mod1');
+							$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = FALSE;
 						}
 					} // FULL IMPORT EOF
 					else {
@@ -935,19 +939,30 @@ switch ($_REQUEST['action']) {
 									if ($tx_multishop_customer_ids[$record['customer_id']]) {
 										$record['customer_id']=$tx_multishop_customer_ids[$record['customer_id']];
 									}
+									$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = TRUE;
 									$res =$GLOBALS['TYPO3_DB']->exec_INSERTquery($key, $record);
 									$new_id=$GLOBALS['TYPO3_DB']->sql_insert_id();
 									if ($new_id) {
 										$tx_multishop_orders_ids[$old_id]=$new_id;
 										$insert_records++;
+									} else {
+										t3lib_utility_Debug::debug($GLOBALS['TYPO3_DB']->debug_lastBuiltQuery, 'last built query');
 									}
+									$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = FALSE;
 								}
 								break;
 							case 'tx_multishop_orders_products':
 								foreach ($records as $record) {
 									$record['orders_id']=$tx_multishop_orders_ids[$record['orders_id']];
+									$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = TRUE;
 									$res =$GLOBALS['TYPO3_DB']->exec_INSERTquery($key, $record);
-									$insert_records++;
+									$new_orders_products_id=$GLOBALS['TYPO3_DB']->sql_insert_id();
+									if ($new_orders_products_id) {
+										$insert_records++;
+									} else {
+										t3lib_utility_Debug::debug($GLOBALS['TYPO3_DB']->debug_lastBuiltQuery, 'last built query');
+									}
+									$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = FALSE;
 								}
 								break;
 							case 'tx_multishop_orders_status_history':
@@ -1322,7 +1337,7 @@ if (count($shops)>0) {
 		$content.='
 		<fieldset><legend>Multishop Configuration</legend>
 		<fieldset><legend>Downloader / Duplicator</legend>
-		<form action="mod.php?M=web_txmultishopM1" method="post" enctype="multipart/form-data">
+		<form action="'.BackendUtility::getModuleUrl('web_txmultishopM1').'" method="post" enctype="multipart/form-data">
 		<input name="action" type="hidden" value="configuration_actions" />
 		'.$tmpcontent.'
 			<table>
@@ -1351,7 +1366,7 @@ if (count($shops)>0) {
 		if ($options) {
 			$content.='
 			<fieldset><legend>Uploader</legend>
-			<form action="mod.php?M=web_txmultishopM1" method="post" enctype="multipart/form-data">	
+			<form action="'.BackendUtility::getModuleUrl('web_txmultishopM1').'" method="post" enctype="multipart/form-data">
 				Target shop
 		';
 			$content.='<select name="target_pid">'."\n";
@@ -1388,7 +1403,7 @@ if (count($multishop_content_objects)>0) {
 		$pageinfo=t3lib_BEfunc::readPageAccess($content_object['pid'], '');
 		if (is_numeric($pageinfo['uid'])) {
 			$content.='
-							<form action="mod.php?M=web_txmultishopM1" method="post" enctype="multipart/form-data">
+							<form action="'.BackendUtility::getModuleUrl('web_txmultishopM1').'" method="post" enctype="multipart/form-data">
 							<div class="shadow_bottom">
 							<fieldset>
 							<legend><a href="#" onclick="'.htmlspecialchars(t3lib_BEfunc::viewOnClick($content_object['pid'], $this->backPath, t3lib_BEfunc::BEgetRootLine($content_object['pid']), '', '')).'">'.trim($pageinfo['_thePathFull'], '/').'</a> <a title="View" href="#" onclick="'.htmlspecialchars(t3lib_BEfunc::viewOnClick($content_object['pid'], $this->backPath, t3lib_BEfunc::BEgetRootLine($content_object['pid']), '', '')).'">'.$this->Typo3Icon('actions-document-view', 'View').'</a> <a title="Delete" href="'.t3lib_div::linkThisScript().'&page_uid='.$content_object['pid'].'&action=erase" onClick="return CONFIRM(\'Are you sure you want to delete the products, categories, orders, cms pages and settings of: '.$pageinfo['_thePathFull'].'?\')">'.$this->Typo3Icon('actions-edit-delete', 'Delete').'</a>

@@ -183,7 +183,7 @@ class mslib_fe {
 				break;
 			case 'relatives':
 				//$GLOBALS['TYPO3_DB']->store_lastBuiltQuery=1;
-				$data=$GLOBALS['TYPO3_DB']->exec_SELECTgetRows('products_id,relative_product_id', 'tx_multishop_products_to_relative_products', "(products_id = '".$product['products_id']."' or relative_product_id = '".$product['products_id']."') and relation_types='cross-sell'", '', '',$limit);
+				$data=$GLOBALS['TYPO3_DB']->exec_SELECTgetRows('products_id,relative_product_id', 'tx_multishop_products_to_relative_products', "(products_id = '".$product['products_id']."' or relative_product_id = '".$product['products_id']."') and relation_types='cross-sell'", '', '', $limit);
 				//echo $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery;
 				//die();
 				$product_ids=array();
@@ -1152,7 +1152,7 @@ class mslib_fe {
 			}
 		} else {
 			//	$url = htmlspecialchars($GLOBALS["TSFE"]->cObj->typolink(NULL, $conf));	
-			$url=$GLOBALS["TSFE"]->cObj->typolink(NULL, $conf);
+			$url=$GLOBALS["TSFE"]->cObj->typolink(null, $conf);
 		}
 		return $url;
 	}
@@ -2250,8 +2250,11 @@ class mslib_fe {
 		$array=array();
 		if (!$this->ms['MODULES']['FLAT_DATABASE']) {
 			if (count($having)) {
-				// since this query is using HAVING we need to calculate the total records on a different way                           
-				$str=$GLOBALS['TYPO3_DB']->SELECTquery('p.products_id,IF(s.status, s.specials_new_products_price, p.products_price) as final_price', // SELECT ...
+				// since this query is using HAVING we need to calculate the total records on a different way
+				if (!$select_total_count) {
+					$select_total_count='p.products_id,IF(s.status, s.specials_new_products_price, p.products_price) as final_price';
+				}
+				$str=$GLOBALS['TYPO3_DB']->SELECTquery($select_total_count, // SELECT ...
 					$from_clause, // FROM ...
 					$where_clause, // WHERE...
 					implode($groupby, ",").$having_clause, // GROUP BY...
@@ -2263,8 +2266,11 @@ class mslib_fe {
 				$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 				$array['total_rows']=$GLOBALS['TYPO3_DB']->sql_num_rows($qry);
 			} else {
+				if (!$select_total_count) {
+					$select_total_count='p.products_id';
+				}
 				// the select count(1) is buggy when working with group by and 1-n relations (1 product to many categories). therefore we temporary counting through sql_num_rows
-				$str=$GLOBALS['TYPO3_DB']->SELECTquery('p.products_id ', // SELECT ...
+				$str=$GLOBALS['TYPO3_DB']->SELECTquery($select_total_count, // SELECT ...
 					$from_clause, // FROM ...
 					$where_clause, // WHERE...
 					implode($groupby, ","), // GROUP BY...
@@ -2281,7 +2287,7 @@ class mslib_fe {
 			if (!$select_total_count) {
 				$select_total_count='count(DISTINCT('.$prefix.'products_id)) as total';
 			}
-			$str=$GLOBALS['TYPO3_DB']->SELECTquery(//'count(1) as total',         // SELECT ...
+			$str=$GLOBALS['TYPO3_DB']->SELECTquery( //'count(1) as total',         // SELECT ...
 				$select_total_count, // SELECT ...
 				$from_clause, // FROM ...
 				$where_clause, // WHERE...
@@ -2326,7 +2332,6 @@ class mslib_fe {
 			$tax_ruleset=array();
 			while ($product=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
 				if ($this->ROOTADMIN_USER or ($this->ADMIN_USER and $this->CATALOGADMIN_USER)) {
-
 				} else {
 					// check every cat status
 					$disable_product=false;
@@ -5132,7 +5137,7 @@ class mslib_fe {
 			if (($order['orders_id'] and $order['bill']) or ($order['orders_id'] and $force)) {
 				$invoice_id=mslib_fe::generateInvoiceId();
 				if ($invoice_id) {
-					$hash=md5(uniqid('', TRUE));
+					$hash=md5(uniqid('', true));
 					$insertArray=array();
 					$insertArray['invoice_id']=$invoice_id;
 					$insertArray['customer_id']=$order['customer_id'];
@@ -5216,7 +5221,7 @@ class mslib_fe {
 						$row['crdate']=time();
 						$row['paid']=1;
 						$row['invoice_id']=$new_invoice_id;
-						$row['hash']=md5(uniqid('', TRUE));
+						$row['hash']=md5(uniqid('', true));
 						$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_invoices', $row);
 						$res=$GLOBALS['TYPO3_DB']->sql_query($query);
 						// update old invoice to paid so its gone from the unpaid list						
@@ -5735,21 +5740,21 @@ class mslib_fe {
 		$array['orders_id']=$orders_id;
 		switch ($security_type) {
 			case 'sha512':
-				$array['transaction_id']=hash('sha512', uniqid($orders_id.'-'.$psp, TRUE));
+				$array['transaction_id']=hash('sha512', uniqid($orders_id.'-'.$psp, true));
 				break;
 			case 'sha1':
-				$array['transaction_id']=sha1(uniqid($orders_id.'-'.$psp, TRUE));
+				$array['transaction_id']=sha1(uniqid($orders_id.'-'.$psp, true));
 				break;
 			case 'manual':
 				$array['transaction_id']=$transid;
 				break;
 			case 'crc32':
-				$array['transaction_id']=hash('crc32', uniqid($orders_id.'-'.$psp, TRUE));
+				$array['transaction_id']=hash('crc32', uniqid($orders_id.'-'.$psp, true));
 				break;
 			case 'short_md5':
 			case 'md5':
 			default:
-				$array['transaction_id']=md5(uniqid($orders_id.'-'.$psp, TRUE));
+				$array['transaction_id']=md5(uniqid($orders_id.'-'.$psp, true));
 				break;
 		}
 		$array['psp']=$psp;
@@ -5889,7 +5894,7 @@ class mslib_fe {
 					if ($path['scheme']) {
 						// we try to use Curl, so we don't need PHP allow_url_fopen to be on
 						$ch=curl_init($filename);
-						curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+						curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 						curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 						curl_setopt($ch, CURLOPT_HEADER, 0);
 						curl_setopt($ch, CURLOPT_POST, 0);
@@ -5919,7 +5924,7 @@ class mslib_fe {
 //		$template_obj = new SimpleXMLElement($xmlstr);				
 		$template_obj=simplexml_load_string($xmlstr, 'SimpleXMLElement', LIBXML_NOCDATA|LIBXML_NOBLANKS);
 		$json=json_encode($template_obj);
-		$template_array=json_decode($json, TRUE);
+		$template_array=json_decode($json, true);
 		return $template_array;
 	}
 	public function convertPHPArraytoXML($array, $root='root') {
@@ -6618,7 +6623,7 @@ class mslib_fe {
 				$content='<select name="options_groups['.$options_id.']">';
 				$content.='<option value="">select group</option>';
 				while ($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry)) {
-					$str2="select attributes_options_groups_to_products_options_id from tx_multishop_attributes_options_groups_to_products_options where attributes_options_groups_id = '".$row['attributes_options_groups_id']."' and products_options_id = '" . $options_id . "'";
+					$str2="select attributes_options_groups_to_products_options_id from tx_multishop_attributes_options_groups_to_products_options where attributes_options_groups_id = '".$row['attributes_options_groups_id']."' and products_options_id = '".$options_id."'";
 					$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
 					if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry2)>0) {
 						$content.='<option value="'.$row['attributes_options_groups_id'].'" selected="selected">'.$row['attributes_options_groups_name'].'</option>';
@@ -6650,6 +6655,28 @@ class mslib_fe {
 			}
 		} else if ($exclude_type=='products') {
 			$sql_check="select id from tx_multishop_feeds_excludelist where feed_id='".addslashes($feed_id)."' and exclude_id='".addslashes($exclude_id)."' and exclude_type='products'";
+			$qry_check=$GLOBALS['TYPO3_DB']->sql_query($sql_check);
+			if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry_check)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	function isItemInFeedsStockExcludeList($feed_id, $exclude_id, $exclude_type='products') {
+		if ($exclude_type=='categories') {
+			$cats=mslib_fe::Crumbar($exclude_id);
+			if (count($cats)>0) {
+				foreach ($cats as $cat) {
+					$sql_check="select id from tx_multishop_feeds_stock_excludelist where feed_id='".addslashes($feed_id)."' and exclude_id='".addslashes($cat['id'])."' and exclude_type='categories'";
+					$qry_check=$GLOBALS['TYPO3_DB']->sql_query($sql_check);
+					if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry_check)) {
+						return true;
+						break;
+					}
+				}
+			}
+		} else if ($exclude_type=='products') {
+			$sql_check="select id from tx_multishop_feeds_stock_excludelist where feed_id='".addslashes($feed_id)."' and exclude_id='".addslashes($exclude_id)."' and exclude_type='products'";
 			$qry_check=$GLOBALS['TYPO3_DB']->sql_query($sql_check);
 			if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry_check)) {
 				return true;
