@@ -160,18 +160,21 @@ class mslib_fe {
 				$orders=$GLOBALS['TYPO3_DB']->exec_SELECTgetRows('orders_id', 'tx_multishop_orders_products', "products_id = '".$product['products_id']."'", 'orders_id');
 				foreach ($orders as $order) {
 					$products=$GLOBALS['TYPO3_DB']->exec_SELECTgetRows('products_id', 'tx_multishop_orders_products', "orders_id = '".$order['orders_id']."' and products_id !='".$product['products_id']."'", '', $limit);
-					foreach ($products as $product) {
-						$product_ids[]=$product['products_id'];
+					if (is_array($products) && count($products)) {
+						foreach ($products as $product) {
+							$product_ids[]=$product['products_id'];
+							if (count($product_ids)==$limit) {
+								break;
+							}
+						}
 						if (count($product_ids)==$limit) {
 							break;
 						}
 					}
-					if (count($product_ids)==$limit) {
-						break;
-					}
 				}
-				$product_ids=array_unique($product_ids);
-				if (!count($product_ids)) {
+				if (count($product_ids)) {
+					$product_ids=array_unique($product_ids);
+				} else {
 					return false;
 				}
 				if (!$this->ms['MODULES']['FLAT_DATABASE']) {
@@ -187,14 +190,16 @@ class mslib_fe {
 				//echo $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery;
 				//die();
 				$product_ids=array();
-				foreach ($data as $item) {
-					if ($product['products_id']==$item['relative_product_id']) {
-						$product_ids[]=$item['products_id'];
-					} else {
-						$product_ids[]=$item['relative_product_id'];
-					}
-					if (count($product_ids)==$limit) {
-						break;
+				if (is_array($data) && count($data)) {
+					foreach ($data as $item) {
+						if ($product['products_id']==$item['relative_product_id']) {
+							$product_ids[]=$item['products_id'];
+						} else {
+							$product_ids[]=$item['relative_product_id'];
+						}
+						if (count($product_ids)==$limit) {
+							break;
+						}
 					}
 				}
 				if (!count($product_ids)) {
@@ -996,6 +1001,8 @@ class mslib_fe {
 			$customer_landnaam=$row['naam'];
 		}
 		if ($bu_landen_id) {
+			// new static_info_tables
+			//$str="SELECT st.*, str.tx_rate FROM static_taxes st, static_tax_rates str, static_countries sc WHERE st.tx_rate_id=str.uid and sc.cn_iso_2=st.tx_country_iso_2 and sc.cn_iso_nr ='".$bu_landen_id."'";
 			$str="SELECT * FROM `static_taxes` WHERE `tx_country_iso_nr` ='".$bu_landen_id."'";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			$row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
@@ -2182,11 +2189,6 @@ class mslib_fe {
 			if (!$this->masterShop) {
 				$where[]="pf.page_uid='".$this->showCatalogFromPage."'";
 			}
-			$from_clause.="tx_multishop_products_flat pf ";
-			if (count($extra_join)) {
-				$from_clause.=" ";
-				$from_clause.=implode(" ", $extra_join);
-			}
 			//hook to let other plugins further manipulate the query
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getProductsPageSet'])) {
 				$query_elements=array();
@@ -2202,6 +2204,7 @@ class mslib_fe {
 				$query_elements['redirect_if_one_product']=&$redirect_if_one_product;
 				$query_elements['extra_from']=&$extra_from;
 				$query_elements['search_section']=&$search_section;
+				$query_elements['extra_join']=&$extra_join;
 				$params=array(
 					'query_elements'=>&$query_elements,
 					'enableFetchTaxRate'=>&$enableFetchTaxRate
@@ -2209,6 +2212,11 @@ class mslib_fe {
 				foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getProductsPageSet'] as $funcRef) {
 					t3lib_div::callUserFunction($funcRef, $params, $this);
 				}
+			}
+			$from_clause.="tx_multishop_products_flat pf ";
+			if (count($extra_join)) {
+				$from_clause.=" ";
+				$from_clause.=implode(" ", $extra_join);
 			}
 			//hook to let other plugins further manipulate the query eof					
 			if (count($extra_from)) {
@@ -2318,8 +2326,9 @@ class mslib_fe {
 			$limit_clause // LIMIT ...
 		);
 		//echo $str.'<br>';
-		//error_log($str);
 		//die();
+		//error_log($str);
+
 		if ($this->msDebug) {
 			$this->msDebugInfo.=$str."\n\n";
 		}

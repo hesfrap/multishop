@@ -1,5 +1,5 @@
 <?php
-use TYPO3\CMS\Backend\Utility\BackendUtility;
+
 $title='Help';
 $content.='
 	<div class="shadow_bottom">

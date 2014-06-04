@@ -1,5 +1,4 @@
 <?php
-use TYPO3\CMS\Backend\Utility\BackendUtility;
 /*
 //QUICK LANGUAGE UID FIXER:
 
@@ -130,17 +129,17 @@ switch ($_REQUEST['action']) {
 		$this->ms['category_image_formats']['normal']['width']=$format[0];
 		$this->ms['category_image_formats']['normal']['height']=$format[1];
 		$format=explode("x", $this->ms['MODULES']['PRODUCT_IMAGE_SIZE_50']);
-		$this->ms['product_image_formats'][50]['width']=$format[0];
-		$this->ms['product_image_formats'][50]['height']=$format[1];
+		$this->ms['product_image_formats']['50']['width']=$format[0];
+		$this->ms['product_image_formats']['50']['height']=$format[1];
 		$format=explode("x", $this->ms['MODULES']['PRODUCT_IMAGE_SIZE_100']);
-		$this->ms['product_image_formats'][100]['width']=$format[0];
-		$this->ms['product_image_formats'][100]['height']=$format[1];
+		$this->ms['product_image_formats']['100']['width']=$format[0];
+		$this->ms['product_image_formats']['100']['height']=$format[1];
 		$format=explode("x", $this->ms['MODULES']['PRODUCT_IMAGE_SIZE_200']);
-		$this->ms['product_image_formats'][200]['width']=$format[0];
-		$this->ms['product_image_formats'][200]['height']=$format[1];
+		$this->ms['product_image_formats']['200']['width']=$format[0];
+		$this->ms['product_image_formats']['200']['height']=$format[1];
 		$format=explode("x", $this->ms['MODULES']['PRODUCT_IMAGE_SIZE_300']);
-		$this->ms['product_image_formats'][300]['width']=$format[0];
-		$this->ms['product_image_formats'][300]['height']=$format[1];
+		$this->ms['product_image_formats']['300']['width']=$format[0];
+		$this->ms['product_image_formats']['300']['height']=$format[1];
 		$format=explode("x", $this->ms['MODULES']['PRODUCT_IMAGE_SIZE_ENLARGED']);
 		$this->ms['product_image_formats']['enlarged']['width']=$format[0];
 		$this->ms['product_image_formats']['enlarged']['height']=$format[1];
@@ -492,7 +491,7 @@ switch ($_REQUEST['action']) {
 								$insertArray['zip']=$row['entry_postcode'];
 								$insertArray['city']=$row['entry_city'];
 								$insertArray['tstamp']=time();
-								$insertArray['tx_multishop_code']=md5(uniqid('', TRUE));
+								$insertArray['tx_multishop_code']=md5(uniqid('', true));
 								$insertArray['page_uid']=$this->post['page_uid'];
 								$insertArray['usergroup']='';
 								$insertArray['pid']='';
@@ -752,7 +751,7 @@ switch ($_REQUEST['action']) {
 								//								$row['billing_name']=$record['coupon_discount_code'];
 								//								$row['billing_name']=$record['billed'];
 								$row['deleted']=0;
-								$row['hash']=md5(uniqid('', TRUE));
+								$row['hash']=md5(uniqid('', true));
 								$database['orders'][$key]=$row;
 							}
 						}
@@ -828,14 +827,14 @@ switch ($_REQUEST['action']) {
 								}
 							}
 							// older multishop versions has sometimes columnes that are not existing in the newer version. lets filter them out EOF
-							$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = TRUE;
+							$GLOBALS['TYPO3_DB']->store_lastBuiltQuery=true;
 							$res =$GLOBALS['TYPO3_DB']->exec_INSERTquery($key, $record);
 							if ($GLOBALS['TYPO3_DB']->sql_insert_id() or $GLOBALS['TYPO3_DB']->sql_affected_rows()) {
 								$insert_records++;
 							} else {
 								t3lib_utility_Debug::debug($GLOBALS['TYPO3_DB']->debug_lastBuiltQuery, ' failed');
 							}
-							$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = FALSE;
+							$GLOBALS['TYPO3_DB']->store_lastBuiltQuery=false;
 						}
 					} // FULL IMPORT EOF
 					else {
@@ -939,7 +938,7 @@ switch ($_REQUEST['action']) {
 									if ($tx_multishop_customer_ids[$record['customer_id']]) {
 										$record['customer_id']=$tx_multishop_customer_ids[$record['customer_id']];
 									}
-									$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = TRUE;
+									$GLOBALS['TYPO3_DB']->store_lastBuiltQuery=true;
 									$res =$GLOBALS['TYPO3_DB']->exec_INSERTquery($key, $record);
 									$new_id=$GLOBALS['TYPO3_DB']->sql_insert_id();
 									if ($new_id) {
@@ -948,13 +947,13 @@ switch ($_REQUEST['action']) {
 									} else {
 										t3lib_utility_Debug::debug($GLOBALS['TYPO3_DB']->debug_lastBuiltQuery, 'last built query');
 									}
-									$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = FALSE;
+									$GLOBALS['TYPO3_DB']->store_lastBuiltQuery=false;
 								}
 								break;
 							case 'tx_multishop_orders_products':
 								foreach ($records as $record) {
 									$record['orders_id']=$tx_multishop_orders_ids[$record['orders_id']];
-									$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = TRUE;
+									$GLOBALS['TYPO3_DB']->store_lastBuiltQuery=true;
 									$res =$GLOBALS['TYPO3_DB']->exec_INSERTquery($key, $record);
 									$new_orders_products_id=$GLOBALS['TYPO3_DB']->sql_insert_id();
 									if ($new_orders_products_id) {
@@ -962,7 +961,7 @@ switch ($_REQUEST['action']) {
 									} else {
 										t3lib_utility_Debug::debug($GLOBALS['TYPO3_DB']->debug_lastBuiltQuery, 'last built query');
 									}
-									$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = FALSE;
+									$GLOBALS['TYPO3_DB']->store_lastBuiltQuery=false;
 								}
 								break;
 							case 'tx_multishop_orders_status_history':
@@ -1332,12 +1331,13 @@ if (count($shops)>0) {
 		}
 	}
 	if ($options) {
+		$typoLink=$t3lib_BEfuncAlias::getModuleUrl('web_txmultishopM1');
 		$tmpcontent='';
 		$tmpcontent.='<select name="configuration_copier_pid">'."\n".$options."\n".'</select>'."\n";
 		$content.='
 		<fieldset><legend>Multishop Configuration</legend>
 		<fieldset><legend>Downloader / Duplicator</legend>
-		<form action="'.BackendUtility::getModuleUrl('web_txmultishopM1').'" method="post" enctype="multipart/form-data">
+		<form action="'.$typoLink.'" method="post" enctype="multipart/form-data">
 		<input name="action" type="hidden" value="configuration_actions" />
 		'.$tmpcontent.'
 			<table>
@@ -1364,9 +1364,10 @@ if (count($shops)>0) {
 			}
 		}
 		if ($options) {
+			$typoLink=$t3lib_BEfuncAlias::getModuleUrl('web_txmultishopM1');
 			$content.='
 			<fieldset><legend>Uploader</legend>
-			<form action="'.BackendUtility::getModuleUrl('web_txmultishopM1').'" method="post" enctype="multipart/form-data">
+			<form action="'.$typoLink.'" method="post" enctype="multipart/form-data">
 				Target shop
 		';
 			$content.='<select name="target_pid">'."\n";
@@ -1402,8 +1403,9 @@ if (count($multishop_content_objects)>0) {
 	foreach ($multishop_content_objects as $content_object) {
 		$pageinfo=t3lib_BEfunc::readPageAccess($content_object['pid'], '');
 		if (is_numeric($pageinfo['uid'])) {
+			$typoLink=$t3lib_BEfuncAlias::getModuleUrl('web_txmultishopM1');
 			$content.='
-							<form action="'.BackendUtility::getModuleUrl('web_txmultishopM1').'" method="post" enctype="multipart/form-data">
+							<form action="'.$typoLink.'" method="post" enctype="multipart/form-data">
 							<div class="shadow_bottom">
 							<fieldset>
 							<legend><a href="#" onclick="'.htmlspecialchars(t3lib_BEfunc::viewOnClick($content_object['pid'], $this->backPath, t3lib_BEfunc::BEgetRootLine($content_object['pid']), '', '')).'">'.trim($pageinfo['_thePathFull'], '/').'</a> <a title="View" href="#" onclick="'.htmlspecialchars(t3lib_BEfunc::viewOnClick($content_object['pid'], $this->backPath, t3lib_BEfunc::BEgetRootLine($content_object['pid']), '', '')).'">'.$this->Typo3Icon('actions-document-view', 'View').'</a> <a title="Delete" href="'.t3lib_div::linkThisScript().'&page_uid='.$content_object['pid'].'&action=erase" onClick="return CONFIRM(\'Are you sure you want to delete the products, categories, orders, cms pages and settings of: '.$pageinfo['_thePathFull'].'?\')">'.$this->Typo3Icon('actions-edit-delete', 'Delete').'</a>

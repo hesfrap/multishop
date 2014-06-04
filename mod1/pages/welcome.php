@@ -1,5 +1,4 @@
 <?php
-use TYPO3\CMS\Backend\Utility\BackendUtility;
 // mod.php?&amp;id=0&amp;M=web_txmultishopM1&amp;SET[function]='+this.options[this.selectedIndex].value,this);">
 $pages=array();
 foreach ($this->MOD_MENU['function'] as $key=>$label) {
@@ -8,13 +7,15 @@ foreach ($this->MOD_MENU['function'] as $key=>$label) {
 	$params['SET[function]']=$key;
 	switch ($key) {
 		case '2':
+			$typoLink=$t3lib_BEfuncAlias::getModuleUrl('web_txmultishopM1', $params);
 			$pages[$key]['title']=$label;
-			$pages[$key]['url']=BackendUtility::getModuleUrl('web_txmultishopM1', $params);
+			$pages[$key]['url']=$typoLink;
 			$pages[$key]['description']='Page for maintaining the Multishop Plugin. Here you can easily backup and restore your Multishop database, resize catalog images and do much much more.';
 			break;
 		case '3':
+			$typoLink=$t3lib_BEfuncAlias::getModuleUrl('web_txmultishopM1', $params);
 			$pages[$key]['title']=$label;
-			$pages[$key]['url']=BackendUtility::getModuleUrl('web_txmultishopM1', $params);
+			$pages[$key]['url']=$typoLink;
 			$pages[$key]['description']='Are you new to TYPO3 Multishop? Here you can find details about how to configure Multishop on this TYPO3 Installation.';
 			break;
 	}
