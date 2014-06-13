@@ -6,13 +6,37 @@ $GLOBALS['TSFE']->additionalHeaderData[]='
 <script type="text/javascript" src="'.t3lib_extMgm::siteRelPath($this->extKey).'js/multiselect/js/ui.multiselect_normal.js"></script>
 <link href="'.t3lib_extMgm::siteRelPath($this->extKey).'js/multiselect/css/ui.multiselect.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript">
-	jQuery(function($){
+	jQuery(document).ready(function($) {
 		$(".multiselect").multiselect();
+		$(\'.msadminRunImporter\').click(function(e) {
+			e.preventDefault();
+			var linkTarget=$(this).attr("href");
+			ifConfirm($(this).attr("data-dialog-title"),$(this).attr("data-dialog-body"),function() {
+				$(this).dialog("close");
+				$(this).hide();
+				msAdminBlockUi();
+				window.location.href=linkTarget;
+			});
+		});
+
+		$(document).on("click", ".hide_advanced_import_radio", function() {
+			$(this).parent().find(".hide").hide();
+		});
+		$(document).on("click", ".advanced_import_radio", function() {
+			$(this).parent().find(".hide").show();
+		});
+		$(".admin_menu_upload_productfeed").click(function(event) {
+			var cid=$(this).attr("cid");
+			var cloned_productfeed_form=$("#upload_productfeed_form").clone();
+			cloned_productfeed_form.find(".cid").attr("value",cid);
+			jQuery("#productfeed_form_container_"+cid).html(\'<form action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_import').'" method="post" enctype="multipart/form-data" name="form1" id="form1" class="blockSubmitForm">\'+cloned_productfeed_form.html()+\'</form>\');
+			jQuery("#productfeed_form_container_"+cid).slideToggle(\'slow\', function(){});
+			event.preventDefault();
+		});
 	});
 </script>	
 ';
 $max_category_level=4;
-$GLOBALS['TSFE']->additionalHeaderData['tx_multishop_pi1_block_ui']=mslib_fe::jQueryBlockUI();
 if ($this->get['run_as_cron']) {
 	$lock_file=$this->DOCUMENT_ROOT.'uploads/tx_multishop/log/importer_is_running_'.$this->HTTP_HOST.'_'.$this->get['job_id'];
 	// Clears file status cache
@@ -36,6 +60,7 @@ if ($this->get['run_as_cron']) {
 }
 set_time_limit(86400);
 ignore_user_abort(true);
+$sortOrderArray=array();
 $language_id=$GLOBALS['TSFE']->sys_language_uid;
 // define the different columns
 $coltypes=array();
@@ -206,26 +231,6 @@ if (is_numeric($this->get['job_id']) and is_numeric($this->get['status'])) {
 	$res=$GLOBALS['TYPO3_DB']->sql_query($query);
 	// update the status of a job eof
 }
-$GLOBALS['TSFE']->additionalHeaderData[]='
-	<script type="text/javascript">
-	jQuery(document).ready(function($){
-		$(document).on("click", ".hide_advanced_import_radio", function() {
-			$(this).parent().find(".hide").hide();
-		});									
-		$(document).on("click", ".advanced_import_radio", function() {
-			$(this).parent().find(".hide").show();
-		});
-		$(".admin_menu_upload_productfeed").click(function(event) {
-			var cid=$(this).attr("cid");
-			var cloned_productfeed_form=$("#upload_productfeed_form").clone();
-			cloned_productfeed_form.find(".cid").attr("value",cid);
-			jQuery("#productfeed_form_container_"+cid).html(\'<form action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_import').'" method="post" enctype="multipart/form-data" name="form1" id="form1">\'+cloned_productfeed_form.html()+\'</form>\');
-			jQuery("#productfeed_form_container_"+cid).slideToggle(\'slow\', function(){});
-			event.preventDefault();
-		});
-	});			
-	</script>			
-';
 $tabs=array();
 /*
 $html=mslib_fe::tep_get_categories_edit('',$GLOBALS['TSFE']->fe_user->user['uid']);
@@ -483,6 +488,7 @@ if ($this->post['action']=='category-insert') {
 				$tmpcontent.='
 				<tr class="'.$switch.'">
 					<td class="first">
+					<div class="msAdminSelect2Wrapper bigdropWider">
 					<select name="select['.$i.']" id="select['.$i.']" class="select_columns_fields">
 						<option value="">'.$this->pi_getLL('skip').'</option>
 						';
@@ -491,10 +497,11 @@ if ($this->post['action']=='category-insert') {
 				}
 				$tmpcontent.='
 					</select>
+					</div>
 					<input name="advanced_settings" class="importer_advanced_settings msadmin_button" type="button" value="'.$this->pi_getLL('admin_advanced_settings').'" />
 					<fieldset class="advanced_settings_container hide">
 						<div class="form-field">
-							aux
+							<span>aux</span>
 							<input name="input['.$i.']" type="text" style="width:150px;" value="'.htmlspecialchars($this->post['input'][$i]).'" />
 						</div>	
 					</fieldset>				
@@ -578,7 +585,8 @@ if ($this->post['action']=='category-insert') {
 					$(this).next().toggle();			
 				});
 				$(\'.select_columns_fields\').select2({
-					width:\'550px\'
+					dropdownCssClass: "bigdropWider", // apply css that makes the dropdown taller
+					width:\'220px\'
 				});
 			});			
 			</script>			
@@ -589,7 +597,7 @@ if ($this->post['action']=='category-insert') {
 		$tmpcontent.='<strong>Products cannot be retrieved.</strong>';
 	}
 	// print form 
-	$combinedContent='<form id="product_import_form" class="" name="form1" method="post" action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_import').'">
+	$combinedContent='<form id="product_import_form" class="blockSubmitForm" name="form1" method="post" action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_import').'">
 	<input name="consolidate" type="hidden" value="'.$this->post['consolidate'].'" />
 	<input name="os" type="hidden" value="'.$this->post['os'].'" />
 	<input name="escape_first_line" type="hidden" value="'.$this->post['escape_first_line'].'" />
@@ -613,6 +621,7 @@ if ($this->post['action']=='category-insert') {
 	}
 	$combinedContent.=$tmpcontent;
 	$combinedContent.='
+			<br />
 			<fieldset>
 			<legend>'.$this->pi_getLL('save_import_task').'</legend>
 			<div class="account-field">					
@@ -1881,7 +1890,7 @@ if ($this->post['action']=='category-insert') {
 										$res=$GLOBALS['TYPO3_DB']->sql_query($query);
 									}
 								}
-							} elseif ($item['updated_products_id']) {
+							} elseif ($item['products_price'] && $item['updated_products_id']) {
 								// delete any special
 								$query=$GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_specials', 'products_id='.$item['updated_products_id']);
 								$res=$GLOBALS['TYPO3_DB']->sql_query($query);
@@ -1898,7 +1907,12 @@ if ($this->post['action']=='category-insert') {
 								if (isset($item['products_sort_order'])) {
 									$updateArray['sort_order']=$item['products_sort_order'];
 								} else {
-									$updateArray['sort_order']=time();
+									if ($sortOrderArray['tx_multishop_products_to_categories']['sort_order']) {
+										$sortOrderArray['tx_multishop_products_to_categories']['sort_order']=+1;
+									} else {
+										$sortOrderArray['tx_multishop_products_to_categories']['sort_order']=time();
+									}
+									$updateArray['sort_order']=$sortOrderArray['tx_multishop_products_to_categories']['sort_order'];
 								}
 								$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_to_categories', $updateArray);
 								$res=$GLOBALS['TYPO3_DB']->sql_query($query);
@@ -2006,6 +2020,12 @@ if ($this->post['action']=='category-insert') {
 							if (isset($item['products_sort_order'])) {
 								$updateArray['sort_order']=$item['products_sort_order'];
 							}
+							/*
+							if (!isset($item['products_status'])) {
+								// incremental updates must also have status=1
+								$updateArray['products_status']=1;
+							}
+							*/
 							// custom hook that can be controlled by third-party plugin
 							if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_import.php']['insertProductPreHook'])) {
 								$params=array(
@@ -2074,7 +2094,12 @@ if ($this->post['action']=='category-insert') {
 								if (isset($item['products_sort_order'])) {
 									$updateArray['sort_order']=$item['products_sort_order'];
 								} else {
-									$updateArray['sort_order']=time();
+									if ($sortOrderArray['tx_multishop_products_to_categories']['sort_order']) {
+										$sortOrderArray['tx_multishop_products_to_categories']['sort_order']=+1;
+									} else {
+										$sortOrderArray['tx_multishop_products_to_categories']['sort_order']=time();
+									}
+									$updateArray['sort_order']=$sortOrderArray['tx_multishop_products_to_categories']['sort_order'];
 								}
 								$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_to_categories', $updateArray);
 								$res=$GLOBALS['TYPO3_DB']->sql_query($query);
@@ -2141,7 +2166,8 @@ if ($this->post['action']=='category-insert') {
 									}
 									if ($vatRate) {
 										// reduce VAT from the price
-										$option_row[2]=number_format(($option_row[2]/(100+$vatRate)*100),16);
+										$price=($option_row[2]/(100+$vatRate)*100);
+										$option_row[2]=number_format($price,16,'.','');
 									}
 								}
 								// now add it to the attribute_option_value array for further processing
@@ -2170,8 +2196,19 @@ if ($this->post['action']=='category-insert') {
 										$products_options_id=$rs_chk['products_options_id'];
 									} else {
 										// add the option
-										$sql_ins="insert into tx_multishop_products_options (products_options_id, language_id, products_options_name, listtype, attributes_values,sort_order) values ('', '".$language_id."', '".addslashes($option_name)."', 'pulldownmenu', '0',".time().")";
-										$GLOBALS['TYPO3_DB']->sql_query($sql_ins);
+										$insertArray=array();
+										$insertArray['language_id']=$language_id;
+										$insertArray['products_options_name']=$option_name;
+										$insertArray['listtype']='pulldownmenu';
+										$insertArray['attributes_values']='0';
+										if ($sortOrderArray['tx_multishop_products_options']['sort_order']) {
+											$sortOrderArray['tx_multishop_products_options']['sort_order']++;
+										} else {
+											$sortOrderArray['tx_multishop_products_options']['sort_order']=time();
+										}
+										$insertArray['sort_order']=$sortOrderArray['tx_multishop_products_options']['sort_order'];
+										$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_options', $insertArray);
+										$GLOBALS['TYPO3_DB']->sql_query($query);
 										$products_options_id=$GLOBALS['TYPO3_DB']->sql_insert_id();
 									}
 									if ($products_options_id and $option_value) {
@@ -2186,8 +2223,11 @@ if ($this->post['action']=='category-insert') {
 											$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
 											$rows2=$GLOBALS['TYPO3_DB']->sql_num_rows($qry2);
 											if (!$rows2) {
-												$str2="INSERT into tx_multishop_products_options_values (language_id,products_options_values_id,products_options_values_name) VALUES (".$language_id.",'','".addslashes($option_value)."')";
-												$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
+												$insertArray=array();
+												$insertArray['language_id']=$language_id;
+												$insertArray['products_options_values_name']=$option_value;
+												$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_options_values', $insertArray);
+												$GLOBALS['TYPO3_DB']->sql_query($query);
 												$option_value_id=$GLOBALS['TYPO3_DB']->sql_insert_id();
 											} else {
 												$row2=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry2);
@@ -2199,15 +2239,32 @@ if ($this->post['action']=='category-insert') {
 												$query=$GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_products_attributes', 'products_id='.$products_id.' and options_id=\''.$products_options_id.'\' and options_values_id=\''.$option_value_id.'\'');
 												$res=$GLOBALS['TYPO3_DB']->sql_query($query);
 											}
-											$query=$GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_products_options_values_to_products_options', 'products_options_id='.$products_options_id." and products_options_values_id='".$option_value_id."'");
-											$res=$GLOBALS['TYPO3_DB']->sql_query($query);
-											$str2="INSERT into tx_multishop_products_options_values_to_products_options  (products_options_id,products_options_values_id,sort_order) VALUES ('".$products_options_id."','".$option_value_id."',".time().")";
-											$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
+											//$query=$GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_products_options_values_to_products_options', 'products_options_id='.$products_options_id." and products_options_values_id='".$option_value_id."'");
+											//$res=$GLOBALS['TYPO3_DB']->sql_query($query);
+											$filter=array();
+											$filter[]='products_options_values_id=\''.addslashes($option_value_id).'\'';
+											if (!mslib_befe::ifExists($products_options_id, 'tx_multishop_products_options_values_to_products_options', 'products_options_id', $filter)) {
+												$insertArray=array();
+												$insertArray['products_options_id']=$products_options_id;
+												$insertArray['products_options_values_id']=$option_value_id;
+												if ($sortOrderArray['tx_multishop_products_options_values_to_products_options']['sort_order']) {
+													$sortOrderArray['tx_multishop_products_options_values_to_products_options']['sort_order']++;
+												} else {
+													$sortOrderArray['tx_multishop_products_options_values_to_products_options']['sort_order']=time();
+												}
+												$insertArray['sort_order']=$sortOrderArray['tx_multishop_products_options_values_to_products_options']['sort_order'];
+												$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_options_values_to_products_options', $insertArray);
+												$GLOBALS['TYPO3_DB']->sql_query($query);
+											}
 											if ($products_id and $products_options_id and $option_value_id) {
-												$str2="INSERT into tx_multishop_products_attributes   (products_id,options_id,options_values_id,options_values_price,price_prefix) VALUES ('".$products_id."','".$products_options_id."','".$option_value_id."','".$option_price."','+')";
-												$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
-											} else {
-												$str2="INSERT into tx_multishop_products_attributes   (products_id,options_id,options_values_id,options_values_price,price_prefix) VALUES ('".$products_id."','".$products_options_id."','".$option_value_id."','".$option_price."','+')";
+												$insertArray=array();
+												$insertArray['products_id']=$products_id;
+												$insertArray['options_id']=$products_options_id;
+												$insertArray['options_values_id']=$option_value_id;
+												$insertArray['options_values_price']=$option_price;
+												$insertArray['price_prefix']='+';
+												$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_attributes', $insertArray);
+												$GLOBALS['TYPO3_DB']->sql_query($query);
 											}
 										}
 									}
@@ -2234,8 +2291,11 @@ if ($this->post['action']=='category-insert') {
 									$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
 									$rows2=$GLOBALS['TYPO3_DB']->sql_num_rows($qry2);
 									if (!$rows2) {
-										$str2="INSERT into tx_multishop_products_options_values (language_id,products_options_values_id,products_options_values_name) VALUES (".$language_id.",'','".addslashes($option_value)."')";
-										$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
+										$insertArray=array();
+										$insertArray['language_id']=$language_id;
+										$insertArray['products_options_values_name']=$option_value;
+										$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_options_values', $insertArray);
+										$GLOBALS['TYPO3_DB']->sql_query($query);
 										$option_value_id=$GLOBALS['TYPO3_DB']->sql_insert_id();
 									} else {
 										$row2=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry2);
@@ -2248,8 +2308,17 @@ if ($this->post['action']=='category-insert') {
 									$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
 									$rows2=$GLOBALS['TYPO3_DB']->sql_num_rows($qry2);
 									if (!$rows2) {
-										$str2="INSERT into tx_multishop_products_options_values_to_products_options  (products_options_id,products_options_values_id,sort_order) VALUES ('".$products_options_id."','".$option_value_id."',".time().")";
-										$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
+										$insertArray=array();
+										$insertArray['products_options_id']=$products_options_id;
+										$insertArray['products_options_values_id']=$option_value_id;
+										if ($sortOrderArray['tx_multishop_products_options_values_to_products_options']['sort_order']) {
+											$sortOrderArray['tx_multishop_products_options_values_to_products_options']['sort_order']++;
+										} else {
+											$sortOrderArray['tx_multishop_products_options_values_to_products_options']['sort_order']=time();
+										}
+										$insertArray['sort_order']=$sortOrderArray['tx_multishop_products_options_values_to_products_options']['sort_order'];
+										$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_options_values_to_products_options', $insertArray);
+										$GLOBALS['TYPO3_DB']->sql_query($query);
 									}
 									// added 2013-07-31 due to double records when re-importing the same partial feed
 									if ($this->post['incremental_update'] and $products_id) {
@@ -2399,7 +2468,7 @@ if ($this->post['action']=='category-insert') {
 }
 if ($this->post['action']!='product-import-preview') {
 	$tmptab='
-	<form action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_import').'" method="post" enctype="multipart/form-data" name="form1" id="form1">
+	<form action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_import').'" method="post" enctype="multipart/form-data" name="form1" id="form1" class="blockSubmitForm">
 	'.$this->ms['upload_productfeed_form'].'
 				<input name="cid" type="hidden" value="0" />
 	</form>';
@@ -2439,7 +2508,7 @@ if ($this->post['action']!='product-import-preview') {
 				}
 				$schedule_content.='<tr class="'.$switch.'">';
 				$schedule_content.='<td>'.$job['prefix_source_name'].'</td>
-				<td><a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&job_id='.$job['id']).'&action=edit_job">'.$job['name'].'</a></td>';
+				<td><a class="blockAhrefLink" href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&job_id='.$job['id']).'&action=edit_job">'.$job['name'].'</a></td>';
 				$category_name='<form method="get" action="index.php">
 			<input name="id" type="hidden" value="'.$this->showCatalogFromPage.'" />
 			<input name="type" type="hidden" value="2003" />
@@ -2452,7 +2521,7 @@ if ($this->post['action']!='product-import-preview') {
 				';
 				$schedule_content.='<td nowrap align="right">'.date("Y-m-d", $job['last_run']).'<br />'.date("G:i:s", $job['last_run']).'</td>';
 				if (!$job['period']) {
-					$schedule_content.='<td>manual<br /><a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&job_id='.$job['id'].'&action=run_job&limit=99999999').'" class="msadmin_button" onClick="return CONFIRM(\''.addslashes($this->pi_getLL('are_you_sure_you_want_to_run_the_import_job')).': '.htmlspecialchars(addslashes($job['name'])).'?\')"><i>'.$this->pi_getLL('run_now').'</i></a><br /><a href="" class="copy_to_clipboard" rel="'.htmlentities('/usr/bin/wget -O /dev/null --tries=1 --timeout=86400 -q "'.$this->FULL_HTTP_URL.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&job_id='.$job['id'].'&code='.$job['code'].'&action=run_job&run_as_cron=1&limit=99999999', 1).'" >/dev/null 2>&1').'" ><i>'.$this->pi_getLL('run_by_crontab').'</i></a></td>';
+					$schedule_content.='<td>manual<br /><a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&job_id='.$job['id'].'&action=run_job&limit=99999999').'" class="msadmin_button msadminRunImporter" data-dialog-title=\'Warning\' data-dialog-body="'.addslashes(htmlspecialchars($this->pi_getLL('are_you_sure_you_want_to_run_the_import_job').': '.$job['name'].'?')).'"><i>'.$this->pi_getLL('run_now').'</i></a><br /><a href="" class="copy_to_clipboard" rel="'.htmlentities('/usr/bin/wget -O /dev/null --tries=1 --timeout=86400 -q "'.$this->FULL_HTTP_URL.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&job_id='.$job['id'].'&code='.$job['code'].'&action=run_job&run_as_cron=1&limit=99999999', 1).'" >/dev/null 2>&1').'" ><i>'.$this->pi_getLL('run_by_crontab').'</i></a></td>';
 				} else {
 					$schedule_content.='<td>'.date("Y-m-d G:i:s", $job['last_run']+$job['period']).'</td>';
 				}
@@ -2482,7 +2551,7 @@ if ($this->post['action']!='product-import-preview') {
 				$schedule_content.='
 				</td>
 				<td>
-					 <form action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_import').'" method="post" enctype="multipart/form-data" name="form1" id="form1">
+					 <form action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_import').'" method="post" enctype="multipart/form-data" name="form1" id="form1" class="blockSubmitForm">
 						<input type="file" name="file" />		
 						<input type="submit" name="Submit" class="submit msadmin_button" id="cl_submit" value="'.$this->pi_getLL('upload').'" />
 						<input name="skip_import" type="hidden" value="1" />

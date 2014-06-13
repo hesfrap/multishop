@@ -515,13 +515,20 @@ if (is_numeric($this->get['orders_id'])) {
 			}
 		}
 		if ($close_window) {
-			echo $this->pi_getLL('update_processed').'.';
-			echo '
-			<script>
-			window.parent.location.href = \''.$this->FULL_HTTP_URL.mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_orders').'\';
-			</script>
-			';
-			exit();
+			if ($this->post['tx_multishop_pi1']['referrer']) {
+				header("Location: ".$this->post['tx_multishop_pi1']['referrer']);
+				exit();
+			} else {
+				header("Location: ".$this->FULL_HTTP_URL.mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_orders',1));
+				exit();
+			}
+			if ($this->post['tx_multishop_pi1']['referrer']) {
+				header("Location: ".$this->post['tx_multishop_pi1']['referrer']);
+				exit();
+			} else {
+				header("Location: ".$this->FULL_HTTP_URL.mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_orders',1));
+				exit();
+			}
 		}
 		$save_block='
 			<div class="save_block">
@@ -1226,7 +1233,7 @@ if (is_numeric($this->get['orders_id'])) {
 								$manual_attr['optprice'][]=$options['options_values_price'];
 							}
 						}
-						$sql_option="select po.products_options_name, po.products_options_id from tx_multishop_products_attributes pa left join tx_multishop_products_options po on pa.options_id = po.products_options_id where po.hide_in_cart=0 and po.language_id = '".$this->sys_language_uid."' and pa.products_id = ".$order['products_id']." group by pa.options_id";
+						$sql_option="select po.products_options_name, po.products_options_id from tx_multishop_products_attributes pa left join tx_multishop_products_options po on pa.options_id = po.products_options_id where (po.hide_in_cart=0 or po.hide_in_cart is null) and po.language_id = '".$this->sys_language_uid."' and pa.products_id = ".$order['products_id']." group by pa.options_id";
 						$qry_option=$GLOBALS['TYPO3_DB']->sql_query($sql_option);
 						while (($rs_option=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_option))!=false) {
 							$tmpcontent.='<tr class="'.$tr_type.'"><td>&nbsp;</td><td>&nbsp;</td>';
@@ -1362,7 +1369,7 @@ if (is_numeric($this->get['orders_id'])) {
 					}
 				} else {
 					if ($this->get['edit_product'] && $this->get['order_pid']==$order['orders_products_id']) {
-						$sql_option="select po.products_options_name, po.products_options_id from tx_multishop_products_attributes pa left join tx_multishop_products_options po on pa.options_id = po.products_options_id where po.hide_in_cart=0 and po.language_id = '".$this->sys_language_uid."' and pa.products_id = ".$order['products_id']." group by pa.options_id";
+						$sql_option="select po.products_options_name, po.products_options_id from tx_multishop_products_attributes pa left join tx_multishop_products_options po on pa.options_id = po.products_options_id where (po.hide_in_cart=0 or po.hide_in_cart is null) and po.language_id = '".$this->sys_language_uid."' and pa.products_id = ".$order['products_id']." group by pa.options_id";
 						$qry_option=$GLOBALS['TYPO3_DB']->sql_query($sql_option);
 						while (($rs_option=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry_option))!=false) {
 							$tmpcontent.='<tr class="'.$tr_type.'"><td>&nbsp;</td><td>&nbsp;</td>';
@@ -2210,10 +2217,17 @@ $("#button_manual_new_product").click(function(e) {
 		$count++;
 		$content.='<li'.(($count==1) ? ' class="active"' : '').'><a href="#'.$key.'">'.$value[0].'</a></li>';
 	}
+	$subpartArray['###VALUE_REFERRER###']='';
+	if ($this->post['tx_multishop_pi1']['referrer']) {
+		$subpartArray['###VALUE_REFERRER###']=$this->post['tx_multishop_pi1']['referrer'];
+	} else {
+		$subpartArray['###VALUE_REFERRER###']=$_SERVER['HTTP_REFERER'];
+	}
 	$content.='
 		</ul>
 		<div class="tab_container">
-	<form class="admin_product_edit" name="admin_product_edit_'.$product['products_id'].'" id="admin_product_edit_'.$product['products_id'].'" method="post" action="'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=admin_ajax&action=edit_order&orders_id='.$_REQUEST['orders_id']).'" enctype="multipart/form-data">
+	<form class="admin_product_edit" name="admin_product_edit_'.$product['products_id'].'" id="admin_product_edit_'.$product['products_id'].'" method="post" action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_ajax&action=edit_order&orders_id='.$_REQUEST['orders_id']).'" enctype="multipart/form-data">
+		<input type="hidden" name="tx_multishop_pi1[referrer]" id="msAdminReferrer" value="'.$subpartArray['###VALUE_REFERRER###'].'" >
 		';
 	$count=0;
 	foreach ($tabs as $key=>$value) {

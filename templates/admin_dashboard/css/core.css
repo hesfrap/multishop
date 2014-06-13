@@ -79,8 +79,9 @@ body { background:#000 url(../images/msadmin_dash_bg.gif) left top repeat-x; fon
 #msadmin_content #tx_multishop_pi1_core #tab-container table#product_import_table table#msOrderDetailsSubTotalTable td.msOrderDetailsSubTotalValue { text-align:right; }
 
 #msadmin_content ul.admin_search_result { overflow:hidden; width:100%; }
-#msadmin_content li.ui-menu-item.ui-menu-item-alternate { float:left; width:19%; margin:0 0.5% 10px;}
-#msadmin_content li.ui-menu-item.ui-menu-item-alternate a { display:block; border:1px solid #ddd; border-radius:6px; text-decoration:none; padding:10px; }
+#msadmin_content ul.admin_search_result li.ui-category { clear:left; }
+#msadmin_content li.ui-menu-item.ui-menu-item-alternate { display:inline-block; width:19%; margin:0 0.5% 10px; vertical-align:top; }
+#msadmin_content li.ui-menu-item.ui-menu-item-alternate a { display:block; min-height:30px; border:1px solid #ddd; border-radius:6px; text-decoration:none; padding:10px; }
 #msadmin_content li.ui-menu-item.ui-menu-item-alternate a:hover { border-color:#999; text-decoration:none !important; }
 #msadmin_content li.ui-menu-item.ui-menu-item-alternate .ajax_products_image_wrapper { height:50px; text-align:center; padding:0 0 5px; }
 #msadmin_content li.ui-menu-item.ui-menu-item-alternate .ajax_products_search_item .ajax_products_name { height:30px; font-weight:bold; color:#E42434; }
@@ -108,3 +109,20 @@ body { background:#000 url(../images/msadmin_dash_bg.gif) left top repeat-x; fon
 #msadmin_section #msadmin_content #tx_multishop_pi1_core .formfield-wrapper ul.netopsVerticalList li a#noDeselectNotAvailableDomains { display:inline-block; background:url(../images/world_delete.png) left 2px no-repeat; padding-top:3px; padding-left:20px; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core .formfield-wrapper ul.netopsVerticalList li input[type="checkbox"] { float:left; margin:4px 5px 0 0; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core .formfield-wrapper ul.netopsVerticalList li label { float:left; padding-top:3px; }
+
+#msadmin_section #msadmin_content #tx_multishop_pi1_core .bigdrop .select2-dropdown-open .select2-choice { width:392px !important; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core .bigdropWider .select2-dropdown-open .select2-choice { width:692px !important; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core .select2-container .select2-choice { color:#333; }
+.msAdminSelect2Wrapper.bigdrop,
+.msAdminSelect2Wrapper.bigdropWider { margin:0 0 10px; }
+.msAdminHighslidePopup .select2-container-active h3 { background:none; }
+.select2-drop.select2-drop-active.bigdropWider { width:702px !important; border-color:#444 !important; z-index:10003 !important; }
+.select2-container-active .select2-choice,
+.select2-container-active .select2-choices,
+.select2-drop-active { border-color:#444 !important; }
+.select2-results .select2-highlighted { background:#444 !important; }
+.select2-results .select2-result-label { border-bottom:1px solid #dedede; padding:5px 7px 5px; }
+
+#msadmin_section #msadmin_content #tx_multishop_pi1_core fieldset.advanced_settings_container { margin-top:10px; padding-top:10px; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core fieldset.advanced_settings_container * { display:inline-block; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core fieldset.advanced_settings_container input[type="text"] { margin-right:0; }

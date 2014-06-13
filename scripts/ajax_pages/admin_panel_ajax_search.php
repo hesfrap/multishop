@@ -3,6 +3,8 @@ if (!defined('TYPO3_MODE')) {
 	die ('Access denied.');
 }
 if ($this->ADMIN_USER) {
+	$page=($this->get['context']['next_page']);
+	$p=!$page ? 0 : $this->get['context']['next_page'];
 	if ($this->ms['MODULES']['CACHE_FRONT_END'] and !$this->ms['MODULES']['CACHE_TIME_OUT_SEARCH_PAGES']) {
 		$this->ms['MODULES']['CACHE_FRONT_END']=0;
 	}
@@ -13,7 +15,7 @@ if ($this->ADMIN_USER) {
 			'lifeTime'=>$this->ms['MODULES']['CACHE_TIME_OUT_SEARCH_PAGES']
 		);
 		$Cache_Lite=new Cache_Lite($options);
-		$string=md5('ajax_products_search_'.$this->showCatalogFromPage.'_'.$_REQUEST['q'].'_'.$this->get['page']);
+		$string=md5('ajax_products_search_'.$this->showCatalogFromPage.'_'.$_REQUEST['q'].'_'.$page);
 	}
 	if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRONT_END'] and !$content=$Cache_Lite->get($string))) {
 		$data=array();
@@ -97,12 +99,10 @@ if ($this->ADMIN_USER) {
 			}
 			return $text;
 		}
-
-		$p=!$this->get['page'] ? 0 : $this->get['page'];
 		if (!is_numeric($p)) {
 			$p=0;
 		}
-		$limit=5;
+		$limit=20;
 		$offset=$p*$limit;
 		$this->get['limit']=$limit;
 		$global_max_page=0;
@@ -114,6 +114,10 @@ if ($this->ADMIN_USER) {
 		$have_paging=false;
 		$results_counter=0;
 		if (is_numeric($this->get['q'])) {
+			if ($this->ADMIN_USER) {
+				$modules['admin_cms']=1;
+				$modules['admin_settings']=1;
+			}
 			// numeric so first find orders and customer ids
 			$modules['orders']=1;
 			$modules['invoices']=1;
@@ -126,17 +130,27 @@ if ($this->ADMIN_USER) {
 			$categories_filter[]='c.products_id like "'.addslashes($this->get['q']).'%"';
 		} else {
 			// string
-			$modules['products']=1;
-			$modules['categories']=1;
-			$modules['orders']=1;
-			$modules['customers']=1;
 			if ($this->ADMIN_USER) {
 				$modules['admin_cms']=1;
 				$modules['admin_settings']=1;
 			}
+			$modules['invoices']=1;
+			$modules['orders']=1;
+			$modules['customers']=1;
+			$modules['products']=1;
+			$modules['categories']=1;
+			$invoices_filter[]='i.invoice_id like "'.addslashes($this->get['q']).'%"';
 		}
+		if (isset($this->get['context']['section']) && !empty($this->get['context']['section'])) {
+			$section=$this->get['context']['section'];
+		} else {
+			$section='admin_cms';
+		}
+		$data_json=array();
+		$move_next_section=false;
+		$next_page=false;
 		// cms search
-		if ($modules['admin_cms']) {
+		if ($modules[$section] && $section=='admin_cms') {
 			$filter=array();
 			$having=array();
 			$match=array();
@@ -147,29 +161,52 @@ if ($this->ADMIN_USER) {
 			if (strlen($this->get['q'])>0) {
 				$items=array();
 				$items[]="cd.name LIKE '%".addslashes($this->get['q'])."%'";
-				//$items[] ="cd.content LIKE '%".addslashes($this->get['q'])."%'";				
+				//$items[] ="cd.content LIKE '%".addslashes($this->get['q'])."%'";
 				$filter[]='('.implode(" or ", $items).')';
 				$filter[]='c.status = 1';
 			}
 			//if (!$this->masterShop) $filter[]='page_uid='.$this->shop_pid;
 			$select[]='cd.id, cd.name';
 			$orderby[]='cd.name';
+			$pageset=array();
 			$pageset=mslib_fe::getCMSPageSet($filter, $offset, $this->get['limit'], $orderby, $having, $select, $where, $from);
 			$resultset['admin_cms']=$pageset;
-			$max_page=ceil($pageset['total_rows']/$limit);
-			if ($max_page>$global_max_page) {
-				$global_max_page=$max_page;
-			}
-			if ($pageset['total_rows']>$limit && ($p+1)<$max_page) {
-				$have_paging=true;
-			}
-			if ($pageset['total_rows']>0) {
-				$results_counter++;
+			if (count($resultset['admin_cms']['admin_cms'])>0) {
+				foreach ($resultset['admin_cms']['admin_cms'] as $category) {
+					if (!$tr_type or $tr_type=='even') {
+						$tr_type='odd';
+					} else {
+						$tr_type='even';
+					}
+					$prod=array();
+					$prod['is_children']=true;
+					$prod['Name']=substr($category['name'], 0, 50);
+					$prod['id']=md5($category['name']);
+					$prod['text']=$category['name'];
+					$prod['Title']=str_highlight($prod['Name'], $this->get['q']);
+					$prod['Link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cmt_id='.$category['id']).'&action=edit_cms';
+					$prod['Image']='';
+					$prod['Desc']='';
+					$prod['Price']='';
+					$prod['skeyword']=$this->get['q'];
+					$prod['Page']=$pages;
+					$prod['Product']=false;
+					$prod['SmallListing']=true;
+					$prod['EditIcons']='';
+					$data['listing']['cms'][]=$prod;
+				}
+				$next_page=true;
+			} else {
+				$move_next_section=true;
+				$section='admin_settings';
 			}
 		}
-		// cms search eof		
 		// admin_settings search
-		if ($modules['admin_settings']) {
+		if ($modules[$section] && $section=='admin_settings') {
+			if ($move_next_section && ($this->get['context']['section']!=$section || !isset($this->get['context']['section']))) {
+				$p=0;
+				$offset=$p*$limit;
+			}
 			$filter=array();
 			$having=array();
 			$match=array();
@@ -180,7 +217,7 @@ if ($this->ADMIN_USER) {
 			if (strlen($this->get['q'])>0) {
 				$items=array();
 				$items[]="c.configuration_title LIKE '%".addslashes($this->get['q'])."%'";
-				//$items[] ="c.description LIKE '%".addslashes($this->get['q'])."%'";				
+				//$items[] ="c.description LIKE '%".addslashes($this->get['q'])."%'";
 				$items[]="c.configuration_key LIKE '%".addslashes($this->get['q'])."%'";
 				$items[]="c.configuration_value LIKE '%".addslashes($this->get['q'])."%'";
 				$items[]="cv.configuration_value LIKE '%".addslashes($this->get['q'])."%'";
@@ -192,20 +229,213 @@ if ($this->ADMIN_USER) {
 			$orderby[]='c.configuration_title';
 			$pageset=mslib_fe::getAdminSettingsPageSet($filter, $offset, $this->get['limit'], $orderby, $having, $select, $where, $from);
 			$resultset['admin_settings']=$pageset;
-			$max_page=ceil($pageset['total_rows']/$limit);
-			if ($max_page>$global_max_page) {
-				$global_max_page=$max_page;
-			}
-			if ($pageset['total_rows']>$limit && ($p+1)<$max_page) {
-				$have_paging=true;
-			}
-			if ($pageset['total_rows']>0) {
-				$results_counter++;
+			if (count($resultset['admin_settings']['admin_settings'])>0) {
+				foreach ($resultset['admin_settings']['admin_settings'] as $category) {
+					if (!$tr_type or $tr_type=='even') {
+						$tr_type='odd';
+					} else {
+						$tr_type='even';
+					}
+					$prod=array();
+					$prod['is_children']=true;
+					$prod['Name']=substr($category['configuration_title'], 0, 50);
+					$prod['id']=md5($category['configuration_title']);
+					$prod['Title']=str_highlight($prod['Name'], $this->get['q']);
+					$prod['text']=$category['configuration_title'];
+					$prod['Link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&module_id='.$category['id']).'&action=edit_module';
+					$prod['Image']='';
+					$prod['Desc']='';
+					$prod['Price']='';
+					$prod['skeyword']=$this->get['q'];
+					$prod['Page']=$pages;
+					$prod['Product']=false;
+					$prod['SmallListing']=true;
+					$prod['EditIcons']='';
+					$data['listing']['admin_settings'][]=$prod;
+				}
+				$next_page=true;
+			} else {
+				$move_next_section=true;
+				$section='orders';
 			}
 		}
-		// admin_settings search eof	
+		// admin_settings search eof
+		// orders search
+		if ($modules[$section] && $section=='orders') {
+			if ($move_next_section && ($this->get['context']['section']!=$section || !isset($this->get['context']['section']))) {
+				$p=0;
+				$offset=$p*$limit;
+			}
+			$filter=$orders_filter;
+			$having=array();
+			$match=array();
+			$orderby=array();
+			$where=array();
+			$orderby=array();
+			$select=array();
+			if (strlen($this->get['q'])>0) {
+				$items=array();
+				$items[]="orders_id='".addslashes($this->get['q'])."'";
+				$items[]="customer_id LIKE '".addslashes($this->get['q'])."%'";
+				$filter[]='('.implode(" or ", $items).')';
+				$filter[]='(o.deleted=0)';
+			}
+			if (!$this->masterShop) {
+				$filter[]='o.page_uid='.$this->showCatalogFromPage;
+			}
+			$select[]='o.*, osd.name as orders_status';
+			$orderby[]='o.orders_id desc';
+			$pageset=mslib_fe::getOrdersPageSet($filter, $offset, $this->get['limit'], $orderby, $having, $select, $where, $from);
+			$resultset['orders']=$pageset;
+			if (count($resultset['orders']['orders'])) {
+				foreach ($resultset['orders']['orders'] as $order) {
+					if (!$tr_type or $tr_type=='even') {
+						$tr_type='odd';
+					} else {
+						$tr_type='even';
+					}
+					$prod=array();
+					$prod['is_children']=true;
+					$prod['Name']=substr($order['orders_id'], 0, 50);
+					$prod['id']=md5($order['orders_id']);
+					$prod['text']=$order['orders_id'];
+					$prod['Title']=str_highlight($prod['Name'], $this->get['q']);
+					$prod['Link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id']).'&action=edit_order';
+					$prod['Image']='';
+					$prod['Desc']='';
+					$prod['Price']='';
+					$prod['skeyword']=$this->get['q'];
+					$prod['Page']=$pages;
+					$prod['Product']=false;
+					$prod['SmallListing']=true;
+					$prod['EditIcons']='';
+					$data['listing']['orders'][]=$prod;
+				}
+				$next_page=true;
+			} else {
+				$move_next_section=true;
+				$section='invoices';
+			}
+		}
+		// orders search eof
+		// invoices search
+		if ($modules[$section] && $section=='invoices') {
+			if ($move_next_section && ($this->get['context']['section']!=$section || !isset($this->get['context']['section']))) {
+				$p=0;
+				$offset=$p*$limit;
+			}
+			$filter=$invoices_filter;
+			$having=array();
+			$match=array();
+			$orderby=array();
+			$where=array();
+			$orderby=array();
+			$select=array();
+			if (!$this->masterShop) {
+				$filter[]='i.page_uid='.$this->showCatalogFromPage;
+			}
+			$select[]='i.invoice_id,i.hash';
+			$orderby[]='i.id desc';
+			$pageset=mslib_fe::getInvoicesPageSet($filter, $offset, $this->get['limit'], $orderby, $having, $select, $where, $from);
+			$resultset['invoices']=$pageset;
+			if (count($resultset['invoices']['invoices'])) {
+				foreach ($resultset['invoices']['invoices'] as $invoice) {
+					if (!$tr_type or $tr_type=='even') {
+						$tr_type='odd';
+					} else {
+						$tr_type='even';
+					}
+					$prod=array();
+					$prod['is_children']=true;
+					$prod['Name']=substr($invoice['invoice_id'], 0, 50);
+					$prod['id']=md5($invoice['invoice_id']);
+					$prod['text']=$invoice['invoice_id'];
+					$prod['Title']=str_highlight($prod['Name'], $this->get['q']);
+					$prod['Link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=download_invoice&tx_multishop_pi1[hash]='.$invoice['hash']);
+					$prod['Image']='';
+					$prod['Desc']='';
+					$prod['Price']='';
+					$prod['skeyword']=$this->get['q'];
+					$prod['Page']=$pages;
+					$prod['Product']=false;
+					$prod['SmallListing']=true;
+					$prod['EditIcons']='';
+					$data['listing']['invoices'][]=$prod;
+				}
+				$next_page=true;
+			} else {
+				$move_next_section=true;
+				$section='customers';
+			}
+		}
+		// invoices eof
+		// customer search
+		if ($modules[$section] && $section=='customers') {
+			if ($move_next_section && ($this->get['context']['section']!=$section || !isset($this->get['context']['section']))) {
+				$p=0;
+				$offset=$p*$limit;
+			}
+			$filter=$customers_filter;
+			$having=array();
+			$match=array();
+			$orderby=array();
+			$where=array();
+			$orderby=array();
+			$select=array();
+			if (strlen($this->get['q'])>0) {
+				$items=array();
+				$items[]="f.company like '%".addslashes($this->get['q'])."%'";
+				$items[]="f.name like '%".addslashes($this->get['q'])."%'";
+				$items[]="f.email like '%".addslashes($this->get['q'])."%'";
+				$items[]="f.username like '%".addslashes($this->get['q'])."%'";
+				$filter[]='('.implode(" or ", $items).')';
+				$filter[]='(f.disable=0 and f.deleted=0)';
+			}
+			$pageset=mslib_fe::getCustomersPageSet($filter, $offset, 0, $orderby, $having, $select, $where);
+			$resultset['customers']=$pageset;
+			if (count($resultset['customers']['customers'])) {
+				foreach ($resultset['customers']['customers'] as $customer) {
+					if (!$tr_type or $tr_type=='even') {
+						$tr_type='odd';
+					} else {
+						$tr_type='even';
+					}
+					if (!$customer['company']) {
+						$customer['company']='N/A';
+					}
+					if (!$customer['name']) {
+						$customer['name']=$customer['username'];
+					}
+					$prod=array();
+					$prod['is_children']=true;
+					$prod['Name']=substr($customer['name'], 0, 50);
+					$prod['id']=md5($customer['name']);
+					$prod['text']=$customer['name'];
+					$prod['Title']=str_highlight($prod['Name'], $this->get['q']);
+					$prod['Link']=mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_ajax&tx_multishop_pi1[cid]='.$customer['uid'].'&action=edit_customer');
+					$prod['Image']='';
+					$prod['Desc']='';
+					$prod['Price']='';
+					$prod['skeyword']=$this->get['q'];
+					$prod['Page']=$pages;
+					$prod['Product']=false;
+					$prod['SmallListing']=true;
+					$prod['EditIcons']='';
+					$data['listing']['customers'][]=$prod;
+				}
+				$next_page=true;
+			} else {
+				$move_next_section=true;
+				$section='categories';
+			}
+		}
+		// customer search eof
 		// categories search
-		if ($modules['categories']) {
+		if ($modules[$section] && $section=='categories') {
+			if ($move_next_section && ($this->get['context']['section']!=$section || !isset($this->get['context']['section']))) {
+				$p=0;
+				$offset=$p*$limit;
+			}
 			$filter=$categories_filter;
 			$having=array();
 			$match=array();
@@ -227,146 +457,68 @@ if ($this->ADMIN_USER) {
 			$orderby[]='cd.categories_name';
 			$pageset=mslib_fe::getCategoriesPageSet($filter, $offset, $this->get['limit'], $orderby, $having, $select, $where, $from);
 			$resultset['categories']=$pageset;
-			$max_page=ceil($pageset['total_rows']/$limit);
-			if ($max_page>$global_max_page) {
-				$global_max_page=$max_page;
-			}
-			if ($pageset['total_rows']>$limit && ($p+1)<$max_page) {
-				$have_paging=true;
-			}
-			if ($pageset['total_rows']>0) {
-				$results_counter++;
-			}
-		}
-		// categories search eof		
-		// orders search
-		if ($modules['orders']) {
-			$filter=$orders_filter;
-			$having=array();
-			$match=array();
-			$orderby=array();
-			$where=array();
-			$orderby=array();
-			$select=array();
-			if (strlen($this->get['q'])>0) {
-				$items=array();
-				$items[]="orders_id='".addslashes($this->get['q'])."'";
-				$items[]="customer_id LIKE '%".addslashes($this->get['q'])."%'";
-				$filter[]='('.implode(" or ", $items).')';
-				$filter[]='(o.deleted=0)';
-			}
-			if (!$this->masterShop) {
-				$filter[]='o.page_uid='.$this->showCatalogFromPage;
-			}
-			$select[]='o.*, osd.name as orders_status';
-			$orderby[]='o.orders_id desc';
-			$pageset=mslib_fe::getOrdersPageSet($filter, $offset, $this->get['limit'], $orderby, $having, $select, $where, $from);
-			$resultset['orders']=$pageset;
-			$max_page=ceil($pageset['total_rows']/$limit);
-			if ($max_page>$global_max_page) {
-				$global_max_page=$max_page;
-			}
-			if ($pageset['total_rows']>$limit && ($p+1)<$max_page) {
-				$have_paging=true;
-			}
-			if ($pageset['total_rows']>0) {
-				$results_counter++;
-			}
-		}
-		// orders search eof
-		// invoices search
-		if ($modules['invoices']) {
-			$filter=$invoices_filter;
-			$having=array();
-			$match=array();
-			$orderby=array();
-			$where=array();
-			$orderby=array();
-			$select=array();
-			if (!$this->masterShop) {
-				$filter[]='i.page_uid='.$this->showCatalogFromPage;
-			}
-			$select[]='i.invoice_id,i.hash';
-			$orderby[]='i.id desc';
-			$pageset=mslib_fe::getInvoicesPageSet($filter, $offset, $this->get['limit'], $orderby, $having, $select, $where, $from);
-			$resultset['invoices']=$pageset;
-			$max_page=ceil($pageset['total_rows']/$limit);
-			if ($max_page>$global_max_page) {
-				$global_max_page=$max_page;
-			}
-			if ($pageset['total_rows']>$limit && ($p+1)<$max_page) {
-				$have_paging=true;
-			}
-			if ($pageset['total_rows']>0) {
-				$results_counter++;
-			}
-		}
-		// invoices eof	
-		// customer search
-		if ($modules['customers']) {
-			$filter=$customers_filter;
-			$having=array();
-			$match=array();
-			$orderby=array();
-			$where=array();
-			$orderby=array();
-			$select=array();
-			if (strlen($this->get['q'])>0) {
-				$items=array();
-				$items[]="f.company like '".addslashes($this->get['q'])."%'";
-				$items[]="f.name like '".addslashes($this->get['q'])."%'";
-				$items[]="f.email like '".addslashes($this->get['q'])."%'";
-				$items[]="f.username like '".addslashes($this->get['q'])."%'";
-				$filter[]='('.implode(" or ", $items).')';
-				$filter[]='(f.disable=0 and f.deleted=0)';
-			}
-			$pageset=mslib_fe::getCustomersPageSet($filter, $offset, 0, $orderby, $having, $select, $where);
-			$resultset['customers']=$pageset;
-			$max_page=ceil($pageset['total_rows']/$limit);
-			if ($max_page>$global_max_page) {
-				$global_max_page=$max_page;
-			}
-			if ($pageset['total_rows']>$limit && ($p+1)<$max_page) {
-				$have_paging=true;
-			}
-			if ($pageset['total_rows']>0) {
-				$results_counter++;
-			}
-		}
-		// customer search eof
-		if ($have_paging) {
-			//echo $totpage;
-			//if ($pages != $totpage){
-			$prod=array();
-			$prod['Name']=$this->pi_getLL('more_results');
-			$prod['Link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_panel_ajax_search&page='.($this->get['page']+1).'&q='.urlencode($this->get['q']));
-			$prod['Title']='<span id="more-results">'.htmlspecialchars($this->pi_getLL('more_results')).' (Page '.($this->get['page']+1).' of '.$global_max_page.')</span>';
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']=$this->get['page']+1;
-			$prod['Product']='paging';
-			$data[]=$prod;
-			//}
-		} else {
-			$prod=array();
-			if ($results_counter>0) {
-				$prod['Name']=$this->pi_getLL('more_results');
-				$prod['Link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_panel_ajax_search&page='.($this->get['page']+1).'&q='.urlencode($this->get['q']));
-				$prod['Title']='<span id="more-results">(Page '.($this->get['page']+1).' of '.$global_max_page.')</span>';
-				$prod['skeyword']=$this->get['q'];
-				$prod['Page']=$this->get['page']+1;
-				$prod['Product']='paging';
+			if (count($resultset['categories']['categories'])) {
+				foreach ($resultset['categories']['categories'] as $category) {
+					if (!$tr_type or $tr_type=='even') {
+						$tr_type='odd';
+					} else {
+						$tr_type='even';
+					}
+					$prod=array();
+					$prod['is_children']=true;
+					$prod['Name']=substr($category['categories_name'], 0, 50);
+					$prod['id']=md5($category['categories_name']);
+					$prod['text']=$category['categories_name'];
+					$prod['Title']=str_highlight($prod['Name'], $this->get['q']);
+					$prod['Link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$category['categories_id'].'&action=edit_category');
+					$prod['Image']='';
+					$prod['Desc']='';
+					$prod['Price']='';
+					$prod['skeyword']=$this->get['q'];
+					$prod['Page']=$pages;
+					$prod['Product']=false;
+					$prod['SmallListing']=true;
+					if ($category['categories_url']) {
+						$target=' target="_blank"';
+						$link=$category['categories_url'];
+					} else {
+						$target="";
+						// get all cats to generate multilevel fake url
+						$level=0;
+						$cats=mslib_fe::Crumbar($this->get['categories_id']);
+						$cats=array_reverse($cats);
+						$where='';
+						if (count($cats)>0) {
+							foreach ($cats as $item) {
+								$where.="categories_id[".$level."]=".$item['id']."&";
+								$level++;
+							}
+							$where=substr($where, 0, (strlen($where)-1));
+							$where.='&';
+						}
+						$where.='categories_id['.$level.']='.$category['categories_id'];
+						// get all cats to generate multilevel fake url eof
+						$link=$this->FULL_HTTP_URL.mslib_fe::typolink($this->conf['products_listing_page_pid'], '&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
+					}
+					/*
+								$prod['EditIcons']='<ul class="ui-edit-item"><li><a href="'.$link.'" class="ui-edit-view" target="_blank">view</a></li>
+					<li><a href="'.mslib_fe::typolink($this->shop_pid.',2003','tx_multishop_pi1[page_section]=admin_ajax&cid='.$category['categories_id'].'&action=delete_category').'" class="ui-edit-delete" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 140} )">delete</a></li></ul>';
+					*/
+					$data['listing']['categories'][]=$prod;
+				}
+				$next_page=true;
 			} else {
-				$prod['Name']='no results';
-				$prod['Link']='';
-				$prod['Title']='<span id="more-results">No item(s) found</span>';
-				$prod['skeyword']=$this->get['q'];
-				$prod['Page']='';
-				$prod['Product']='paging';
+				$move_next_section=true;
+				$section='products';
 			}
-			$data[]=$prod;
 		}
+		// categories search eof
 		// product search
-		if ($modules['products'] and $this->get['q']) {
+		if ($modules[$section] && $section=='products') {
+			if ($move_next_section && ($this->get['context']['section']!=$section || !isset($this->get['context']['section']))) {
+				$p=0;
+				$offset=$p*$limit;
+			}
 			$this->ms['MODULES']['FLAT_DATABASE']=0;
 			$filter=array();
 			$having=array();
@@ -433,7 +585,7 @@ if ($this->ADMIN_USER) {
 					if ($string) {
 						$filter[]=$string;
 					}
-					// 
+					//
 				} else {
 					$cats=mslib_fe::get_subcategory_ids($parent_id);
 					$cats[]=$parent_id;
@@ -443,379 +595,118 @@ if ($this->ADMIN_USER) {
 //			error_log(print_r($filter,1));
 			$pageset=mslib_fe::getProductsPageSet($filter, $offset, $limit, $orderby, $having, $select, $where, 0, array(), array(), 'admin_ajax_products_search');
 			$resultset['products']=$pageset;
-			$max_page=ceil($pageset['total_rows']/$limit);
-			if ($pageset['total_rows']>$limit && ($p+1)<$max_page) {
-				$have_paging=true;
-			}
-			if ($pageset['total_rows']>0) {
-				$results_counter++;
+			if (count($resultset['products']['products'])) {
+				foreach ($resultset['products']['products'] as $product) {
+					if (!$tr_type or $tr_type=='even') {
+						$tr_type='odd';
+					} else {
+						$tr_type='even';
+					}
+					$prod=array();
+					$prod['is_children']=true;
+					$prod['Link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$product['categories_id'].'&pid='.$product['products_id'].'&action=edit_product');
+					if ($product['products_image']) {
+						$prod['Image']='<div class="ajax_products_image">'.'<img src="'.mslib_befe::getImagePath($product['products_image'], 'products', '50').'">'.'</div>';
+					} else {
+						$prod['Image']='<div class="ajax_products_image"><div class="no_image_50"></div>
+					</div>';
+					}
+					$prod['Title']='<div class="ajax_products_name">'.substr($product['products_name'], 0, 50).'</div>';
+					$prod['id']=md5($product['products_name']);
+					$prod['text']=$product['products_name'];
+					$prod['Title']=$prod['Title'];
+					$product['products_shortdescription']=strip_tags($product['products_shortdescription']);
+					$prod['Desc']='<div class="ajax_products_shortdescription">'.str_highlight(substr($product['products_shortdescription'], 0, 75), $this->get['q']).'</div>';
+					if ($product['products_price']<>$product['final_price']) {
+						$prod['Price']='<div class="ajax_old_price">'.mslib_fe::amount2Cents($product['products_price'], 0).'</div><div class="ajax_specials_price">'.mslib_fe::amount2Cents($product['final_price'], 0).'</div>';
+					} else {
+						$prod['Price']='<div class="ajax_products_price">'.mslib_fe::amount2Cents($product['products_price'], 0).'</div>';
+					}
+					$prod['Name']=substr($product['products_name'], 0, 50);
+					$prod['skeyword']=$this->get['q'];
+					$prod['Page']=$pages;
+					$prod['Product']=true;
+					$where='';
+					if ($product['categories_id']) {
+						// get all cats to generate multilevel fake url
+						$level=0;
+						$cats=mslib_fe::Crumbar($product['categories_id']);
+						$cats=array_reverse($cats);
+						$where='';
+						if (count($cats)>0) {
+							foreach ($cats as $cat) {
+								$where.="categories_id[".$level."]=".$cat['id']."&";
+								$level++;
+							}
+							$where=substr($where, 0, (strlen($where)-1));
+							$where.='&';
+						}
+						// get all cats to generate multilevel fake url eof
+					}
+					if ($product['products_url'] and $this->ms['MODULES']['AFFILIATE_SHOP']) {
+						$link=$product['products_url'];
+					} else {
+						$link=$this->FULL_HTTP_URL.mslib_fe::typolink($this->shop_pid, '&'.$where.'&products_id='.$product['products_id']);
+					}
+					$data['listing']['products'][]=$prod;
+				}
+				$next_page=true;
 			}
 		}
 		// product search eof
 		// now build up the listing
-		// admin cms
-		if (count($resultset['admin_cms']['admin_cms'])) {
-			$prod=array();
-			$prod['Name']="CMS";
-			$prod['Title']='<span class="admin_ajax_res_header">Admin CMS</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
-			foreach ($resultset['admin_cms']['admin_cms'] as $category) {
-				if (!$tr_type or $tr_type=='even') {
-					$tr_type='odd';
-				} else {
-					$tr_type='even';
-				}
-				$prod['Name']=substr($category['name'], 0, 50);
-				$prod['Title']=$prod['Name'];
-				$prod['Link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cmt_id='.$category['id']).'&action=edit_cms';
-				$prod['Image']='';
-				$prod['Desc']='';
-				$prod['Price']='';
-				$prod['skeyword']=$this->get['q'];
-				$prod['Page']=$pages;
-				$prod['Product']=true;
-				$prod['SmallListing']=true;
-				$prod['EditIcons']='';
-				$data[]=$prod;
-			}
-			$prod=array();
-			$prod['Name']="Total";
-			$prod['Title']='<span id="admin_ajax_res_footer">Total number: '.$resultset['admin_cms']['total_rows'].'</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
+		$page_marker=array();
+		$page_marker['context']['section']=$section;
+		$page_marker['context']['next_page']=$p+1;
+		$page_marker['context']['next']=$next_page;
+		$data_json=array();
+		if (count($data['listing']['cms'])>0) {
+			$data_json[]=array(
+				'text'=>'CMS',
+				'children'=>$data['listing']['cms']
+			);
 		}
-		// end admin cms
-		// admin settings
-		if (count($resultset['admin_settings']['admin_settings'])) {
-			$prod=array();
-			$prod['Name']="Admin Settings";
-			$prod['Title']='<span class="admin_ajax_res_header">Admin Settings</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
-			foreach ($resultset['admin_settings']['admin_settings'] as $category) {
-				if (!$tr_type or $tr_type=='even') {
-					$tr_type='odd';
-				} else {
-					$tr_type='even';
-				}
-				$prod['Name']=substr($category['configuration_title'], 0, 50);
-				$prod['Title']=$prod['Name'];
-				$prod['Link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&module_id='.$category['id']).'&action=edit_module';
-				$prod['Image']='';
-				$prod['Desc']='';
-				$prod['Price']='';
-				$prod['skeyword']=$this->get['q'];
-				$prod['Page']=$pages;
-				$prod['Product']=true;
-				$prod['SmallListing']=true;
-				$prod['EditIcons']='';
-				$data[]=$prod;
-			}
-			$prod=array();
-			$prod['Name']="Total";
-			$prod['Title']='<span id="admin_ajax_res_footer">Total number: '.$resultset['admin_settings']['total_rows'].'</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
+		if (count($data['listing']['admin_settings'])>0) {
+			$data_json[]=array(
+				'text'=>'Admin settings',
+				'children'=>$data['listing']['admin_settings']
+			);
 		}
-		// end admin settings
-		// categories
-		if (count($resultset['categories']['categories'])) {
-			$prod=array();
-			$prod['Name']="Categories";
-			$prod['Title']='<span class="admin_ajax_res_header">Categories</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
-			foreach ($resultset['categories']['categories'] as $category) {
-				if (!$tr_type or $tr_type=='even') {
-					$tr_type='odd';
-				} else {
-					$tr_type='even';
-				}
-				$prod['Name']=substr($category['categories_name'], 0, 50);
-				$prod['Title']=$prod['Name'];
-				$prod['Link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$category['categories_id'].'&action=edit_category');
-				$prod['Image']='';
-				$prod['Desc']='';
-				$prod['Price']='';
-				$prod['skeyword']=$this->get['q'];
-				$prod['Page']=$pages;
-				$prod['Product']=true;
-				$prod['SmallListing']=true;
-				if ($category['categories_url']) {
-					$target=' target="_blank"';
-					$link=$category['categories_url'];
-				} else {
-					$target="";
-					// get all cats to generate multilevel fake url
-					$level=0;
-					$cats=mslib_fe::Crumbar($this->get['categories_id']);
-					$cats=array_reverse($cats);
-					$where='';
-					if (count($cats)>0) {
-						foreach ($cats as $item) {
-							$where.="categories_id[".$level."]=".$item['id']."&";
-							$level++;
-						}
-						$where=substr($where, 0, (strlen($where)-1));
-						$where.='&';
-					}
-					$where.='categories_id['.$level.']='.$category['categories_id'];
-					// get all cats to generate multilevel fake url eof				
-					$link=$this->FULL_HTTP_URL.mslib_fe::typolink($this->conf['products_listing_page_pid'], '&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
-				}
-				/*
-							$prod['EditIcons']='<ul class="ui-edit-item"><li><a href="'.$link.'" class="ui-edit-view" target="_blank">view</a></li>
-				<li><a href="'.mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=admin_ajax&cid='.$category['categories_id'].'&action=delete_category').'" class="ui-edit-delete" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 140} )">delete</a></li></ul>';
-				*/
-				$data[]=$prod;
-			}
-			$prod=array();
-			$prod['Name']="Total";
-			$prod['Title']='<span id="admin_ajax_res_footer">Total number: '.$resultset['categories']['total_rows'].'</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
+		if (count($data['listing']['orders'])>0) {
+			$data_json[]=array(
+				'text'=>'Orders',
+				'children'=>$data['listing']['orders']
+			);
 		}
-		// end categories
-		// orders
-		if (count($resultset['orders']['orders'])) {
-			$prod=array();
-			$prod['Name']="Orders";
-			$prod['Title']='<span id="admin_ajax_res_header">Orders</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
-			foreach ($resultset['orders']['orders'] as $order) {
-				if (!$tr_type or $tr_type=='even') {
-					$tr_type='odd';
-				} else {
-					$tr_type='even';
-				}
-				$prod['Name']=substr($order['orders_id'], 0, 50);
-				$prod['Title']=$prod['Name'];
-				$prod['Link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id']).'&action=edit_order';
-				$prod['Image']='';
-				$prod['Desc']='';
-				$prod['Price']='';
-				$prod['skeyword']=$this->get['q'];
-				$prod['Page']=$pages;
-				$prod['Product']=true;
-				$prod['SmallListing']=true;
-				$prod['EditIcons']='';
-				$data[]=$prod;
-			}
-			$prod=array();
-			$prod['Name']="Total";
-			$prod['Title']='<span id="admin_ajax_res_footer">Total number: '.$resultset['orders']['total_rows'].'</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
+		if (count($data['listing']['invoices'])>0) {
+			$data_json[]=array(
+				'text'=>'Invoices',
+				'children'=>$data['listing']['invoices']
+			);
 		}
-		// end orders
-		// invoices
-		if (count($resultset['invoices']['invoices'])) {
-			$prod=array();
-			$prod['Name']="Invoices";
-			$prod['Title']='<span id="admin_ajax_res_header">Invoices</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
-			foreach ($resultset['invoices']['invoices'] as $invoice) {
-				if (!$tr_type or $tr_type=='even') {
-					$tr_type='odd';
-				} else {
-					$tr_type='even';
-				}
-				$prod['Name']=substr($invoice['invoice_id'], 0, 50);
-				$prod['Title']=$prod['Name'];
-				$prod['Link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=download_invoice&tx_multishop_pi1[hash]='.$invoice['hash']);
-				$prod['Image']='';
-				$prod['Desc']='';
-				$prod['Price']='';
-				$prod['skeyword']=$this->get['q'];
-				$prod['Page']=$pages;
-				$prod['Product']=true;
-				$prod['SmallListing']=true;
-				$prod['EditIcons']='';
-				$data[]=$prod;
-			}
-			$prod=array();
-			$prod['Name']="Total";
-			$prod['Title']='<span id="admin_ajax_res_footer">Total number: '.$resultset['orders']['total_rows'].'</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
+		if (count($data['listing']['customers'])>0) {
+			$data_json[]=array(
+				'text'=>'Customers',
+				'children'=>$data['listing']['customers']
+			);
 		}
-		// end invoices	
-		// customers
-		if (count($resultset['customers']['customers'])) {
-			$prod=array();
-			$prod['Name']="Customers";
-			$prod['Title']='<span id="admin_ajax_res_header">Customers</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
-			foreach ($resultset['customers']['customers'] as $customer) {
-				if (!$tr_type or $tr_type=='even') {
-					$tr_type='odd';
-				} else {
-					$tr_type='even';
-				}
-				if (!$customer['company']) {
-					$customer['company']='N/A';
-				}
-				if (!$customer['name']) {
-					$customer['name']=$customer['username'];
-				}
-				$prod['Name']=substr($customer['name'], 0, 50);
-				$prod['Title']=$prod['Name'];
-				$prod['Link']=mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=admin_ajax&tx_multishop_pi1[cid]='.$customer['uid'].'&action=edit_customer');
-				$prod['Image']='';
-				$prod['Desc']='';
-				$prod['Price']='';
-				$prod['skeyword']=$this->get['q'];
-				$prod['Page']=$pages;
-				$prod['Product']=true;
-				$prod['SmallListing']=true;
-				$prod['EditIcons']='';
-				$data[]=$prod;
-			}
-			$prod=array();
-			$prod['Name']="Total";
-			$prod['Title']='<span id="admin_ajax_res_footer">Total number: '.$resultset['customers']['total_rows'].'</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
+		if (count($data['listing']['categories'])>0) {
+			$data_json[]=array(
+				'text'=>'Categories',
+				'children'=>$data['listing']['categories']
+			);
 		}
-		// end customers		
-		// products
-		if (count($resultset['products']['products'])) {
-			$prod=array();
-			$prod['Name']="Products";
-			$prod['Title']='<span id="admin_ajax_res_header">Products</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
-			foreach ($resultset['products']['products'] as $product) {
-				if (!$tr_type or $tr_type=='even') {
-					$tr_type='odd';
-				} else {
-					$tr_type='even';
-				}
-				$prod['Link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$product['categories_id'].'&pid='.$product['products_id'].'&action=edit_product');
-				if ($product['products_image']) {
-					$prod['Image']='<div class="ajax_products_image">'.'<img src="'.mslib_befe::getImagePath($product['products_image'], 'products', '50').'">'.'</div>';
-				} else {
-					$prod['Image']='<div class="ajax_products_image"><div class="no_image_50"></div>
-					</div>';
-				}
-				$prod['Title']='<div class="ajax_products_name">'.substr($product['products_name'], 0, 50).'</div>';
-				$prod['Title']=$prod['Title'];
-				$prod['Desc']='<div class="ajax_products_shortdescription">'.str_highlight(substr($product['products_shortdescription'], 0, 75), $this->get['q']).'</div>';
-				if ($product['products_price']<>$product['final_price']) {
-					$prod['Price']='<div class="ajax_old_price">'.mslib_fe::amount2Cents($product['products_price'], 0).'</div><div class="ajax_specials_price">'.mslib_fe::amount2Cents($product['final_price'], 0).'</div>';
-				} else {
-					$prod['Price']='<div class="ajax_products_price">'.mslib_fe::amount2Cents($product['products_price'], 0).'</div>';
-				}
-				$prod['Name']=substr($product['products_name'], 0, 50);
-				$prod['skeyword']=$this->get['q'];
-				$prod['Page']=$pages;
-				$prod['Product']=true;
-				$where='';
-				if ($product['categories_id']) {
-					// get all cats to generate multilevel fake url
-					$level=0;
-					$cats=mslib_fe::Crumbar($product['categories_id']);
-					$cats=array_reverse($cats);
-					$where='';
-					if (count($cats)>0) {
-						foreach ($cats as $cat) {
-							$where.="categories_id[".$level."]=".$cat['id']."&";
-							$level++;
-						}
-						$where=substr($where, 0, (strlen($where)-1));
-						$where.='&';
-					}
-					// get all cats to generate multilevel fake url eof
-				}
-				if ($product['products_url'] and $this->ms['MODULES']['AFFILIATE_SHOP']) {
-					$link=$product['products_url'];
-				} else {
-					$link=$this->FULL_HTTP_URL.mslib_fe::typolink($this->shop_pid, '&'.$where.'&products_id='.$product['products_id']);
-				}
-				$data[]=$prod;
-			}
-			$prod=array();
-			$prod['Name']="Total";
-			$prod['Title']='<span id="admin_ajax_res_footer">Total number: '.$resultset['products']['total_rows'].'</span>';
-			$prod['Link']=false;
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']='';
-			$prod['Product']=false;
-			$data[]=$prod;
+		if (count($data['listing']['products'])>0) {
+			$data_json[]=array(
+				'text'=>'Products',
+				'children'=>$data['listing']['products']
+			);
 		}
-		if ($have_paging) {
-			$prod=array();
-			$prod['Name']=$this->pi_getLL('more_results');
-			$prod['Link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_panel_ajax_search&page='.($this->get['page']+1).'&q='.urlencode($this->get['q']));
-			$prod['Title']='<span id="more-results">'.htmlspecialchars($this->pi_getLL('more_results')).' (Page '.($this->get['page']+1).' from '.$global_max_page.')</span>';
-			$prod['skeyword']=$this->get['q'];
-			$prod['Page']=$this->get['page']+1;
-			$prod['Product']='paging';
-			$data[]=$prod;
-		} else {
-			$prod=array();
-			if ($results_counter>0) {
-				$prod['Name']=$this->pi_getLL('more_results');
-				$prod['Link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_panel_ajax_search&page='.($this->get['page']+1).'&q='.urlencode($this->get['q']));
-				$prod['Title']='<span id="more-results">(Page '.($this->get['page']+1).' of '.$global_max_page.')</span>';
-				$prod['skeyword']=$this->get['q'];
-				$prod['Page']=$this->get['page']+1;
-				$prod['Product']='paging';
-			} else {
-				$prod['Name']='';
-				$prod['Link']='';
-				$prod['Title']='';
-				$prod['skeyword']='';
-				$prod['Page']='';
-				$prod['Product']='';
-			}
-			$data[]=$prod;
-		}
-		// end products
-		$content=array("products"=>$data);
+		$content=array(
+			"products"=>$data_json,
+			"total_rows"=>$results_counter,
+			"page_marker"=>$page_marker
+		);
 		$content=json_encode($content, ENT_NOQUOTES);
 		// now build up the listing eof
 	}

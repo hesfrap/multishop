@@ -1791,7 +1791,7 @@ class mslib_fe {
 		if (!is_numeric($products_id)) {
 			return false;
 		}
-		$str="select popt.products_options_id, popt.products_options_name from tx_multishop_products_options popt, tx_multishop_products_attributes patrib where patrib.products_id='".(int)$products_id."' and popt.hide_in_cart=0 and patrib.options_id = popt.products_options_id group by popt.products_options_id order by popt.products_options_id";
+		$str="select popt.products_options_id, popt.products_options_name from tx_multishop_products_options popt, tx_multishop_products_attributes patrib where patrib.products_id='".(int)$products_id."' and (popt.hide_in_cart=0 or popt.hide_in_cart is null) and patrib.options_id = popt.products_options_id group by popt.products_options_id order by popt.products_options_id";
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry)>0) {
 			return true;
@@ -2189,6 +2189,7 @@ class mslib_fe {
 			if (!$this->masterShop) {
 				$where[]="pf.page_uid='".$this->showCatalogFromPage."'";
 			}
+			$where[]="pf.language_id='".$this->sys_language_uid."'";
 			//hook to let other plugins further manipulate the query
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['getProductsPageSet'])) {
 				$query_elements=array();
@@ -3144,6 +3145,21 @@ class mslib_fe {
 			$array[1]=',-';
 		}
 		$output.=$array[0].$cu_decimal_point.'</span><span class="amount_cents">'.$array[1].'</span>';
+		//hook to let other plugins further manipulate the query
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['amount2CentsPostProc'])) {
+			$params=array(
+				'amount'=>&$amount,
+				'customer_currency'=>&$customer_currency,
+				'include_currency_symbol'=>&$include_currency_symbol,
+				'cu_thousands_point'=>&$cu_thousands_point,
+				'cu_decimal_point'=>&$cu_decimal_point,
+				'array'=>&$array,
+				'output'=>&$output
+			);
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/pi1/classes/class.mslib_fe.php']['amount2CentsPostProc'] as $funcRef) {
+				t3lib_div::callUserFunction($funcRef, $params, $this);
+			}
+		}
 		return $output;
 	}
 	public function taxDecimalCrop($float, $precision=2, $disable=true) {
@@ -4445,16 +4461,16 @@ class mslib_fe {
 			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_category']['link_params']='onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 890, height: 500} )" id="msadmin_new_category"';
 			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_multiple_category']['label']=$this->pi_getLL('admin_new_multiple_category', 'NEW CATEGORIES');
 			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_multiple_category']['description']=$this->pi_getLL('admin_add_new_multiple_category_to_the_catalog', 'Add new categories simultaneous').'.';
-			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_multiple_category']['link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&action=add_multiple_category');
-			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_multiple_category']['link_params']='onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 890, height: 500} )" id="msadmin_new_category"';
+			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_multiple_category']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&action=add_multiple_category');
+
 			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_search_and_edit_categories']['label']=$this->pi_getLL('admin_search_and_edit_categories');
 			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_search_and_edit_categories']['description']=$this->pi_getLL('admin_here_you_can_search_and_update_categories').'.';
 			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_search_and_edit_categories']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_categories&cid='.$this->get['categories_id']);
 			if ($this->get['categories_id']) {
 				$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_edit_category']['label']=$this->pi_getLL('admin_edit_category');
 				$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_edit_category']['description']=$this->pi_getLL('admin_edit_category_description').'.';
-				$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_edit_category']['link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&action=edit_category');
-				$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_edit_category']['link_params']='onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 890, height: 500} )" id="msadmin_edit_category"';
+				$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_edit_category']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&action=edit_category');
+				$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_edit_category']['link_params']='id="msadmin_edit_category"';
 				$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_delete_category']['label']=$this->pi_getLL('admin_delete_category');
 				$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_delete_category']['description']=$this->pi_getLL('admin_delete_category_description').'.';
 				$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_delete_category']['link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&action=delete_category');
@@ -4470,8 +4486,8 @@ class mslib_fe {
 			if ($this->get['products_id']) {
 				$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_edit_product']['label']=$this->pi_getLL('admin_edit_product');
 				$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_edit_product']['description']=$this->pi_getLL('admin_edit_product_description').'.';
-				$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_edit_product']['link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&pid='.$this->get['products_id'].'&action=edit_product');
-				$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_edit_product']['link_params']='onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 890, height: 500} )" id="msadmin_edit_product"';
+				$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_edit_product']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&pid='.$this->get['products_id'].'&action=edit_product');
+				$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_edit_product']['link_params']='';
 				$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_delete_product']['label']=$this->pi_getLL('admin_delete_product');
 				$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_delete_product']['description']=$this->pi_getLL('admin_delete_product_description').'.';
 				$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_delete_product']['link']=mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=admin_ajax&cid='.$product['categories_id'].'&pid='.$this->get['products_id'].'&action=delete_product');
@@ -4522,8 +4538,8 @@ class mslib_fe {
 				$ms_menu['header']['ms_admin_orders_customers']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_customers');
 			}
 			$ms_menu['header']['ms_admin_orders_customers']['subs']['ms_admin_customers']['subs']['admin_manual_orders']['label']=$this->pi_getLL('admin_new_customer');
-			$ms_menu['header']['ms_admin_orders_customers']['subs']['ms_admin_customers']['subs']['admin_manual_orders']['link']=mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=admin_ajax&action=add_customer');
-			$ms_menu['header']['ms_admin_orders_customers']['subs']['ms_admin_customers']['subs']['admin_manual_orders']['link_params']='onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 950, height: 500} )"';
+			$ms_menu['header']['ms_admin_orders_customers']['subs']['ms_admin_customers']['subs']['admin_manual_orders']['link']=mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_ajax&action=add_customer');
+			$ms_menu['header']['ms_admin_orders_customers']['subs']['ms_admin_customers']['subs']['admin_manual_orders']['link_params']='';
 			$ms_menu['header']['ms_admin_orders_customers']['subs']['ms_admin_customers']['label']=$this->pi_getLL('admin_customers');
 			$ms_menu['header']['ms_admin_orders_customers']['subs']['ms_admin_customers']['description']=$this->pi_getLL('admin_customers_description', 'Customers').'.';
 			$ms_menu['header']['ms_admin_orders_customers']['subs']['ms_admin_customers']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_customers');
@@ -4601,13 +4617,21 @@ class mslib_fe {
 			';
 			$ms_menu['header']['ms_admin_search']['description'].='
 								<form action="'.mslib_fe::typolink().'" method="get" id="ms_admin_top_search">
-									<input class="admin_skeyword" id="ms_admin_skeyword" name="ms_admin_skeyword" type="text" value="'.$this->pi_getLL('keyword').'" />
+									<!-- <input class="admin_skeyword" id="ms_admin_skeyword" name="ms_admin_skeyword" type="text" placeholder="'.$this->pi_getLL('keyword').'" value="" />-->
+									<input type="hidden" class="bigdrop" id="ms_admin_skeyword" style="width: 200px" name="ms_admin_skeyword" value="" />
 									<input name="id" type="hidden" value="'.$this->shop_pid.'" />
 									<input name="type" type="hidden" value="2003" />
 									<input name="tx_multishop_pi1[page_section]" type="hidden" value="admin_search" />
 									<input name="page" id="ms_admin_us_page" type="hidden" value="0" />	
-									<input name="Submit" type="submit" />
+									<input name="Submit" type="submit" id="btn_search_admin_panel" />
 								</form>'."\n";
+			$ms_menu['header']['ms_admin_search']['description'].='<script type="text/javascript">
+			adminPanelSearch();
+			$(document).on(\'click\', \'#btn_search_admin_panel\', function(){
+				$(\'#ms_admin_skeyword\').val($(\'div.select2-search > input.select2-input\').val());
+				return true;
+			});
+			</script>'."\n";
 		}
 		if ($this->ROOTADMIN_USER or $this->STORESADMIN_USER) {
 			// multishops
@@ -4646,6 +4670,7 @@ class mslib_fe {
 				foreach ($members as $member) {
 					$ms_menu['footer']['ms_admin_online_users']['subs']['total_members']['subs']['admin_member_'.$member['uid']]['label']=$member['username'];
 					$ms_menu['footer']['ms_admin_online_users']['subs']['total_members']['subs']['admin_member_'.$member['uid']]['description']='Logged in at '.strftime("%x %X", $member['lastlogin']);
+					$ms_menu['footer']['ms_admin_online_users']['subs']['total_members']['subs']['admin_member_'.$member['uid']]['link']=mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_ajax&tx_multishop_pi1[cid]='.$member['uid'].'&action=edit_customer',1);
 				}
 			}
 			$ms_menu['footer']['ms_admin_online_users']['subs']['total_guests']['label']=$this->pi_getLL('admin_guests').': '.($rowguests['total']-$total_members);
@@ -4948,16 +4973,16 @@ class mslib_fe {
 			$html.='<ul>';
 		}
 		while ($parent_categories=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($parent_categories_query)) {
-			$html.='<li><div class="float-right-bold"><a href="'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=admin_ajax&cid='.$parent_categories['id']).'&action=delete_category" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 890, height: 140} )" alt="Remove" class="admin_menu_remove" title="Remove"></a>';
+			$html.='<li><div class="float-right-bold"><a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_ajax&cid='.$parent_categories['id']).'&action=delete_category" alt="Remove" class="admin_menu_remove" title="Remove"></a>';
 			$strchk="select * from tx_multishop_categories where parent_id='".$parent_categories['id']."'";
 			$qrychk=$GLOBALS['TYPO3_DB']->sql_query($strchk);
 			if (!$GLOBALS['TYPO3_DB']->sql_num_rows($qrychk)) {
-				$html.=' <a href="'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=admin_ajax&cid='.$parent_categories['id'].'&action=add_product').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 890, height: 500} )" class="admin_menu_add" title="Add Product"></a>';
+				$html.=' <a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_ajax&cid='.$parent_categories['id'].'&action=add_product').'" class="admin_menu_add" title="Add Product"></a>';
 			}
 			if (!$GLOBALS['TYPO3_DB']->sql_num_rows($qrychk)) {
 				$html.=' <a href="#" cid="'.$parent_categories['id'].'" class="admin_menu_upload_productfeed" title="Upload Productfeed"></a>';
 			}
-			$html.='</div><strong><a href="'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=admin_ajax&cid='.$parent_categories['id']).'&action=edit_category" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 890, height: 500} )">'.$parent_categories['name'].'</a></strong>';
+			$html.='</div><strong><a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_ajax&cid='.$parent_categories['id']).'&action=edit_category">'.$parent_categories['name'].'</a></strong>';
 			if ($GLOBALS['TYPO3_DB']->sql_num_rows($qrychk)) {
 				$html.=mslib_fe::tep_get_categories_edit($parent_categories['id'], $aid);
 			} else {
@@ -5999,10 +6024,10 @@ class mslib_fe {
 						$link=mslib_fe::typolink($this->conf['products_listing_page_pid'], '&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 //						$where.='categories_id['.$level.']='.$category['categories_id'];
 						// get all cats to generate multilevel fake url eof
-						$content.='<a href="'.mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id']).'&action=edit_category" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 500} )">'.$item['categories_name'].'</a>';
+						$content.='<a href="'.mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id']).'&action=edit_category">'.$item['categories_name'].'</a>';
 						$content.='<div class="action_icons">
-						<a href="'.mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id']).'&action=edit_category" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 500} )" class="msadmin_edit_icon"><span>edit</span></a>
-						<a href="'.mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id'].'&action=delete_category').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 140} )" class="msadmin_delete_icon" alt="Remove"><span>delete</span></a>
+						<a href="'.mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id']).'&action=edit_category" class="msadmin_edit_icon"><span>edit</span></a>
+						<a href="'.mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id'].'&action=delete_category').'" class="msadmin_delete_icon" alt="Remove"><span>delete</span></a>
 						<a href="'.$link.'" target="_blank" class="msadmin_view"><span>view</span></a>
 						</div>';
 //						$content.='<span class="msadmin_cat_edit_icons"><a href="'.mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id']).'&action=edit_category" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 500} )" class="msadmin_edit">edit</a> | <a href="'.mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id'].'&action=delete_category').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 140} )" class="msadmin_delete" alt="Remove">delete</a></span> | <span class="msadmin_cat_view_icons"><a href="'.$link.'" target="_blank" class="msadmin_view">view</a>';
@@ -6113,10 +6138,10 @@ class mslib_fe {
 						$link=mslib_fe::typolink($this->conf['products_listing_page_pid'], '&'.$where.'&tx_multishop_pi1[page_section]=products_listing');
 						//						$where.='categories_id['.$level.']='.$category['categories_id'];
 						// get all cats to generate multilevel fake url eof
-						$content.='<a href="'.mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id']).'&action=edit_category" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 500} )">'.$item['categories_name'].'</a>';
+						$content.='<a href="'.mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id']).'&action=edit_category">'.$item['categories_name'].'</a>';
 						$content.='<div class="action_icons">
-							<a href="'.mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id']).'&action=edit_category" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 500} )" class="msadmin_edit_icon"><span>edit</span></a>
-							<a href="'.mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id'].'&action=delete_category').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 140} )" class="msadmin_delete_icon" alt="Remove"><span>delete</span></a>
+							<a href="'.mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id']).'&action=edit_category" class="msadmin_edit_icon"><span>edit</span></a>
+							<a href="'.mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id'].'&action=delete_category').'" class="msadmin_delete_icon" alt="Remove"><span>delete</span></a>
 							<a href="'.$link.'" target="_blank" class="msadmin_view"><span>view</span></a>
 						</div>';
 						//						$content.='<span class="msadmin_cat_edit_icons"><a href="'.mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id']).'&action=edit_category" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 500} )" class="msadmin_edit">edit</a> | <a href="'.mslib_fe::typolink($this->shop_pid.',2002','tx_multishop_pi1[page_section]=admin_ajax&cid='.$item['categories_id'].'&action=delete_category').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 140} )" class="msadmin_delete" alt="Remove">delete</a></span> | <span class="msadmin_cat_view_icons"><a href="'.$link.'" target="_blank" class="msadmin_view">view</a>';

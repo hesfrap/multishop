@@ -69,8 +69,8 @@ foreach ($products as $current_product) {
 	}
 	if ($this->ROOTADMIN_USER or ($this->ADMIN_USER and $this->CATALOGADMIN_USER)) {
 		$output['admin_icons']='<div class="admin_menu">
-		<a href="'.mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$current_product['categories_id'].'&pid='.$current_product['products_id'].'&action=edit_product').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 500} )" class="admin_menu_edit"></a>
-		<a href="'.mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$current_product['categories_id'].'&pid='.$current_product['products_id'].'&action=delete_product').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 910, height: 140} )" class="admin_menu_remove" title="Remove"></a>
+		<a href="'.mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$current_product['categories_id'].'&pid='.$current_product['products_id'].'&action=edit_product').'" class="admin_menu_edit"></a>
+		<a href="'.mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$current_product['categories_id'].'&pid='.$current_product['products_id'].'&action=delete_product').'" class="admin_menu_remove" title="Remove"></a>
 		</div>';
 	}
 	$markerArray=array();
@@ -144,9 +144,14 @@ foreach ($products as $current_product) {
 }
 // fill the row marker with the expanded rows
 if ($current['content']) {
-	$subpartArray['###CURRENT_CATEGORIES_TOP_DESCRIPTION###']=trim($current['content']);
+	$subpartArray['###CURRENT_CATEGORIES_TOP_DESCRIPTION###']='<div class="categories_top_description">'.trim($current['content']).'</div>';
 } else {
 	$subpartArray['###CURRENT_CATEGORIES_TOP_DESCRIPTION###']='';
+}
+if ($current['content_footer']) {
+	$subpartArray['###CURRENT_CATEGORIES_FOOTER_DESCRIPTION###']='<div class="categories_bottom_description">'.trim($current['content_footer']).'</div>';
+} else {
+	$subpartArray['###CURRENT_CATEGORIES_FOOTER_DESCRIPTION###']='';
 }
 $subpartArray['###CURRENT_CATEGORIES_NAME###']=trim($current['categories_name']);
 $subpartArray['###ITEM###']=$contentItem;

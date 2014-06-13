@@ -173,7 +173,7 @@ if ($this->ADMIN_USER) {
 		// orders this week eof
 		// orders this month
 		$from=strtotime(date("Y-m-1 00:00:00"));
-		$till=strtotime(date("Y-m-31 23:59:59"));
+		$till=strtotime("+1 MONTH -1 DAY ".date("Y-m-1 23:59:59"));
 		$str="SELECT count(1) as total from tx_multishop_orders where deleted=0 and crdate BETWEEN ".$from." and ".$till;
 		if (!$this->masterShop) {
 			$str.=" and page_uid='".$this->shop_pid."'";
@@ -233,10 +233,12 @@ if ($this->ADMIN_USER) {
 	$html.='
 			<script type="text/javascript">
 			var MS_ADMIN_PANEL_AUTO_COMPLETE_URL=\''.mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_panel_ajax_search').'\';
+			var MS_ADMIN_PANEL_AUTO_COMPLETE_LABEL=\''.$this->pi_getLL('keyword').'\';
 			var MS_ADMIN_PANEL_FULL_URL=\''.$this->FULL_HTTP_URL.'\';
 			jQuery(document).ready(function($){
 				$(document).on("click", ".ms_admin_minimize", function(e) {
 					e.preventDefault();
+					$("li.ms_admin_search > form#ms_admin_top_search > input#ms_admin_skeyword").select2("close");
 					$.cookie("hide_admin_panel", "1", { expires: 7, path: \'/\', domain: \''.$this->server['HTTP_HOST'].'\'});
 					$("#tx_multishop_admin_header_bg").slideToggle("slow");
 					$("#tx_multishop_admin_footer_wrapper").slideToggle("slow");
@@ -252,7 +254,9 @@ if ($this->ADMIN_USER) {
 				$(document).on("change", "#ms_admin_simulate_language", function() {
 					$("#multishop_admin_language_form").submit();
 				});							
-				
+				if (isMobile()) {
+					return false;
+				}
 				jQuery.ajax({
 					url: \''.mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_panel&tx_multishop_pi1[categories_id]='.$this->get['categories_id'].'&tx_multishop_pi1[products_id]='.$this->get['products_id']).'\',
 					data: \'\',
