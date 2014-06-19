@@ -2,6 +2,9 @@
 if (!defined('TYPO3_MODE')) {
 	die ('Access denied.');
 }
+$compiledWidget['key']='ordersLatest';
+$compiledWidget['defaultCol']=1;
+$compiledWidget['title']=$this->pi_getLL('latest_orders', 'Bestellingen');
 $headerData='';
 $headerData.='
 <script type="text/javascript">
@@ -222,13 +225,23 @@ if ($this->post['tx_multishop_pi1']['is_proposal']) {
 } else {
 	$filter[]='o.is_proposal=0';
 }
+switch($this->dashboardArray['section']) {
+	case 'admin_home':
+		break;
+	case 'admin_edit_customer':
+		if ($this->get['tx_multishop_pi1']['cid'] && is_numeric($this->get['tx_multishop_pi1']['cid'])) {
+			$filter[]='(o.customer_id='.$this->get['tx_multishop_pi1']['cid'].')';
+		}
+		break;
+}
 $pageset=mslib_fe::getOrdersPageSet($filter, $offset, 20, $orderby, $having, $select, $where, $from);
 $tmporders=$pageset['orders'];
 if ($pageset['total_rows']>0) {
 	$data=array();
 	$data[]=array(
-		'Bestelnummer',
-		'Bedrag',
+		$this->pi_getLL('admin_label_order_number'),
+		$this->pi_getLL('admin_label_amount'),
+		$this->pi_getLL('date'),
 		$this->pi_getLL('admin_paid'),
 		$this->pi_getLL('admin_payment_method')
 	);
@@ -250,7 +263,7 @@ if ($pageset['total_rows']>0) {
 			$tr_type='even';
 		}
 		if ($this->masterShop) {
-			$master_shop_col='<td align="left" nowrap>'.mslib_fe::getShopNameByPageUid($order['page_uid']).'</td>';
+			$master_shop_col='<td align="left">'.mslib_fe::getShopNameByPageUid($order['page_uid']).'</td>';
 		}
 		if ($order['billing_company']) {
 			$customer_name=$order['billing_company'];
@@ -266,18 +279,18 @@ if ($pageset['total_rows']>0) {
 		$print_order_list_button=false;
 		switch ($page_type) {
 			case 'proposals':
-				$orderlist_buttons['mail_order']='<a href="'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id'].'&action=mail_order').'" rel="email" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: \'910\', height: browser_height} )" class="msadmin_button">'.htmlspecialchars($this->pi_getLL('email')).'</a>';
+				$orderlist_buttons['mail_order']='<a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id'].'&action=mail_order', 1).'" rel="email" class="msadmin_button">'.htmlspecialchars($this->pi_getLL('email')).'</a>';
 				$orderlist_buttons['convert_to_order']='<a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&orders_id='.$order['orders_id'].'&tx_multishop_pi1[action]=convert_to_order').'" class="msadmin_button">'.htmlspecialchars($this->pi_getLL('convert_to_order')).'</a>';
 				$print_order_list_button=true;
 				break;
 			case 'orders':
 				if ($this->ms['MODULES']['ADMIN_INVOICE_MODULE'] || $this->ms['MODULES']['PACKING_LIST_PRINT']) {
 					if ($this->ms['MODULES']['ADMIN_INVOICE_MODULE']) {
-						$orderlist_buttons['invoice']='<a href="'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id'].'&action=edit_order&print=invoice').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: \'910\', height: browser_height} )" class="msadmin_button">'.htmlspecialchars($this->pi_getLL('invoice')).'</a>';
+						$orderlist_buttons['invoice']='<a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id'].'&action=edit_order&print=invoice', 1).'" class="msadmin_button">'.htmlspecialchars($this->pi_getLL('invoice')).'</a>';
 						$print_order_list_button=true;
 					}
 					if ($this->ms['MODULES']['PACKING_LIST_PRINT']) {
-						$orderlist_buttons['pakbon']='<a href="'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id'].'&action=edit_order&print=packing').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: \'910\', height: browser_height} )" class="msadmin_button">'.htmlspecialchars($this->pi_getLL('packing_list')).'</a>';
+						$orderlist_buttons['pakbon']='<a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id'].'&action=edit_order&print=packing', 1).'" class="msadmin_button">'.htmlspecialchars($this->pi_getLL('packing_list')).'</a>';
 						$print_order_list_button=true;
 					}
 				}
@@ -296,7 +309,7 @@ if ($pageset['total_rows']>0) {
 		$order_list_button_extra='';
 		if ($print_order_list_button) {
 			//button area
-			$order_list_button_extra.='<td align="center" nowrap>';
+			$order_list_button_extra.='<td align="center">';
 			$order_list_button_extra.=implode("&nbsp;", $orderlist_buttons);
 			$order_list_button_extra.='</td>';
 		}
@@ -315,28 +328,29 @@ if ($pageset['total_rows']>0) {
 		'<a href="'.mslib_fe::typolink(',2002','&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id'].'&action=edit_order').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: '.$edit_order_popup_width.', height: browser_height} )" title="Loading" class="tooltip" rel="'.$order['orders_id'].'">'.$customer_name.'</a>'
 		*/
 		$data[]=array(
-			'<a href="'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id'].'&action=edit_order').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: '.$edit_order_popup_width.', height: browser_height} )" title="Loading" class="tooltip" rel="'.$order['orders_id'].'">'.$order['orders_id'].'</a>',
+			'<a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_ajax&orders_id='.$order['orders_id'].'&action=edit_order', 1).'" title="Loading" class="tooltip" rel="'.$order['orders_id'].'">'.$order['orders_id'].'</a>',
 			mslib_fe::amount2Cents($order['grand_total'], 0),
+			strftime("%x %X", $order['crdate']),
 			$paid_status,
 			'<span title="'.htmlspecialchars($order['payment_method_label']).'">'.$order['payment_method_label'].'</span>'
 		);
 	}
 	$counter=0;
-	$libaryWidgets['ordersLatest']['content'].='<div id="tblWidgetOrdersLatest-wrapper"><table width="100%" class="msZebraTable" cellspacing="0" cellpadding="0" border="0" id="tblWidgetOrdersLatest">';
+	$compiledWidget['content'].='<div id="tblWidgetOrdersLatest-wrapper"><table width="100%" class="msZebraTable" cellspacing="0" cellpadding="0" border="0" id="tblWidgetOrdersLatest">';
 	$tr_type='';
 	$rowCounter=0;
 	foreach ($data as $host=>$item) {
 		$counter++;
 		if ($counter==1) {
-			$libaryWidgets['ordersLatest']['content'].='<tr class="tblHeader">';
+			$compiledWidget['content'].='<tr class="tblHeader">';
 			$colCounter=0;
 			foreach ($item as $col) {
 				$colCounter++;
-				$libaryWidgets['ordersLatest']['content'].='
-					<th class="tblHeadCol'.$colCounter.'">'.$col.'</th>
+				$compiledWidget['content'].='
+					<th class="tblHeadCol'.$colCounter.'" nowrap>'.$col.'</th>
 				';
 			}
-			$libaryWidgets['ordersLatest']['content'].='</tr>';
+			$compiledWidget['content'].='</tr>';
 		} else {
 			$rowCounter++;
 			if (!$tr_type or $tr_type=='even') {
@@ -344,18 +358,18 @@ if ($pageset['total_rows']>0) {
 			} else {
 				$tr_type='even';
 			}
-			$libaryWidgets['ordersLatest']['content'].='<tr class="tblBody '.$tr_type.'">';
+			$compiledWidget['content'].='<tr class="tblBody '.$tr_type.'">';
 			$colCounter=0;
 			foreach ($item as $col) {
 				$colCounter++;
-				$libaryWidgets['ordersLatest']['content'].='
-					<td class="tblBodyCol'.$colCounter.'">'.$col.'</td>
+				$compiledWidget['content'].='
+					<td class="tblBodyCol'.$colCounter.'" nowrap>'.$col.'</td>
 				';
 			}
-			$libaryWidgets['ordersLatest']['content'].='</tr>';
+			$compiledWidget['content'].='</tr>';
 		}
 	}
-	$libaryWidgets['ordersLatest']['content'].='</table></div>';
+	$compiledWidget['content'].='</table></div>';
 }
 
 ?>

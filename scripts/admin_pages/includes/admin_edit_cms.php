@@ -2,6 +2,12 @@
 if (!defined('TYPO3_MODE')) {
 	die ('Access denied.');
 }
+$subpartArray['###VALUE_REFERRER###']='';
+if ($this->post['tx_multishop_pi1']['referrer']) {
+	$subpartArray['###VALUE_REFERRER###']=$this->post['tx_multishop_pi1']['referrer'];
+} else {
+	$subpartArray['###VALUE_REFERRER###']=$_SERVER['HTTP_REFERER'];
+}
 $tabs=array();
 if ($_REQUEST['action']=='edit_cms') {
 	$str="SELECT * from tx_multishop_cms c, tx_multishop_cms_description cd where c.id='".$_REQUEST['cms_id']."' and cd.id=c.id";
@@ -63,16 +69,17 @@ if ($this->post and $_REQUEST['action']=='edit_cms') {
 		header("Location: ".$this->post['tx_multishop_pi1']['referrer']);
 		exit();
 	} else {
-		header("Location: ".$this->FULL_HTTP_URL.mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_cms',1));
+		header("Location: ".$this->FULL_HTTP_URL.mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_cms', 1));
 		exit();
 	}
 }
 if ($cms['id'] or $_REQUEST['action']=='edit_cms') {
 	$save_block='
 		<div class="save_block">
-			<input name="cancel" type="button" value="'.htmlspecialchars($this->pi_getLL('cancel')).'" onClick="parent.window.hs.close();" class="submit" />
-			<input name="Submit" type="submit" value="'.htmlspecialchars($this->pi_getLL('save')).'" class="submit" />
-		</div>';
+			<a href="'.$subpartArray['###VALUE_REFERRER###'].'" class="msBackendButton backState arrowLeft arrowPosLeft"><span>'.$this->pi_getLL('cancel').'</span></a>
+			<span class="msBackendButton continueState arrowRight arrowPosLeft"><input name="Submit" type="submit" value="'.$this->pi_getLL('save').'" /></span>
+		</div>
+	';
 	$types=array();
 	$payment_methods=mslib_fe::loadPaymentMethods();
 	// Home
@@ -164,52 +171,56 @@ if ($cms['id'] or $_REQUEST['action']=='edit_cms') {
 				updateForm();								
 			});
 		</script>
-		<div class="account-field">
-			<label>Dynamic markers</label>
+		<div class="account-field" style="display:none" id="msadminMarkersBox">
+			<label>'.$this->pi_getLL('marker').'</label>
 			<div class="valueField">
-				<ul>';
+				<table width="100%" cellpadding="0" cellspacing="0" border="0" id="product_import_table" class="msAdminTooltipTable msZebraTable msadmin_orders_listing">
+				<tr>
+					<th>'.$this->pi_getLL('marker').'</th>
+					<th>'.$this->pi_getLL('description').'</th>
+				</tr>
+				';
 	$markers=array();
-	$markers['DELIVERY_FIRST_NAME']='First name (delivery)';
-	$markers['DELIVERY_LAST_NAME']='Last name (delivery)';
-	$markers['BILLING_FIRST_NAME']='First name (billing)';
-	$markers['BILLING_LAST_NAME']='Last name (billing)';
-	$markers['BILLING_TELEPHONE']='Telephone (billing)';
-	$markers['DELIVERY_TELEPHONE']='Telephone (delivery)';
-	$markers['BILLING_MOBILE']='Mobile (billing)';
-	$markers['DELIVERY_MOBILE']='Mobile (delivery)';
-	$markers['FULL_NAME']='Full name (billing)';
-	$markers['DELIVERY_FULL_NAME']='Full name (delivery)';
-	$markers['CUSTOMER_EMAIL']='Customer email address';
-	$markers['ORDER_DATE_LONG']='Order date in long format (date of purchase)';
-	$markers['CURRENT_DATE_LONG']='Current date in long format (date of sending the message)';
-	$markers['STORE_NAME']='Store name';
-	$markers['TOTAL_AMOUNT']='Order total amount';
-	$markers['PROPOSAL_NUMBER']='Proposal number';
-	$markers['ORDER_NUMBER']='Order number (orders id)';
-	$markers['BILLING_ADDRESS']='Billing address';
-	$markers['BILLING_COMPANY']='Billing company';
-	$markers['DELIVERY_COMPANY']='Delivery company';
-	$markers['DELIVERY_ADDRESS']='Delivery address';
-	$markers['CUSTOMER_ID']='Customer id';
-	$markers['SHIPPING_METHOD']='Shipping method';
-	$markers['PAYMENT_METHOD']='Payment method';
-	$markers['ORDER_DETAILS']='Order details';
+	$markers['DELIVERY_FIRST_NAME']=$this->pi_getLL('admin_label_cms_marker_first_name_delivery');
+	$markers['DELIVERY_LAST_NAME']=$this->pi_getLL('admin_label_cms_marker_last_name_delivery');
+	$markers['BILLING_FIRST_NAME']=$this->pi_getLL('admin_label_cms_marker_first_name_billing');
+	$markers['BILLING_LAST_NAME']=$this->pi_getLL('admin_label_cms_marker_last_name_billing');
+	$markers['BILLING_TELEPHONE']=$this->pi_getLL('admin_label_cms_marker_telephone_billing');
+	$markers['DELIVERY_TELEPHONE']=$this->pi_getLL('admin_label_cms_marker_telephone_delivery');
+	$markers['BILLING_MOBILE']=$this->pi_getLL('admin_label_cms_marker_mobile_billing');
+	$markers['DELIVERY_MOBILE']=$this->pi_getLL('admin_label_cms_marker_mobile_delivery');
+	$markers['FULL_NAME']=$this->pi_getLL('admin_label_cms_marker_full_name_billing');
+	$markers['DELIVERY_FULL_NAME']=$this->pi_getLL('admin_label_cms_marker_full_name_delivery');
+	$markers['CUSTOMER_EMAIL']=$this->pi_getLL('admin_label_cms_marker_customer_email');
+	$markers['ORDER_DATE_LONG']=$this->pi_getLL('admin_label_cms_marker_order_date_in_long_format');
+	$markers['CURRENT_DATE_LONG']=$this->pi_getLL('admin_label_cms_marker_current_date_in_long_format');
+	$markers['STORE_NAME']=$this->pi_getLL('admin_label_cms_marker_store_name');
+	$markers['TOTAL_AMOUNT']=$this->pi_getLL('admin_label_cms_marker_order_total_amount');
+	$markers['PROPOSAL_NUMBER']=$this->pi_getLL('admin_label_cms_marker_proposal_number');
+	$markers['ORDER_NUMBER']=$this->pi_getLL('admin_label_cms_marker_order_number');
+	$markers['BILLING_ADDRESS']=$this->pi_getLL('admin_label_cms_marker_billing_address');
+	$markers['BILLING_COMPANY']=$this->pi_getLL('admin_label_cms_marker_billing_company');
+	$markers['DELIVERY_COMPANY']=$this->pi_getLL('admin_label_cms_marker_delivery_company');
+	$markers['DELIVERY_ADDRESS']=$this->pi_getLL('admin_label_cms_marker_delivery_address');
+	$markers['CUSTOMER_ID']=$this->pi_getLL('admin_label_cms_marker_customer_id');
+	$markers['SHIPPING_METHOD']=$this->pi_getLL('admin_label_cms_marker_shipping_method');
+	$markers['PAYMENT_METHOD']=$this->pi_getLL('admin_label_cms_marker_payment_method');
+	$markers['ORDER_DETAILS']=$this->pi_getLL('admin_label_cms_marker_order_details');
 	if ($this->ms['MODULES']['ADMIN_INVOICE_MODULE']) {
-		$markers['INVOICE_LINK']='Invoice link';
-		$markers['INVOICE_NUMBER']='Invoice number';
+		$markers['INVOICE_LINK']=$this->pi_getLL('admin_label_cms_marker_invoice_link');
+		$markers['INVOICE_NUMBER']=$this->pi_getLL('admin_label_cms_marker_invoice_number');
 	}
-	$markers['BILLING_NAME']='Name (billing)';
-	$markers['BILLING_EMAIL']='Customer email address (billing)';
-	$markers['DELIVERY_EMAIL']='Customer email address (delivery)';
-	$markers['DELIVERY_NAME']='Name (delivery)';
-	$markers['CUSTOMER_COMMENTS']='Customer comments (used by order status update letter)';
-	$markers['OLD_ORDER_STATUS']='Old order status (used by order status update letter)';
-	$markers['ORDER_STATUS']='New order status (used by order status update letter)';
-	$markers['EXPECTED_DELIVERY_DATE']='Expected delivery date';
-	$markers['TRACK_AND_TRACE_CODE']='Track and Trace code';
-	$markers['CONFIRMATION_LINK']='Create account confirmation link';
-	$markers['CUSTOMER_COMMENTS']='Customer comments';
-	$markers['PAYMENT_PAGE_LINK']='Payment link (for payment reminder mail template)';
+	$markers['BILLING_NAME']=$this->pi_getLL('admin_label_cms_marker_name_billing');
+	$markers['BILLING_EMAIL']=$this->pi_getLL('admin_label_cms_marker_customer_email_billing');
+	$markers['DELIVERY_EMAIL']=$this->pi_getLL('admin_label_cms_marker_customer_email_delivery');
+	$markers['DELIVERY_NAME']=$this->pi_getLL('admin_label_cms_marker_name_delivery');
+	$markers['CUSTOMER_COMMENTS']=$this->pi_getLL('admin_label_cms_marker_customer_comments_update_status');
+	$markers['OLD_ORDER_STATUS']=$this->pi_getLL('admin_label_cms_marker_old_order_status');
+	$markers['ORDER_STATUS']=$this->pi_getLL('admin_label_cms_marker_new_order_status');
+	$markers['EXPECTED_DELIVERY_DATE']=$this->pi_getLL('admin_label_cms_marker_expected_delivery_date');
+	$markers['TRACK_AND_TRACE_CODE']=$this->pi_getLL('admin_label_cms_marker_track_and_trace_code');
+	$markers['CONFIRMATION_LINK']=$this->pi_getLL('admin_label_cms_marker_create_account_confirmation_link');
+	$markers['PAYMENT_PAGE_LINK']=$this->pi_getLL('admin_label_cms_marker_payment_link');
 	//hook to let other plugins further manipulate the markers
 	if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin/admin_edit_cms.php']['CmsMarkersPostProc'])) {
 		$params=array(
@@ -220,10 +231,16 @@ if ($cms['id'] or $_REQUEST['action']=='edit_cms') {
 		}
 	}
 	ksort($markers);
+	$tr_subtype='';
 	foreach ($markers as $key=>$label) {
-		$tmpcontent.='<li><span class="marker_description">'.htmlspecialchars($label).':</span><span class="marker_key">###'.$key.'###</span></li>'."\n";
+		if (!$tr_subtype or $tr_subtype=='even') {
+			$tr_subtype='odd';
+		} else {
+			$tr_subtype='even';
+		}
+		$tmpcontent.='<tr class="'.$tr_subtype.'"><td class="marker_key">###'.$key.'###</td><td class="marker_description">'.htmlspecialchars($label).'</td></tr>'."\n";
 	}
-	$tmpcontent.='</ul>
+	$tmpcontent.='</table>
 				</div>			
 			</div>';
 	foreach ($this->languages as $key=>$language) {
@@ -238,7 +255,8 @@ if ($cms['id'] or $_REQUEST['action']=='edit_cms') {
 		<div class="account-field">
 			<label for="cms_name['.$language['uid'].']">'.htmlspecialchars($this->pi_getLL('name')).'</label>
 			<input spellcheck="true" type="text" class="text" name="cms_name['.$language['uid'].']" id="cms_name['.$language['uid'].']" value="'.htmlspecialchars($cms[$language['uid']]['name']).'">
-		</div>	
+			<span><a href="#" class="tooltipMarker" title="Dynamic markers">markers</a></span>
+		</div>
 		<div class="account-field">
 			<label for="cms_content['.$language['uid'].']">'.htmlspecialchars($this->pi_getLL('content')).'</label>
 			<textarea spellcheck="true" name="cms_content['.$language['uid'].']" id="cms_content['.$language['uid'].']" class="mceEditor" rows="4">'.htmlspecialchars($cms[$language['uid']]['content']).'</textarea>
@@ -291,12 +309,6 @@ if ($cms['id'] or $_REQUEST['action']=='edit_cms') {
 		$count++;
 		$content.='<li'.(($count==1) ? ' class="active"' : '').'><a href="#'.$key.'">'.$value[0].'</a></li>';
 	}
-	$subpartArray['###VALUE_REFERRER###']='';
-	if ($this->post['tx_multishop_pi1']['referrer']) {
-		$subpartArray['###VALUE_REFERRER###']=$this->post['tx_multishop_pi1']['referrer'];
-	} else {
-		$subpartArray['###VALUE_REFERRER###']=$_SERVER['HTTP_REFERER'];
-	}
 	$content.='</ul>
 	    <div class="tab_container">
 	<form class="admin_cms_edit" name="admin_categories_edit_'.$cms['id'].'" id="admin_categories_edit_'.$cms['id'].'" method="post" action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_ajax').'" enctype="multipart/form-data">
@@ -316,4 +328,17 @@ if ($cms['id'] or $_REQUEST['action']=='edit_cms') {
 	</div>';
 	// tabs eof
 }
+$GLOBALS['TSFE']->additionalHeaderData[]='
+<script type="text/javascript">
+	jQuery(document).ready(function($){
+		$(".tooltipMarker").tooltip({
+			position: "bottom",
+			onBeforeShow: function() {
+				var html=$("#msadminMarkersBox .valueField").html();
+				this.getTip().html("<h1>'.$this->pi_getLL('marker').'</h1>"+html);
+			}
+		});
+	});
+</script>
+';
 ?>

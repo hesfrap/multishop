@@ -1,11 +1,10 @@
 <?php
 if (!defined('TYPO3_MODE')) {
-	die('Access denied.');
+	die ('Access denied.');
 }
-$compiledWidget['key']='turnoverPerMonth';
+$compiledWidget['key']='ordersPerMonth';
 $compiledWidget['defaultCol']=1;
-$compiledWidget['title']=$this->pi_getLL('sales_volume_by_month');
-
+$compiledWidget['title']=$this->pi_getLL('orders_volume_by_month', 'Bestellingen');
 $where=array();
 $where[]='(o.deleted=0)';
 switch($this->dashboardArray['section']) {
@@ -46,21 +45,17 @@ foreach ($dates as $key=>$value) {
 	$compiledWidget['content'].='<td align="right">'.ucfirst($key).'</td>';
 }
 $compiledWidget['content'].='<td align="right" nowrap>'.htmlspecialchars($this->pi_getLL('total')).'</td>';
-$compiledWidget['content'].='<td align="right" nowrap>'.htmlspecialchars($this->pi_getLL('cumulative')).' '.date("Y").'</td>';
+$compiledWidget['content'].='<td align="right" nowrap>'.htmlspecialchars($this->pi_getLL('cumulative')).'</td>';
 $compiledWidget['content'].='</tr>';
 $compiledWidget['content'].='<tr class="even">';
 $total_amount=0;
 foreach ($dates as $key=>$value) {
-	$total_price=0;
+	$total_orders=0;
 	$start_time=strtotime($value."-01 00:00:00");
 	//$end_time=strtotime($value."-31 23:59:59");
 	$end_time=strtotime($value."-01 23:59:59 +1 MONTH -1 DAY");
+
 	$where=array();
-	if ($this->cookie['paid_orders_only']) {
-		$where[]='(o.paid=1)';
-	} else {
-		$where[]='(o.paid=1 or o.paid=0)';
-	}
 	$where[]='(o.deleted=0)';
 	$where[]='(o.crdate BETWEEN '.$start_time.' and '.$end_time.')';
 	switch($this->dashboardArray['section']) {
@@ -72,7 +67,7 @@ foreach ($dates as $key=>$value) {
 			}
 			break;
 	}
-	$str=$GLOBALS['TYPO3_DB']->SELECTquery('o.orders_id, o.grand_total', // SELECT ...
+	$str=$GLOBALS['TYPO3_DB']->SELECTquery('count(1) as total', // SELECT ...
 		'tx_multishop_orders o', // FROM ...
 		'('.implode(" AND ", $where).')', // WHERE...
 		'', // GROUP BY...
@@ -81,13 +76,10 @@ foreach ($dates as $key=>$value) {
 	);
 	$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 	while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry))!=false) {
-		$total_price=($total_price+$row['grand_total']);
+		$total_orders=($total_orders+$row['total']);
 	}
-	$compiledWidget['content'].='<td align="right">'.mslib_fe::amount2Cents($total_price, 0).'</td>';
-	$total_amount=$total_amount+$total_price;
-	if (date("Y", $start_time)==date("Y")) {
-		$total_amount_cumulative=$total_amount_cumulative+$total_price;
-	}
+	$compiledWidget['content'].='<td align="right">'.number_format($total_orders, 0, 3, '.').'</td>';
+	$total_amount=$total_amount+$total_orders;
 }
 if ($this->cookie['stats_year_sb']==date("Y") || !$this->cookie['stats_year_sb']) {
 	$month=date("m");
@@ -104,8 +96,8 @@ if ($this->cookie['stats_year_sb']==date("Y") || !$this->cookie['stats_year_sb']
 	$currentYear=0;
 	$currentMonth=0;
 }
-$compiledWidget['content'].='<td align="right" nowrap>'.mslib_fe::amount2Cents($total_amount, 0).'</td>';
-$compiledWidget['content'].='<td align="right" nowrap>'.mslib_fe::amount2Cents(($total_amount_cumulative/$dayOfTheYear)*365, 0).'</td>';
+$compiledWidget['content'].='<td align="right" nowrap>'.number_format($total_amount, 0, 3, '.').'</td>';
+$compiledWidget['content'].='<td align="right" nowrap>'.number_format(($total_amount/$dayOfTheYear)*365, 0, 3, '.').'</td>';
 $compiledWidget['content'].='</tr>';
 if (!$tr_type or $tr_type=='even') {
 	$tr_type='odd';

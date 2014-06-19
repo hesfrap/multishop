@@ -65,7 +65,9 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 			}
 			$nested_level=0;
 			$catlist=mslib_fe::getSubcatsOnly($user_crumbar[$nested_level]['id']);
-			if (!count($catlist)) {
+			$count_list=count($catlist);
+			if (!$count_list) {
+				$this->hideIfNoResults=1;
 				$this->no_database_results=1;
 			} else {
 				if ($this->default_header) {
@@ -73,6 +75,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 				}
 				$content.='<div id="multishop_catbox_'.$this->cObj->data['uid'].'">
 					<ul id="catalog_sortable_'.$this->cObj->data['uid'].'">';
+				$count_hidden_menu=0;
 				foreach ($catlist as $cat) {
 					if (!$cat['hide_in_menu']) {
 						// level 0
@@ -207,7 +210,10 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 							}
 						}
 						$content.='</li>';
-					} // hide in menu
+					} else {
+						$count_hidden_menu++;
+					}
+					// hide in menu
 				}
 				$content.='</ul></div>';
 				if ($this->ADMIN_USER) {
@@ -237,6 +243,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 				}
 			}
 		} else {
+			$this->hideIfNoResults=1;
 			$this->no_database_results=1;
 		}
 	} else {
@@ -252,9 +259,14 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 					$user_crumbar=array_reverse($user_crumbar);
 				}
 				$catlist=mslib_fe::getSubcatsOnly($this->categoriesStartingPoint);
-				if (count($catlist)>0) {
+				$count_list=count($catlist);
+				if (!$count_list) {
+					$this->hideIfNoResults=1;
+					$this->no_database_results=1;
+				} else {
 					$item_counter=0;
 					$item_counter_accordion=0;
+					$count_hidden_menu=0;
 					foreach ($catlist as $cat) {
 						if (!$cat['hide_in_menu']) {
 							$tmpcontent='';
@@ -334,6 +346,8 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 							// level 0 eof
 							$tmpcontent.='</li>';
 							$items[]=$tmpcontent;
+						} else {
+							$count_hidden_menu++;
 						} // hide in menu
 					}
 					$content.='<div id="multishop_catbox_'.$this->cObj->data['uid'].'">';
@@ -372,11 +386,16 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 				$user_crumbar=array_reverse($user_crumbar);
 			}
 			$catlist=mslib_fe::getSubcatsOnly($this->categoriesStartingPoint);
-			if (count($catlist)>0) {
+			$count_list=count($catlist);
+			if (!$count_list) {
+				$this->hideIfNoResults=1;
+				$this->no_database_results=1;
+			} else {
 				$content.='<div id="multishop_catbox_'.$this->cObj->data['uid'].'">
 					<ul id="vertical_container">';
 				$item_counter=0;
 				$item_counter_accordion=0;
+				$count_hidden_menu=0;
 				foreach ($catlist as $cat) {
 					if (!$cat['hide_in_menu']) {
 						$item_counter++;
@@ -628,7 +647,10 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 							}
 						}
 						$content.='</li>';
-					} // hide in menu
+					} else {
+						$count_hidden_menu++;
+					}
+					// hide in menu
 				}
 				$content.='</ul></div>';
 				if ($this->ADMIN_USER) {
@@ -660,7 +682,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$content=$Cache_Lite->get($stri
 			// show default categories box eof
 		}
 	}
-	if (!$content) {
+	if (!$content || ($count_hidden_menu==$count_list)) {
 		// no content. lets hide it
 		$this->hideIfNoResults=1;
 		$this->no_database_results=1;

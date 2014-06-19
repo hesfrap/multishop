@@ -31,7 +31,7 @@ if (is_numeric($this->get['disable']) and is_numeric($this->get['customer_group_
 if ($this->post) {
 	$erno=array();
 	if (!$this->post['group_name']) {
-		$erno[]='Group name is not defined';
+		$erno[]=$this->pi_getLL('admin_label_group_name_is_not_defined');
 	}
 	if (!is_numeric($this->post['discount'])) {
 		$this->post['discount']=0;
@@ -97,7 +97,7 @@ $content='
 	</div>
 	<div class="account-field">
 		<label>&nbsp;</label>
-		<input type="submit" name="Submit" class="msadmin_button" value="'.$this->pi_getLL('add_new_group').'" />
+		<span class="msBackendButton continueState arrowRight arrowPosLeft"><input type="submit" name="Submit" value="'.$this->pi_getLL('add_new_group').'" /></span>
 	</div>
 </form>
 <div class="main-heading"><h2>'.$this->pi_getLL('groups').'</h2></div>

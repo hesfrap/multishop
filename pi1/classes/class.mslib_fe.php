@@ -30,7 +30,8 @@ class mslib_fe {
 		$this->HTTP_HOST=$ref->HTTP_HOST;
 		$this->FULL_HTTP_URL=$ref->FULL_HTTP_URL;
 		$this->DOCUMENT_ROOT_MULTISHOP=$ref->DOCUMENT_ROOT_MULTISHOP;
-		$this->FULL_HTTP_URL_MULTISHOP=$ref->FULL_HTTP_URL_MULTISHOP;
+		$this->FULL_HTTP_URL_MS=$ref->FULL_HTTP_URL_MS;
+		$this->FULL_HTTP_URL_MULTISHOP=$ref->FULL_HTTP_URL_MS;
 		$this->get= &$ref->get;
 		$this->post= &$ref->post;
 		$this->conf= &$ref->conf;
@@ -4191,7 +4192,7 @@ class mslib_fe {
 			$query=$GLOBALS['TYPO3_DB']->SELECTquery('categories_id', 'tx_multishop_categories', 'page_uid="'.$this->showCatalogFromPage.'"');
 			$res=$GLOBALS['TYPO3_DB']->sql_query($query);
 			if (!$GLOBALS['TYPO3_DB']->sql_num_rows($res)) {
-				$messages[]='This shop doesn\'t contain any categories. <a href="'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&action=add_category').'" onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 890, height: 500} )"><br /><strong>Click here to add a category</strong></a>';
+				$messages[]='This shop doesn\'t contain any categories. <a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&action=add_category').'"><br /><strong>Click here to add a category</strong></a>';
 			}
 			$query=$GLOBALS['TYPO3_DB']->SELECTquery('id', 'tx_multishop_shipping_countries', 'page_uid="'.$this->showCatalogFromPage.'"');
 			$res=$GLOBALS['TYPO3_DB']->sql_query($query);
@@ -4435,9 +4436,12 @@ class mslib_fe {
 	}
 	public function getActiveShop() {
 //		$GLOBALS['TYPO3_DB']->store_lastBuiltQuery = 1;
+		$multishop_content_objects=$GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'pages', 'deleted=0 and hidden=0 and module = \'mscore\'', '');
+		/*
 		$multishop_content_objects=$GLOBALS['TYPO3_DB']->exec_SELECTgetRows('t.pid, p.title, p.uid as puid', 'tt_content t, pages p', 't.list_type = \'multishop_pi1\' and t.pi_flexform like \'%<value index="vDEF">coreshop</value>%\' and t.pi_flexform like \'%<field index="page_uid">
                     <value index="vDEF"></value>
                 </field>%\' and p.hidden=0 and t.hidden=0 and p.deleted=0 and t.deleted=0 and t.pid=p.uid', 'p.sorting');
+		*/
 //		error_log($GLOBALS['TYPO3_DB']->debug_lastBuiltQuery);
 		return $multishop_content_objects;
 	}
@@ -4457,8 +4461,7 @@ class mslib_fe {
 			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_categories&cid='.$this->get['categories_id']);
 			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_category']['label']=$this->pi_getLL('admin_new_category');
 			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_category']['description']=$this->pi_getLL('admin_add_new_category_to_the_catalog').'.';
-			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_category']['link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&action=add_category');
-			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_category']['link_params']='onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 890, height: 500} )" id="msadmin_new_category"';
+			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_category']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&action=add_category');
 			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_multiple_category']['label']=$this->pi_getLL('admin_new_multiple_category', 'NEW CATEGORIES');
 			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_multiple_category']['description']=$this->pi_getLL('admin_add_new_multiple_category_to_the_catalog', 'Add new categories simultaneous').'.';
 			$ms_menu['header']['ms_admin_catalog']['subs']['admin_categories']['subs']['admin_new_multiple_category']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&action=add_multiple_category');
@@ -4481,8 +4484,7 @@ class mslib_fe {
 			$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_products_search_and_edit&cid='.$this->get['categories_id']);
 			$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_new_product']['label']=$this->pi_getLL('admin_new_product');
 			$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_new_product']['description']=$this->pi_getLL('admin_create_new_products_here').'.';
-			$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_new_product']['link']=mslib_fe::typolink($this->shop_pid.',2002', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&action=add_product');
-			$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_new_product']['link_params']='onclick="return hs.htmlExpand(this, { objectType: \'iframe\', width: 890, height: 500} )" id="msadmin_new_product"';
+			$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_new_product']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_ajax&cid='.$this->get['categories_id'].'&action=add_product');
 			if ($this->get['products_id']) {
 				$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_edit_product']['label']=$this->pi_getLL('admin_edit_product');
 				$ms_menu['header']['ms_admin_catalog']['subs']['ms_admin_products']['subs']['admin_edit_product']['description']=$this->pi_getLL('admin_edit_product_description').'.';
@@ -4586,6 +4588,9 @@ class mslib_fe {
 			$ms_menu['header']['ms_admin_statistics']['label']=$this->pi_getLL('admin_statistics');
 			$ms_menu['header']['ms_admin_statistics']['description']=$this->pi_getLL('admin_statistics_description').'.';
 			$ms_menu['header']['ms_admin_statistics']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_home');
+			$ms_menu['header']['ms_admin_statistics']['subs']['ms_global_stats']['label']=$this->pi_getLL('admin_global_statistics');
+			$ms_menu['header']['ms_admin_statistics']['subs']['ms_global_stats']['description']=$this->pi_getLL('admin_global_statistics_description').'.';
+			$ms_menu['header']['ms_admin_statistics']['subs']['ms_global_stats']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_home');
 			$ms_menu['header']['ms_admin_statistics']['subs']['ms_products_search_stats']['label']=$this->pi_getLL('admin_products_search');
 			$ms_menu['header']['ms_admin_statistics']['subs']['ms_products_search_stats']['description']=$this->pi_getLL('admin_products_search_description').'.';
 			$ms_menu['header']['ms_admin_statistics']['subs']['ms_products_search_stats']['link']=mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_products_search_stats');
@@ -4645,10 +4650,10 @@ class mslib_fe {
 				$total=count($multishop_content_objects);
 				foreach ($multishop_content_objects as $pageinfo) {
 					$counter++;
-					if (is_numeric($pageinfo['puid']) and $pageinfo['puid']!=$this->shop_pid) {
+					if (is_numeric($pageinfo['uid']) and $pageinfo['uid']!=$this->shop_pid) {
 						$ms_menu['header']['ms_admin_stores']['subs']['shop_'.$counter]['label']=t3lib_div::strtoupper($pageinfo['title']);
 						$ms_menu['header']['ms_admin_stores']['subs']['shop_'.$counter]['description']=$this->pi_getLL('switch_to').' '.$pageinfo['title'].' '.$this->pi_getLL('web_shop');
-						$ms_menu['header']['ms_admin_stores']['subs']['shop_'.$counter]['link']=mslib_fe::typolink($pageinfo["puid"], '');
+						$ms_menu['header']['ms_admin_stores']['subs']['shop_'.$counter]['link']=mslib_fe::typolink($pageinfo["uid"], '');
 					}
 				}
 			}
@@ -5722,7 +5727,8 @@ class mslib_fe {
 			return false;
 		}
 		if (is_numeric($page_uid)) {
-			$shop=$GLOBALS['TYPO3_DB']->exec_SELECTgetRows('t.pid, p.title, p.uid as puid', 'tt_content t, pages p', 'p.uid=\''.$page_uid.'\' and p.hidden=0 and t.hidden=0 and p.deleted=0 and t.deleted=0 and t.list_type = \'multishop_pi1\' and t.pi_flexform like \'%<value index="vDEF">coreshop</value>%\' and t.pid=p.uid', 'p.sorting');
+			$shop=$GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'pages', 'uid=\''.$page_uid.'\' and deleted=0 and hidden=0 and module = \'mscore\'', '');
+			//$shop=$GLOBALS['TYPO3_DB']->exec_SELECTgetRows('t.pid, p.title, p.uid as puid', 'tt_content t, pages p', 'p.uid=\''.$page_uid.'\' and p.hidden=0 and t.hidden=0 and p.deleted=0 and t.deleted=0 and t.list_type = \'multishop_pi1\' and t.pi_flexform like \'%<value index="vDEF">coreshop</value>%\' and t.pid=p.uid', 'p.sorting');
 			return $shop[0];
 		}
 	}
@@ -6119,7 +6125,7 @@ class mslib_fe {
 			foreach ($dataArray['subs'] as $item) {
 				// cats
 				if (!$selectbox) {
-					$content.='<li class="category'.(!$item['status'] ? ' disabled' : '').'">';
+					$content.='<li class="sub_categories_sorting category'.(!$item['status'] ? ' disabled' : '').'" id="categories_id_'.$item['categories_id'].'">';
 					$content.='<input type="checkbox" class="movecats" name="movecats[]" value="'.$item['categories_id'].'" id="cb-cat_'.$parent_id.'_'.$item['categories_id'].'" rel="'.$parent_id.'_'.$item['categories_id'].'">&nbsp;';
 					if ($this->ADMIN_USER and $admin_mode) {
 						// get all cats to generate multilevel fake url
@@ -6174,7 +6180,7 @@ class mslib_fe {
 					}
 					$sub_content=mslib_fe::displayAdminCategories($item, $selectbox, 0, $item['categories_id']);
 					if ($sub_content) {
-						$content.='<ul>'.$sub_content.'</ul>';
+						$content.='<ul class="sub_categories_ul">'.$sub_content.'</ul>';
 					}
 					$content.='</li>';
 				} else {

@@ -70,21 +70,21 @@ $qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 $rows=$GLOBALS['TYPO3_DB']->sql_num_rows($qry);
 if ($rows) {
 	$content.='
-	<form action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_product_attributes').'" method="post" name="admin_product_attributes">
+	<form action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]=admin_product_attributes').'" method="post" class="msadminFromFancybox" name="admin_product_attributes">
 	<ul class="attribute_options_sortable">';
 	while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry))!=false) {
 		$options_group=mslib_fe::buildAttributesOptionsGroupSelectBox($row['products_options_id']);
 		if (!empty($options_group)) {
-			$options_group='<span class="options_groups">options group: '.$options_group.'</span>';
+			$options_group='<span class="options_groups">'.$this->pi_getLL('admin_label_options_group').': '.$options_group.'</span>';
 		} else {
-			$options_group='<span class="options_groups">options group: -no groups defined-</span>';
+			$options_group='<span class="options_groups">'.$this->pi_getLL('admin_label_options_group').': '.$this->pi_getLL('admin_label_no_groups_defined').'</span>';
 		}
 		$content.='
 		<li id="options_'.$row['products_options_id'].'">
-		<h2><span class="option_id">Option ID: '.$row['products_options_id'].'</span>
+		<h2><span class="option_id">'.$this->pi_getLL('admin_label_option_id').': '.$row['products_options_id'].'</span>
 		'.$options_group.'
 		<span class="listing_type">
-		listing type: 
+		'.$this->pi_getLL('admin_label_listing_type').':
 		<select name="listtype['.$row['products_options_id'].']">';
 		foreach ($selects as $key=>$value) {
 			$content.='<option value="'.$key.'"'.($key==$row['listtype'] ? ' selected' : '').'>'.htmlspecialchars($value).'</option>';
@@ -92,16 +92,16 @@ if ($rows) {
 		$content.='</select>
 		</span>
 		<span class="required">
-			<input name="required['.$row['products_options_id'].']" type="checkbox" value="1"'.($row['required'] ? ' checked' : '').'/> required
+			<input name="required['.$row['products_options_id'].']" type="checkbox" value="1"'.($row['required'] ? ' checked' : '').'/> '.$this->pi_getLL('required').'
 		</span>		
 		<span class="hide_in_cart">
-			<input name="hide_in_cart['.$row['products_options_id'].']" type="checkbox" value="1"'.($row['hide_in_cart'] ? ' checked' : '').'/> don\'t include attribute values in cart
+			<input name="hide_in_cart['.$row['products_options_id'].']" type="checkbox" value="1"'.($row['hide_in_cart'] ? ' checked' : '').'/> '.$this->pi_getLL('admin_label_dont_include_attribute_values_in_cart').'
 		</span>		
 		</h2>
-		<h3>Option name <input name="option_names['.$row['products_options_id'].'][0]" type="text" value="'.htmlspecialchars($row['products_options_name']).'"  />';
+		<h3>'.$this->pi_getLL('admin_label_option_name').' <input name="option_names['.$row['products_options_id'].'][0]" type="text" value="'.htmlspecialchars($row['products_options_name']).'"  />';
 		$value=htmlspecialchars($row2['products_options_values_name']);
 		foreach ($this->languages as $key=>$language) {
-			if ($key>0) {
+			if ($key>0 && isset($this->languages[$key]['uid']) && isset($this->languages[$key]['title']) && $key==$this->languages[$key]['uid']) {
 				$str3="select products_options_name from tx_multishop_products_options where products_options_id='".$row['products_options_id']."' and language_id='".$key."'";
 				$qry3=$GLOBALS['TYPO3_DB']->sql_query($str3);
 				while (($row3=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry3))!=false) {
@@ -112,7 +112,7 @@ if ($rows) {
 				$content.=$this->languages[$key]['title'].' <input name="option_names['.$row['products_options_id'].']['.$key.']" type="text" value="'.$value.'"  />';
 			}
 		}
-		$content.='<a href="#" class="delete_options admin_menu_remove" rel="'.$row['products_options_id'].'">delete</a>&nbsp;';
+		$content.='<a href="#" class="delete_options admin_menu_remove" rel="'.$row['products_options_id'].'">'.$this->pi_getLL('delete').'</a>&nbsp;';
 		$content.='<a href="#" class="msadmin_button fetch_attributes_values" id="button_label_'.$row['products_options_id'].'" rel="'.$row['products_options_id'].'">'.$this->pi_getLL('show_attributes_values', 'SHOW VALUES').'</a>&nbsp;';
 		$content.='<a href="#" class="msadmin_button fetch_options_description" id="button_label_desc_'.$row['products_options_id'].'" rel="'.$row['products_options_id'].'">'.$this->pi_getLL('show_options_description', 'EDIT DESCRIPTION').'</a>';
 		$content.='</h3>
@@ -144,33 +144,32 @@ if ($rows) {
 	}
 	$content.='
 		</ul>
-		<br /><input name="Submit" type="submit" value="Save" class="msadmin_button" />
+		<span class="msBackendButton continueState arrowRight arrowPosLeft"><input name="Submit" type="submit" value="'.$this->pi_getLL('save').'" /></span>
 		</form>
 		
-		<div id="dialog-edit-description" title="Edit options description">
+		<div id="dialog-edit-description" title="'.$this->pi_getLL('admin_label_edit_options_description').'">
 	  		<div id="description_editor_header"></div>
 			<div id="description_editor"></div>
 		</div>
 			
-		<div id="dialog-edit-options-values-description" title="Edit options values description">
+		<div id="dialog-edit-options-values-description" title="'.$this->pi_getLL('admin_label_edit_options_values_description').'">
 	  		<div id="description_ov_editor_header"></div>
 			<div id="description_ov_editor"></div>
 		</div>
 			
-		<div id="dialog-confirm" title="WARNING: THIS ACTION IS NOT REVERSIBLE!!">
-	  		<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>Are you sure you want to delete <span id="attributes-name0"></span> attribute(s)?</p>
+		<div id="dialog-confirm" title="'.$this->pi_getLL('admin_label_warning_this_action_is_not_reversible').'">
+	  		<p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>'.sprintf($this->pi_getLL('admin_label_are_you_sure_want_to_delete_x_attributes'), '<span id="attributes-name0"></span>').'</p>
 		</div>
 			
-		<div id="dialog-confirm-force" title="WARNING: THIS ACTION IS NOT REVERSIBLE!!">
+		<div id="dialog-confirm-force" title="'.$this->pi_getLL('admin_label_warning_this_action_is_not_reversible').'">
 	  		<p>
-				<span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
-				There are <span id="used-product-number"></span> product(s) using <span id="attributes-name1"></span> attribute(s), are you sure want to delete it?
+				<span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>'.sprintf($this->pi_getLL('admin_label_there_are_x_products_using_x_attributes_are_you_sure_want_to_delete_it'), '<span id="used-product-number"></span>', '<span id="attributes-name1"></span>').'
 			</p>
 			<br/><br/>
 			<p style="text-align:left">
-				The products using this attributes are:
+				'.$this->pi_getLL('admin_label_the_products_using_this_attributes_are').':
 				<br/>
-				(link will open in new tab/window)
+				('.$this->pi_getLL('admin_label_link_will_open_in_new_tab_window').')
 			</p>
 			<br/>
 			<span id="products-used-attributes-list" style="text-align:left"></span>
@@ -178,21 +177,21 @@ if ($rows) {
 	// now load the sortables jQuery code
 	$content.='<script type="text/javascript">
 	  jQuery(document).ready(function($) {
-		jQuery("#dialog-edit-description").hide();	
-		jQuery("#dialog-edit-options-values-description").hide();	
-		jQuery("#dialog-confirm").hide();
-		jQuery("#dialog-confirm-force").hide();	
+		$("#dialog-edit-description").hide();
+		$("#dialog-edit-options-values-description").hide();
+		$("#dialog-confirm").hide();
+		$("#dialog-confirm-force").hide();
 		
-		jQuery(".fetch_options_description").click(function(e) {
+		$(".fetch_options_description").click(function(e) {
 			e.preventDefault();
-			var opt_id = jQuery(this).attr("rel");
+			var opt_id = $(this).attr("rel");
 			var dialog_box_id = "#dialog-edit-description";
 			var dialog_box_content_holder = "#description_editor";
-			var dialog_height = "300";
+			var dialog_height = "400";
 			var dialog_width = "500";
 			
 			href = "'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=fetch_options_description').'";
-			jQuery.ajax({ 
+			$.ajax({
 				type:   "POST", 
 				url:    href, 
 				data:   \'data_id=\' + opt_id,
@@ -200,16 +199,15 @@ if ($rows) {
 				success: function(r) {
 					if (r.results) {
 						if (r.options_name != "") {
-							jQuery("#description_editor_header").html("");
-							jQuery("#description_editor_header").html("<strong>Option: " + r.options_name + "</strong>");
+							$("#description_editor_header").html("");
+							$("#description_editor_header").html("<strong>'.$this->pi_getLL('admin_label_option').': " + r.options_name + "</strong>");
 						}
 						var values_data = "";
 					
 						if (r.results.length > 1) {
 							dialog_height = parseInt(170 * r.results.length);
 						}
-						
-						jQuery.each(r.results, function(i, v){
+						$.each(r.results, function(i, v){
 							values_data += \'<li class="description_content">\';
 							values_data += \'<span>\' + v.lang_title + \': </span>\';
 							values_data += \'<textarea name="opt_desc[\' + v.option_id + \'][\' + v.lang_id + \']" id="opt_desc_\' + v.option_id + \'_\' + v.lang_id + \'" rows="8" cols="50">\' + v.description + \'</textarea>\';
@@ -218,48 +216,45 @@ if ($rows) {
 									
 						if (values_data != "") {
 							values_data = "<ul>" + values_data + "</ul>";
-							jQuery(dialog_box_content_holder).html(values_data);
-							
-							jQuery(dialog_box_id).show();	
-					
-							jQuery(dialog_box_id).dialog({
-								resizable: false,
+							$(dialog_box_content_holder).html(values_data);
+							$(dialog_box_id).show();
+							$(dialog_box_id).dialog({
+								resizable: true,
 								height: dialog_height,
 								width: dialog_width,
 								modal: true,
 								buttons: {
+									"Cancel":{
+										text: "'.$this->pi_getLL('cancel').'",
+										class: \'msCancelButton msBackendButton prevState arrowLeft arrowPosLeft\',
+										click: function() {
+											$("#description_editor_header").html("");
+											$(dialog_box_content_holder).html("");
+											$(this).dialog("close");
+											$(this).hide();
+										}
+									},
 									"Save":{
-										text: "Save",
+										text: "'.$this->pi_getLL('save').'",
 										class: \'msOkButton msBackendButton continueState arrowRight arrowPosLeft\',
 										click: function() {
 											href = "'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=save_options_description').'";
-											jQuery.ajax({ 
-													type:   "POST", 
-													url:    href, 
-													data:   jQuery("[id^=opt_desc_]").serialize(),
+											$.ajax({
+													type:   "POST",
+													url:    href,
+													data:   $("[id^=opt_desc_]").serialize(),
 													dataType: "json",
-													success: function(s) { 
-														
-													} 
+													success: function(s) {
+
+													}
 											});
-													
-											jQuery("#description_editor_header").html("");
-											jQuery( dialog_box_content_holder ).html("");
-													
-											jQuery( this ).dialog( "close" );
-											jQuery( this ).hide();
+
+											$("#description_editor_header").html("");
+											$( dialog_box_content_holder ).html("");
+
+											$(this).dialog("close");
+											$(this).hide();
 										}
-									},
-									"Cancel":{
-									text: "Cancel",
-									class: \'msCancelButton msBackendButton prevState arrowLeft arrowPosLeft\',
-									click: function() {
-										jQuery("#description_editor_header").html("");
-										jQuery( dialog_box_content_holder ).html("");
-												
-										jQuery( this ).dialog( "close" );
-										jQuery( this ).hide();
-									}
 									}
 								}
 							});
@@ -270,14 +265,14 @@ if ($rows) {
 		});												
 		$(document).on("click", ".fetch_options_values_description", function(e) {
 			e.preventDefault();
-			var opt_id = jQuery(this).attr("rel");
+			var opt_id = $(this).attr("rel");
 			var dialog_box_id = "#dialog-edit-options-values-description";
 			var dialog_box_content_holder = "#description_ov_editor";
 			var dialog_height = "300";
 			var dialog_width = "500";
 			
 			href = "'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=fetch_options_values_description').'";
-			jQuery.ajax({ 
+			$.ajax({
 				type:   "POST", 
 				url:    href, 
 				data:   \'data_id=\' + opt_id,
@@ -285,8 +280,8 @@ if ($rows) {
 				success: function(r) {
 					if (r.results) {
 						if (r.options_name != "") {
-							jQuery("#description_ov_editor_header").html("");
-							jQuery("#description_ov_editor_header").html("<strong>" + r.options_name + ": " + r.options_values_name + "</strong>");
+							$("#description_ov_editor_header").html("");
+							$("#description_ov_editor_header").html("<strong>" + r.options_name + ": " + r.options_values_name + "</strong>");
 						}
 						var values_data = "";
 					
@@ -294,49 +289,51 @@ if ($rows) {
 							dialog_height = parseInt(170 * r.results.length);
 						}
 						
-						jQuery.each(r.results, function(i, v){
+						$.each(r.results, function(i, v){
 							values_data += \'<li class="ov_description_content">\';
 							values_data += \'<span>\' + v.lang_title + \': </span>\';
 							values_data += \'<textarea name="ov_desc[\' + v.pov2po_id + \'][\' + v.lang_id + \']" id="ov_desc_\' + v.pov2po_id + \'_\' + v.lang_id + \'" rows="8" cols="50">\' + v.description + \'</textarea>\';
 							values_data += \'</li>\';
 						});
-									
 						if (values_data != "") {
 							values_data = "<ul>" + values_data + "</ul>";
-							jQuery(dialog_box_content_holder).html(values_data);
-							
-							jQuery(dialog_box_id).show();	
-					
-							jQuery(dialog_box_id).dialog({
-								resizable: false,
+							$(dialog_box_content_holder).html(values_data);
+							$(dialog_box_id).show();
+							$(dialog_box_id).dialog({
+								resizable: true,
 								height: dialog_height,
 								width: dialog_width,
 								modal: true,
 								buttons: {
-									"Save": function() {
-										href = "'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=save_options_values_description').'";
-										jQuery.ajax({ 
-												type:   "POST", 
-												url:    href, 
-												data:   jQuery("[id^=ov_desc_]").serialize(),
-												dataType: "json",
-												success: function(s) { 
-													
-												} 
-										});
-												
-										jQuery("#description_ov_editor_header").html("");
-										jQuery( dialog_box_content_holder ).html("");
-												
-										jQuery( this ).dialog( "close" );
-										jQuery( this ).hide();
+									"Cancel":{
+										text: "'.$this->pi_getLL('cancel').'",
+										class: \'msCancelButton msBackendButton prevState arrowLeft arrowPosLeft\',
+										click: function() {
+											$("#description_ov_editor_header").html("");
+											$(dialog_box_content_holder).html("");
+											$(this).dialog("close");
+											$(this).hide();
+										}
 									},
-									Cancel: function() {
-										jQuery("#description_ov_editor_header").html("");
-										jQuery( dialog_box_content_holder ).html("");
-												
-										jQuery( this ).dialog( "close" );
-										jQuery( this ).hide();
+									"save":{
+										text: "'.$this->pi_getLL('save').'",
+										class: \'msOkButton msBackendButton continueState arrowRight arrowPosLeft\',
+										click: function() {
+											href = "'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=save_options_values_description').'";
+											$.ajax({
+													type:   "POST",
+													url:    href,
+													data:   $("[id^=ov_desc_]").serialize(),
+													dataType: "json",
+													success: function(s) {
+
+													}
+											});
+											$("#description_ov_editor_header").html("");
+											$(dialog_box_content_holder).html("");
+											$(this).dialog("close");
+											$(this).hide();
+										}
 									}
 								}
 							});
@@ -345,17 +342,16 @@ if ($rows) {
 				} 
 			});
 		});
-			
-		jQuery(".fetch_attributes_values").click(function(e) {
+		$(".fetch_attributes_values").click(function(e) {
 			e.preventDefault();
-			var opt_id = jQuery(this).attr("rel");
+			var opt_id = $(this).attr("rel");
 			var container_id = "#vc_" + opt_id;
 			var fetched_id = "#values_fetched_" + opt_id;
 			var button_label_id = "#button_label_" + opt_id;
 			
-			if (jQuery(fetched_id).val() == "0") {
+			if ($(fetched_id).val() == "0") {
 				href = "'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=fetch_attributes').'";
-				jQuery.ajax({ 
+				$.ajax({
 					type:   "POST", 
 					url:    href, 
 					data:   \'data_id=\' + opt_id,
@@ -363,27 +359,32 @@ if ($rows) {
 					success: function(r) { 
 						if (r.results) {
 							var values_data = "";
-							
-							jQuery.each(r.results, function(i, v){
-								values_data += \'<li id="option_values_\' + v.values_id + \'" class="option_values_\' + opt_id + \'_\' + v.values_id + \'">Option value <input name="option_values[\' + v.values_id + \'][0]" type="text" value="\' + v.values_name + \'" />\';
-								jQuery.each(v.language, function(x, y){
+							var classItem=\'even\';
+							$.each(r.results, function(i, v) {
+								if (classItem==\'even\') {
+									classItem=\'odd\';
+								} else {
+									classItem=\'even\';
+								}
+								values_data += \'<li id="option_values_\' + v.values_id + \'" class="option_values_\' + opt_id + \'_\' + v.values_id + \' \'+classItem+\'">'.$this->pi_getLL('admin_label_option_value').' <input name="option_values[\' + v.values_id + \'][0]" type="text" value="\' + v.values_name + \'" />\';
+								$.each(v.language, function(x, y){
 									values_data += y.lang_title + \' <input name="option_values[\' + v.values_id + \'][\' + y.lang_id + \']" type="text" value="\' + y.lang_values + \'" />\';
 								});
 							
-								values_data += \'<a href="#" class="delete_options admin_menu_remove" rel="\' + opt_id + \':\' + v.values_id + \'">delete</a>&nbsp;\';
+								values_data += \'<a href="#" class="delete_options admin_menu_remove" rel="\' + opt_id + \':\' + v.values_id + \'">'.$this->pi_getLL('delete').'</a>&nbsp;\';
 								values_data += \'<a href="#" class="fetch_options_values_description msadmin_button" rel="\' + v.pov2po_id + \'">'.$this->pi_getLL('show_options_description', 'EDIT VALUES DESCRIPTION').'</a>\';
 								values_data += \'</li>\';
 							});
 
-							values_data += \'<a href="#" class="msadmin_button hide_attributes_values" rel="\' + opt_id + \'">HIDE VALUES</a>\';
+							values_data += \'<a href="#" class="msadmin_button hide_attributes_values" rel="\' + opt_id + \'">'.$this->pi_getLL('admin_label_hide_values').'</a>\';
 						
-							jQuery(container_id).html(values_data);
-							jQuery(fetched_id).val("1");
+							$(container_id).html(values_data);
+							$(fetched_id).val("1");
 										
-							jQuery(container_id).show();
-							jQuery(button_label_id).html("HIDE VALUES");
+							$(container_id).show();
+							$(button_label_id).html("'.$this->pi_getLL('admin_label_hide_values').'");
 						} else {
-							jQuery(button_label_id).html("NO VALUES");
+							$(button_label_id).html("'.$this->pi_getLL('admin_label_no_values').'");
 						}
 					} 
 				});
@@ -391,31 +392,31 @@ if ($rows) {
 			} else if ($(fetched_id).val() == "1") {
 				if ($(container_id).is(":hidden")) {
 					$(container_id).show();
-					$(button_label_id).html("HIDE VALUES");
+					$(button_label_id).html("'.$this->pi_getLL('admin_label_hide_values').'");
 				} else {
 					$(container_id).hide();
-					$(button_label_id).html("SHOW VALUES");
+					$(button_label_id).html("'.$this->pi_getLL('show_attributes_values').'");
 				}
 			}
 		});
 		$(document).on("click", ".hide_attributes_values", function(e) {
 			e.preventDefault();
-			var opt_id = jQuery(this).attr("rel");
+			var opt_id = $(this).attr("rel");
 			var container_id = "#vc_" + opt_id;
 			var button_label_id = "#button_label_" + opt_id;
 			if ($(container_id).is(":hidden")) {
 				$(container_id).show();
-				$(button_label_id).html("HIDE VALUES");
+				$(button_label_id).html("'.$this->pi_getLL('admin_label_hide_values').'");
 			} else {
 				$(container_id).hide();
-				$(button_label_id).html("SHOW VALUES");
+				$(button_label_id).html("'.$this->pi_getLL('show_attributes_values').'");
 			}
 		});		
 		$(document).on("click", ".delete_options", function(e) {
 			e.preventDefault();
 			var opt_id = $(this).attr("rel");			
 			href = "'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=delete_attributes').'";
-			jQuery.ajax({ 
+			$.ajax({
 					type:   "POST", 
 					url:    href, 
 					data:   \'data_id=\' + opt_id,
@@ -429,74 +430,72 @@ if ($rows) {
 								dialog_box_id = "#dialog-confirm-force";
 					
 								// add product list that mapped to attributes
-								jQuery("#used-product-number").html("<strong>" + r.products_used + "</strong>");
+								$("#used-product-number").html("<strong>" + r.products_used + "</strong>");
 								
 								var product_list = "<ul>";
-								jQuery.each(r.products, function(i, v){
+								$.each(r.products, function(i, v){
 									product_list += "<li>"+ parseInt(i+1) +". <a href=\""+v.link+"\" target=\"_blank\" alt=\"Edit\">"+ v.name +"</a></li>";
 								});
 								product_list += "<ul>";
-								jQuery("#products-used-attributes-list").html(product_list);
+								$("#products-used-attributes-list").html(product_list);
 							}
 					
 							if (r.option_value_id != null) {
-								jQuery("#attributes-name0").html("<strong>" + r.option_name + ": " + r.option_value_name + "</strong>");
-								jQuery("#attributes-name1").html("<strong>" + r.option_name + ": " + r.option_value_name + "</strong>");
+								$("#attributes-name0").html("<strong>" + r.option_name + ": " + r.option_value_name + "</strong>");
+								$("#attributes-name1").html("<strong>" + r.option_name + ": " + r.option_value_name + "</strong>");
 							} else {
-								jQuery("#attributes-name0").html("<strong>Option: " + r.option_name + "</strong>");
-								jQuery("#attributes-name1").html("<strong>Option: " + r.option_name + "</strong>");
+								$("#attributes-name0").html("<strong>Option: " + r.option_name + "</strong>");
+								$("#attributes-name1").html("<strong>Option: " + r.option_name + "</strong>");
 							}
-					
-							jQuery(dialog_box_id).show();	
-					
-							jQuery(dialog_box_id).dialog({
+							$(dialog_box_id).show();
+							$(dialog_box_id).dialog({
 								resizable: false,
-								height:300,
+								height:400,
 								width:500,
 								modal: true,
 								buttons: {
-									"CONFIRM DELETE": function() {
-										href = "'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=delete_attributes&force_delete=1').'";
-											jQuery.ajax({ 
-													type:   "POST", 
-													url:    href, 
+									"Cancel":{
+										text: "'.$this->pi_getLL('cancel').'",
+										class: \'msCancelButton msBackendButton prevState arrowLeft arrowPosLeft\',
+										click: function() {
+											$(this).dialog("close");
+											$(this).hide();
+										}
+									},
+									"delete":{
+										text: "'.$this->pi_getLL('delete').'",
+										class: \'msOkButton msBackendButton continueState arrowRight arrowPosLeft\',
+										click: function() {
+											href = "'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=delete_attributes&force_delete=1').'";
+											$.ajax({
+													type:   "POST",
+													url:    href,
 													data:   \'data_id=\' + r.data_id,
 													dataType: "json",
-													success: function(s) { 
+													success: function(s) {
 														if (s.delete_status == "ok"){
-															jQuery(s.delete_id).remove();
+															$(s.delete_id).remove();
 														}
-													} 
+													}
 											});
-							
-							
-										jQuery( this ).dialog( "close" );
-										jQuery( this ).hide();
-									},
-									Cancel: function() {
-										jQuery( this ).dialog( "close" );
-										jQuery( this ).hide();
+											$(this).dialog("close");
+											$(this).hide();
+										}
 									}
 								}
 							});
 						}
 					} 
 			});
-			
-			
-			/* if (confirm(\'Are you sure you want to delete this Attributes Option?\')) {
-				
-			} */
 		});
-		
-		var result 	= jQuery(".attribute_options_sortable").sortable({
-			cursor:     "move", 
-			//axis:       "y", 
+		var result = $(".attribute_options_sortable").sortable({
+			cursor: "move",
+			//axis: "y",
 			update: function(e, ui) { 
 				href = "'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=update_attributes_sortable&tx_multishop_pi1[type]=options').'";
-				jQuery(this).sortable("refresh"); 
-				sorted = jQuery(this).sortable("serialize","id"); 
-				jQuery.ajax({ 
+				$(this).sortable("refresh");
+				sorted = $(this).sortable("serialize","id");
+				$.ajax({
 						type:   "POST", 
 						url:    href, 
 						data:   sorted, 
@@ -506,15 +505,15 @@ if ($rows) {
 				}); 
 			} 
 		});
-		var result2 	= jQuery(".attribute_option_values_sortable").sortable({
+		var result2 	= $(".attribute_option_values_sortable").sortable({
 			cursor:     "move", 
 			//axis:       "y", 
 			update: function(e, ui) { 
 				href = "'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=update_attributes_sortable&tx_multishop_pi1[type]=option_values').'";
-				jQuery(this).sortable("refresh"); 
-				sorted = jQuery(this).sortable("serialize", "id"); 
-				var products_options_id=jQuery(this).attr("rel");
-				jQuery.ajax({ 
+				$(this).sortable("refresh");
+				sorted = $(this).sortable("serialize", "id");
+				var products_options_id=$(this).attr("rel");
+				$.ajax({
 						type:   "POST", 
 						url:    href, 
 						data:   sorted+"&products_options_id="+products_options_id, 
@@ -527,9 +526,9 @@ if ($rows) {
 	  });
 	  </script>';
 } else {
-	$content.='<h1>No product attributes defined yet</h1>';
-	$content.='You can add product attributes while creating and/or editing a product (through the products attribute tab).';
+	$content.='<h1>'.$this->pi_getLL('admin_label_no_product_attributes_defined_yet').'</h1>';
+	$content.=$this->pi_getLL('admin_label_you_can_add_product_attributes_while_creating_and_or_editing_a_product');
 }
 $content.='<p class="extra_padding_bottom"><a class="msadmin_button" href="'.mslib_fe::typolink().'">'.t3lib_div::strtoupper($this->pi_getLL('admin_close_and_go_back_to_catalog')).'</a></p>';
 $content='<div class="fullwidth_div">'.mslib_fe::shadowBox($content).'</div>';
-?>
+?>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         

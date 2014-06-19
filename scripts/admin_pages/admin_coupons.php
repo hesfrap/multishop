@@ -158,7 +158,7 @@ $content.='</select>
 <div class="account-field">
 	<label>&nbsp;</label>
 	<input type="hidden" name="coupons_id" value="'.$edit_row['id'].'" />
-	<input type="submit" name="editpost" class="msadmin_button" value="'.$this->pi_getLL('save').'" />	
+	<span class="msBackendButton continueState arrowRight arrowPosLeft"><input type="submit" name="editpost" value="'.$this->pi_getLL('save').'" /></span>
 </div>
 </form>
 ';
@@ -213,17 +213,17 @@ if (count($coupons_options)>0) {
 		<td align="center">'.$option['times_used'].'</td>
 		<td align="center">';
 		if (!$option['status']) {
-			$content.='<span class="admin_status_red" alt="Disable"></span>';
-			$content.='<a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&coupons_id='.$option['id'].'&status=1').'"><span class="admin_status_green_disable" alt="Enabled"></span></a>';
+			$content.='<span class="admin_status_red" alt="'.$this->pi_getLL('disable').'"></span>';
+			$content.='<a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&coupons_id='.$option['id'].'&status=1').'"><span class="admin_status_green_disable" alt="'.$this->pi_getLL('enabled').'"></span></a>';
 		} else {
-			$content.='<a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&coupons_id='.$option['id'].'&status=0').'"><span class="admin_status_red_disable" alt="Disabled"></span></a>';
-			$content.='<span class="admin_status_green" alt="Enable"></span>';
+			$content.='<a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&coupons_id='.$option['id'].'&status=0').'"><span class="admin_status_red_disable" alt="'.$this->pi_getLL('disabled').'"></span></a>';
+			$content.='<span class="admin_status_green" alt="'.$this->pi_getLL('enable').'"></span>';
 		}
 		$content.='
 		</td>
 		<td align="center">';
-		$content.='<a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&coupons_id='.$option['id'].'&edit=1').'" " class="admin_menu_edit" alt="Edit"></a>';
-		$content.='<a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&coupons_id='.$option['id'].'&delete=1').'" onclick="return confirm(\'Are you sure?\')" class="admin_menu_remove" alt="Remove"></a>';
+		$content.='<a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&coupons_id='.$option['id'].'&edit=1').'" " class="admin_menu_edit" alt="'.$this->pi_getLL('edit').'"></a>';
+		$content.='<a href="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page'].'&coupons_id='.$option['id'].'&delete=1').'" onclick="return confirm(\'Are you sure?\')" class="admin_menu_remove" alt="'.$this->pi_getLL('admin_label_alt_remove').'"></a>';
 		$content.='</td>
 		</tr>
 		';
