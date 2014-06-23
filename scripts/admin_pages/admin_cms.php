@@ -106,16 +106,16 @@ switch ($this->get['tx_multishop_pi1']['order_by']) {
 		break;
 	case 'id':
 	default:
-		$order_by='c.id';
+		$order_by='c.type';
 		break;
 }
 switch ($this->get['tx_multishop_pi1']['order']) {
 	case 'a':
+	default:
 		$order='asc';
 		$order_link='d';
 		break;
 	case 'd':
-	default:
 		$order='desc';
 		$order_link='a';
 		break;

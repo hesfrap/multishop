@@ -259,6 +259,7 @@
             <label index="admin_add_option_plus_value">Add Option + Value</label>
             <label index="admin_value">value</label>
             <label index="admin_add_new_option_plus_value">Add new option + value</label>
+            <label index="admin_add_new_attribute">Add new attributes</label>
             <label index="admin_add_new_value">Add new value</label>
             <label index="admin_choose_attribute">choose attribute</label>
             <label index="admin_price">Price</label>
@@ -887,7 +888,7 @@
             <label index="admin_label_listing_type">listing type</label>
             <label index="admin_label_option_value">Option value</label>
             <label index="admin_label_option_type_selectbox">Selectbox</label>
-            <label index="admin_label_option_type_selectbox_multiple">selectbox multiple</label>
+            <label index="admin_label_option_type_selectbox_multiple">Selectbox (allow multiple values to be selected)</label>
             <label index="admin_label_option_type_radio">Radio</label>
             <label index="admin_label_option_type_checkbox">Checkbox</label>
             <label index="admin_label_option_type_text_input">Text input</label>
@@ -1154,6 +1155,7 @@
             <label index="admin_add_option_plus_value">Voeg optie en waarde toe</label>
             <label index="admin_value">waarde</label>
             <label index="admin_add_new_option_plus_value">Voeg nieuwe optie en waarde toe</label>
+            <label index="admin_add_new_attribute">Voeg attribuut toe</label>
             <label index="admin_add_new_value">Voeg waarde toe</label>
             <label index="admin_choose_attribute">kies attribuut</label>
             <label index="admin_price">Prijs</label>
@@ -1774,7 +1776,7 @@
             <label index="admin_label_listing_type">weergave type</label>
             <label index="admin_label_option_value">Optie waarde</label>
             <label index="admin_label_option_type_selectbox">Uitklapmenu</label>
-            <label index="admin_label_option_type_selectbox_multiple">Uitklapmenu (meervoudig)</label>
+            <label index="admin_label_option_type_selectbox_multiple">Uitklapmenu (sta toe om meerdere waardes te selecteren)</label>
             <label index="admin_label_option_type_radio">Radioknop</label>
             <label index="admin_label_option_type_checkbox">Aankruisvak</label>
             <label index="admin_label_option_type_text_input">Invoerveld</label>
