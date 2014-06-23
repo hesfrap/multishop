@@ -97,7 +97,7 @@ if ($_REQUEST['sub']=='update_payment_method' and $_REQUEST['payment_method_id']
 		</div>	
 		<div class="account-field">
 			<label for="name">'.$this->pi_getLL('admin_name').'</label>
-			<input type="text" class="text" name="name['.$language['uid'].']" id="name['.$language['uid'].']" value="'.htmlspecialchars($lngproduct[$language['uid']]['name']).'">
+			<input type="text" class="text" name="name['.$language['uid'].']" id="name_'.$language['uid'].'" value="'.htmlspecialchars($lngproduct[$language['uid']]['name']).'">
 		</div>		
 		<div class="account-field">
 			<label for="description">'.t3lib_div::strtoupper($this->pi_getLL('admin_short_description')).'</label>
@@ -238,7 +238,7 @@ if ($_REQUEST['sub']=='update_payment_method' and $_REQUEST['payment_method_id']
 				return Math.round(float*100)/100;
 			}
 					
-			jQuery(document).ready(function($){
+			jQuery(document).ready(function($) {
 				jQuery(".msHandlingCostExcludingVat").keyup(function() {
 					productPrice(true, jQuery(this));
 				});
@@ -324,7 +324,7 @@ if ($_REQUEST['sub']=='update_payment_method' and $_REQUEST['payment_method_id']
 		</div>	
 		<div class="account-field">
 			<label for="name">'.$this->pi_getLL('admin_name').'</label>
-			<input type="text" class="text" name="name['.$language['uid'].']" id="name['.$language['uid'].']" value="'.htmlspecialchars($lngproduct[$language['uid']]['name']).'">
+			<input type="text" class="text" name="name['.$language['uid'].']" id="name_'.$language['uid'].'" value="'.htmlspecialchars($lngproduct[$language['uid']]['name']).'">
 		</div>		
 		<div class="account-field">
 			<label for="description">'.t3lib_div::strtoupper($this->pi_getLL('admin_short_description')).'</label>
@@ -335,7 +335,7 @@ if ($_REQUEST['sub']=='update_payment_method' and $_REQUEST['payment_method_id']
 		$tmpcontent.='
 		<div class="account-field">
 			<label for="custom_code">'.$this->pi_getLL('code').'</label>
-			<input name="custom_code" id="custom_code" type="text" value="'.htmlspecialchars($_REQUEST['custom_code']).'" />
+			<input name="custom_code" id="custom_code" type="text" value="'.htmlspecialchars($_REQUEST['custom_code']).'" required="required" />
 		</div>';
 		if (count($active_shop)>1) {
 			$tmpcontent.='
@@ -352,11 +352,26 @@ if ($_REQUEST['sub']=='update_payment_method' and $_REQUEST['payment_method_id']
 		}
 		$tmpcontent.='
 		<div class="account-field">
+			<label>'.$this->pi_getLL('handling_costs_type').'</label>
+			<div class="msAttribute">
+				<select name="handling_costs_type" id="handling_cost_type">
+					<option value="amount" selected="selected">amount</option>
+					<option value="percentage">percentage</option>
+				</select>
+			</div>
+		</div>
+		<div class="account-field" id="handling_cost_percentage_div" style="display:none">
+			<label>'.$this->pi_getLL('handling_costs').'</label>
+			<div class="msAttribute">
+				<input name="handling_costs" id="handling_cost_percentage_input" type="text" value="0%" disabled="disabled" />
+			</div>
+		</div>
+		<div class="account-field" id="handling_cost_amount_div">
 			<label>'.$this->pi_getLL('handling_costs').'</label>
 			<div class="msAttribute">
 				<div class="msAttributesField"><input type="text" id="display_name" name="display_name" class="msHandlingCostExcludingVat" value="0.00"><label for="display_name">'.$this->pi_getLL('excluding_vat').'</label></div>
 				<div class="msAttributesField"><input type="text" name="display_name" id="display_name" class="msHandlingCostIncludingVat" value="0.00"><label for="display_name">'.$this->pi_getLL('including_vat').'</label></div>
-				<div class="msAttributesField hidden"><input name="handling_costs" type="hidden" value="0" /></div>
+				<div class="msAttributesField hidden"><input name="handling_costs" id="handling_cost_amount_input" type="hidden" value="0" /></div>
 			</div>
 		</div>
 		<div class="account-field">
@@ -460,29 +475,44 @@ if ($_REQUEST['sub']=='update_payment_method' and $_REQUEST['payment_method_id']
 				return Math.round(float*100)/100;
 			}
 									
-			jQuery(document).ready(function($){
-				jQuery(".msHandlingCostExcludingVat").keyup(function() {
+			jQuery(document).ready(function($) {
+				$(document).on("keyup", ".msHandlingCostExcludingVat", function() {
 					productPrice(true, jQuery(this));
 				});
-					
-				jQuery("#tax_id").change(function() {
-					jQuery(".msHandlingCostExcludingVat").each(function(i) {
+				$(document).on("change", "#tax_id", function() {
+					$(".msHandlingCostExcludingVat").each(function(i) {
 						productPrice(true, jQuery(this));
 					});
 				});
-					
-				jQuery(".msHandlingCostIncludingVat").keyup(function() {
+				$(document).on("keyup", ".msHandlingCostIncludingVat", function() {
 					productPrice(false, jQuery(this));
-				});	
-				
-				$("#add_payment_form").submit(function(e) {
-					if (!$("#custom_code").val())
-					{
-						e.preventDefault();					
+				});
+				$(document).on("submit", "#add_payment_form", function(e) {
+					if (!$("#name_0").val()) {
+						e.preventDefault();
+						$("#name_0").focus();
+						alert("'.$this->pi_getLL('payment_name_is_required').'!");
+					} else if (!$("#custom_code").val()) {
+						e.preventDefault();
+						$("#custom_code").focus();
 						alert("'.$this->pi_getLL('code_is_required').'!");
+					} else {
+						return true;
 					}
-					else return true;
-				 });							
+				 });
+				 $(document).on("change", "#handling_cost_type", function(){
+					if ($(this).val()=="amount") {
+						$("#handling_cost_amount_div").show();
+						$("#handling_cost_amount_input").removeAttr("disabled");
+						$("#handling_cost_percentage_div").hide();
+						$("#handling_cost_percentage_input").attr("disabled", "disabled");
+					} else if ($(this).val()=="percentage") {
+						$("#handling_cost_amount_div").hide();
+						$("#handling_cost_amount_input").attr("disabled", "disabled");
+						$("#handling_cost_percentage_div").show();
+						$("#handling_cost_percentage_input").removeAttr("disabled");
+					}
+				 });
 			});
 		</script>	
 		';

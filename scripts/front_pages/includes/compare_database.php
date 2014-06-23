@@ -700,8 +700,8 @@ if (!$skipMultishopUpdates) {
 		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		while (($row=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry))!=false) {
 			if ($row['Field']=='handling_costs') {
-				if ($row['Type']=='varchar(10)') {
-					$str2="ALTER TABLE  `tx_multishop_payment_methods` CHANGE  `handling_costs`  `handling_costs` decimal(24,14) DEFAULT  '0.00000000000000'";
+				if ($row['Type']=='decimal(24,14)') {
+					$str2="ALTER TABLE  `tx_multishop_payment_methods` CHANGE  `handling_costs`  `handling_costs` varchar(25) DEFAULT  '0.00000000000000'";
 					$qry2=$GLOBALS['TYPO3_DB']->sql_query($str2);
 					$messages[]=$str2;
 				}
@@ -1918,12 +1918,6 @@ if (!$skipMultishopUpdates) {
 				unset($settings['GLOBAL_MODULES'][$key]);
 			}
 		}
-		$key='GEONAMES_USERNAME';
-		if (!isset($settings['GLOBAL_MODULES'][$key])) {
-			$str="INSERT INTO `tx_multishop_configuration` (`id`, `configuration_title`, `configuration_key`, `configuration_value`, `description`, `group_id`, `sort_order`, `last_modified`, `date_added`, `use_function`, `set_function`) VALUES('', 'Geonames username', '".$key."', '', 'Geonames username. You can register your username here: http://www.geonames.org/.', 3, NULL, NULL, now(), NULL, '');";
-			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-			$messages[]=$str;
-		}
 		$key='SEARCH_ALSO_IN_PRODUCTS_ID';
 		if (!isset($settings['GLOBAL_MODULES'][$key])) {
 			$str="INSERT INTO `tx_multishop_configuration` (`id`, `configuration_title`, `configuration_key`, `configuration_value`, `description`, `group_id`, `sort_order`, `last_modified`, `date_added`, `use_function`, `set_function`) VALUES('', 'Search also in products id', '".$key."', '0', 'This enables the search-engine to also search for the products id.', 3, NULL, NULL, now(), NULL, 'tep_cfg_select_option(array(''1'',''0''),');";
@@ -2063,12 +2057,14 @@ if (!$skipMultishopUpdates) {
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			$messages[]=$str;
 		}
+		/*
 		$key='DISABLE_VAT_RATE_WHEN_CROSS_BORDERS';
 		if (!isset($settings['GLOBAL_MODULES'][$key])) {
 			$str="INSERT INTO `tx_multishop_configuration` (`id`, `configuration_title`, `configuration_key`, `configuration_value`, `description`, `group_id`, `sort_order`, `last_modified`, `date_added`, `use_function`, `set_function`) VALUES('', 'Disable VAT rate when cross borders', '".$key."', '1', 'When a customer is from a different country than the store owner calculate zero tax.', 3, NULL, NULL, now(), NULL, 'tep_cfg_select_option(array(''0'',''1''),');";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			$messages[]=$str;
 		}
+		*/
 		$key='PRODUCTS_DETAIL_NUMBER_OF_TABS';
 		if (!isset($settings['GLOBAL_MODULES'][$key])) {
 			$str="INSERT INTO `tx_multishop_configuration` (`id`, `configuration_title`, `configuration_key`, `configuration_value`, `description`, `group_id`, `sort_order`, `last_modified`, `date_added`, `use_function`, `set_function`) VALUES('', 'Products Detail Tabs', '".$key."', '0', 'Optional field. Number of tabs used on the products detail page.', 11, NULL, NULL, now(), NULL, '');";
@@ -3186,11 +3182,6 @@ if (!$skipMultishopUpdates) {
 			$str="INSERT INTO `tx_multishop_configuration` (`id`, `configuration_title`, `configuration_key`, `configuration_value`, `description`, `group_id`, `sort_order`, `last_modified`, `date_added`, `use_function`, `set_function`) VALUES('', 'Webshop Country ISO Number', '".$key."', '0', 'The country where the webstore is located. Used to determine the local VAT classes.', 3, NULL, NULL, now(), NULL, 'tep_country_select_option(');";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		}
-		$key='SHOW_INNER_FOOTER_NAV';
-		if (!isset($settings['GLOBAL_MODULES'][$key])) {
-			$str="INSERT INTO `tx_multishop_configuration` (`id`, `configuration_title`, `configuration_key`, `configuration_value`, `description`, `group_id`, `sort_order`, `last_modified`, `date_added`, `use_function`, `set_function`) VALUES('', 'Show the footer navigation in the middle content', '".$key."', '0', 'This module enables the inner footer navigation.', 1, NULL, NULL, now(), NULL, 'tep_cfg_select_option(array(''1'', ''0''),');";
-			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-		}
 		$key='STORE_NAME';
 		if (!isset($settings['GLOBAL_MODULES'][$key])) {
 			$str="INSERT INTO `tx_multishop_configuration` (`id`, `configuration_title`, `configuration_key`, `configuration_value`, `description`, `group_id`, `sort_order`, `last_modified`, `date_added`, `use_function`, `set_function`) VALUES('', 'Store Name', '".$key."', '', 'The name of the store.', 3, NULL, NULL, now(), NULL, '');";
@@ -3455,16 +3446,6 @@ if (!$skipMultishopUpdates) {
 			$str="INSERT INTO `tx_multishop_configuration` (`id`, `configuration_title`, `configuration_key`, `configuration_value`, `description`, `group_id`, `sort_order`, `last_modified`, `date_added`, `use_function`, `set_function`) VALUES('', 'Invoice prefix', '".$key."', '0', 'Invoice prefix.', 3, NULL, NULL, now(), NULL, '');";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		}
-		$key='ACCORDION_MENU';
-		if (!isset($settings['GLOBAL_MODULES'][$key])) {
-			$str="INSERT INTO `tx_multishop_configuration` (`id`, `configuration_title`, `configuration_key`, `configuration_value`, `description`, `group_id`, `sort_order`, `last_modified`, `date_added`, `use_function`, `set_function`) VALUES('', 'Accordion Menu', '".$key."', '0', 'Accordion menu.', 3, NULL, NULL, now(), NULL, 'tep_cfg_select_option(array(''1'', ''0''),');";
-			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-		}
-		$key='ACCORDION_SETUP_MODULES';
-		if (!isset($settings['GLOBAL_MODULES'][$key])) {
-			$str="INSERT INTO `tx_multishop_configuration` (`id`, `configuration_title`, `configuration_key`, `configuration_value`, `description`, `group_id`, `sort_order`, `last_modified`, `date_added`, `use_function`, `set_function`) VALUES('', 'Accordion Setup Modules', '".$key."', '0', 'Accordion for setup modules.', 3, NULL, NULL, now(), NULL, 'tep_cfg_select_option(array(''1'', ''0''),');";
-			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-		}
 		// 12 july eof
 		//13 oct 2010 for fe_user
 		$str="select address_number from fe_users limit 1";
@@ -3604,11 +3585,6 @@ if (!$skipMultishopUpdates) {
 		$key='GOOGLE_ANALYTICS_ACCOUNT';
 		if (!isset($settings['GLOBAL_MODULES'][$key])) {
 			$str="INSERT INTO `tx_multishop_configuration` (`id`, `configuration_title`, `configuration_key`, `configuration_value`, `description`, `group_id`, `sort_order`, `last_modified`, `date_added`, `use_function`, `set_function`) VALUES('', 'Google Analytics Account', '".$key."', 'UA-16775241-1', 'Google Analytics is the enterprise-class web analytics solution that gives you rich insights into your website traffic and marketing effectiveness.', 4, NULL, NULL, now(), NULL, '');";
-			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-		}
-		$key='ADDTHIS_ACCOUNT';
-		if (!isset($settings['GLOBAL_MODULES'][$key])) {
-			$str="INSERT INTO `tx_multishop_configuration` (`id`, `configuration_title`, `configuration_key`, `configuration_value`, `description`, `group_id`, `sort_order`, `last_modified`, `date_added`, `use_function`, `set_function`) VALUES('', 'Addthis Account', '".$key."', 'typo3multishop', 'Add a Addthis button to your webshop. Addthis.com makes sharing your website urls easy.', 4, NULL, NULL, now(), NULL, '');";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 		}
 		$key='GOOGLE_ADWORDS_CONVERSION_CODE';
@@ -4148,7 +4124,7 @@ if (!$skipMultishopUpdates) {
 				$array['tstamp']=time();
 				$query2=$GLOBALS['TYPO3_DB']->INSERTquery('tt_address', $array);
 				$res2=$GLOBALS['TYPO3_DB']->sql_query($query2);
-				$messages[]=$str;
+				$messages[]=$query2;
 			}
 		}
 		// now fix the vat
@@ -4324,6 +4300,102 @@ if (!$skipMultishopUpdates) {
 				}
 			}
 		}
+	}
+	// MOVE SEVERAL SETTINGS TO DIFFERENT GROUPS
+	$keys=array();
+	$keys[]=array('key' => 'SEARCH_ALSO_IN_ATTRIBUTE_OPTION_IDS', 'oldGroupId'=>'3', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'SEARCH_ALSO_IN_CATEGORIES_NAME', 'oldGroupId'=>'3', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'SEARCH_ALSO_IN_EAN_CODE', 'oldGroupId'=>'3', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'SEARCH_ALSO_IN_MANUFACTURERS_NAME', 'oldGroupId'=>'3', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'SEARCH_ALSO_IN_PRODUCTS_DESCRIPTION', 'oldGroupId'=>'3', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'SEARCH_ALSO_IN_PRODUCTS_ID', 'oldGroupId'=>'3', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'SEARCH_ALSO_IN_PRODUCTS_MODEL', 'oldGroupId'=>'3', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'SEARCH_ALSO_IN_PRODUCTS_NEGATIVE_KEYWORDS', 'oldGroupId'=>'3', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'SEARCH_ALSO_IN_SKU_CODE', 'oldGroupId'=>'3', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'SEARCH_ALSO_IN_VENDOR_CODE', 'oldGroupId'=>'3', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'ENABLE_FULLTEXT_SEARCH_IN_PRODUCTS_SEARCH', 'oldGroupId'=>'11', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'FULLTEXT_SEARCH_MIN_CHARS', 'oldGroupId'=>'11', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'PRODUCTS_SEARCH_FALLBACK_SEARCH', 'oldGroupId'=>'11', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'REGULAR_SEARCH_MODE', 'oldGroupId'=>'11', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'CATEGORIES_TYPE', 'oldGroupId'=>'11', 'newGroupId'=>'5');
+	$keys[]=array('key' => 'DEFAULT_CURRENCY', 'oldGroupId'=>'11', 'newGroupId'=>'3');
+	$keys[]=array('key' => 'DISABLE_CHECKOUT_FOR_GUESTS', 'oldGroupId'=>'11', 'newGroupId'=>'3');
+	$keys[]=array('key' => 'DISABLE_CRUMBAR', 'oldGroupId'=>'11', 'newGroupId'=>'3');
+	$keys[]=array('key' => 'DISPLAY_SPECIALS_ABOVE_PRODUCTS_LISTING', 'oldGroupId'=>'11', 'newGroupId'=>'6');
+	$keys[]=array('key' => 'DOWNLOAD_INVOICE_TYPE', 'oldGroupId'=>'11', 'newGroupId'=>'12');
+	$keys[]=array('key' => 'ENABLED_CURRENCIES', 'oldGroupId'=>'11', 'newGroupId'=>'3');
+	$keys[]=array('key' => 'ENABLED_LANGUAGES', 'oldGroupId'=>'11', 'newGroupId'=>'3');
+	$keys[]=array('key' => 'REDIRECT_BACK_TO_PRODUCTS_DETAIL_PAGE_AFTER_ADD_TO_CART', 'oldGroupId'=>'11', 'newGroupId'=>'3');
+	$keys[]=array('key' => 'CART_PAGE_UID', 'oldGroupId'=>'11', 'newGroupId'=>'3');
+	$keys[]=array('key' => 'LOCK_ORDER_AFTER_CREATING_INVOICE', 'oldGroupId'=>'11', 'newGroupId'=>'12');
+	$keys[]=array('key' => 'PRODUCTS_DETAIL_NUMBER_OF_TABS', 'oldGroupId'=>'11', 'newGroupId'=>'7');
+	$keys[]=array('key' => 'PRODUCTS_LISTING_SORT_ORDER_OPTION', 'oldGroupId'=>'11', 'newGroupId'=>'6');
+	$keys[]=array('key' => 'PRODUCTS_LISTING_SPECIALS', 'oldGroupId'=>'1', 'newGroupId'=>'6');
+	$keys[]=array('key' => 'SHOW_INNER_FOOTER_NAV', 'oldGroupId'=>'1', 'newGroupId'=>'3');
+	$keys[]=array('key' => 'USE_FLAT_DATABASE_ALSO_IN_ADMIN_PRODUCTS_SEARCH_AND_EDIT', 'oldGroupId'=>'3', 'newGroupId'=>'14');
+	$keys[]=array('key' => 'PRODUCTS_NEW_NUMBER_OF_DAYS', 'oldGroupId'=>'11', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'MANUAL_ORDER', 'oldGroupId'=>'3', 'newGroupId'=>'9');
+	$keys[]=array('key' => 'INVOICE_PRINT', 'oldGroupId'=>'3', 'newGroupId'=>'12');
+	$keys[]=array('key' => 'INVOICE_PREFIX', 'oldGroupId'=>'3', 'newGroupId'=>'12');
+	$keys[]=array('key' => 'ORDER_EDIT', 'oldGroupId'=>'3', 'newGroupId'=>'12');
+	$keys[]=array('key' => 'PACKING_LIST_PRINT', 'oldGroupId'=>'3', 'newGroupId'=>'12');
+	$keys[]=array('key' => 'PRODUCTS_LISTING_LIMIT', 'oldGroupId'=>'3', 'newGroupId'=>'6');
+	$keys[]=array('key' => 'CATEGORIES_LISTING_SPECIALS_CATEGORIES_SUBLEVEL', 'oldGroupId'=>'3', 'newGroupId'=>'5');
+	$keys[]=array('key' => 'CACHE_FRONT_END', 'oldGroupId'=>'3', 'newGroupId'=>'14');
+	$keys[]=array('key' => 'CACHE_TIME_OUT_CATEGORIES_NAVIGATION_MENU', 'oldGroupId'=>'3', 'newGroupId'=>'14');
+	$keys[]=array('key' => 'CACHE_TIME_OUT_LISTING_PAGES', 'oldGroupId'=>'3', 'newGroupId'=>'14');
+	$keys[]=array('key' => 'CACHE_TIME_OUT_PRODUCTS_DETAIL_PAGES', 'oldGroupId'=>'3', 'newGroupId'=>'14');
+	$keys[]=array('key' => 'CACHE_TIME_OUT_SEARCH_PAGES', 'oldGroupId'=>'3', 'newGroupId'=>'14');
+	$keys[]=array('key' => 'FLAT_DATABASE', 'oldGroupId'=>'3', 'newGroupId'=>'14');
+	$keys[]=array('key' => 'FLAT_DATABASE_EXTRA_ATTRIBUTE_OPTION_COLUMNS', 'oldGroupId'=>'3', 'newGroupId'=>'14');
+	$keys[]=array('key' => 'DISPLAY_REALTIME_NOTIFICATION_MESSAGES', 'oldGroupId'=>'3', 'newGroupId'=>'11');
+	$keys[]=array('key' => 'CART_PAGE_UID', 'oldGroupId'=>'3', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'CHECKOUT_TYPE', 'oldGroupId'=>'3', 'newGroupId'=>'8');
+	$keys[]=array('key' => 'DISABLE_CHECKOUT_FOR_GUESTS', 'oldGroupId'=>'3', 'newGroupId'=>'8');
+	$keys[]=array('key' => 'DISABLE_CRUMBAR', 'oldGroupId'=>'3', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'DISABLE_MULTISHOP_CONFIGURATION_VALIDATION', 'oldGroupId'=>'3', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'DISABLE_PRODUCT_ATTRIBUTES_TAB_IN_EDITOR', 'oldGroupId'=>'3', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'ENABLE_ATTRIBUTES_OPTIONS_GROUP', 'oldGroupId'=>'3', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'MULTISHOP_ENCRYPTION_KEY', 'oldGroupId'=>'3', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'MULTISHOP_VERSION', 'oldGroupId'=>'3', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'PAGE_TITLE_DELIMETER', 'oldGroupId'=>'3', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'PRICE_FILTER_BOX_STEPPINGS', 'oldGroupId'=>'3', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'PRODUCTS_SHORT_DESCRIPTION_CONTAINS_HTML_MARKUP', 'oldGroupId'=>'3', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'REDIRECT_BACK_TO_PRODUCTS_DETAIL_PAGE_AFTER_ADD_TO_CART', 'oldGroupId'=>'3', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'ULTRASEARCH_FIELDS', 'oldGroupId'=>'3', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'BASKET_TYPE', 'oldGroupId'=>'11', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'CREATE_ACCOUNT_TYPE', 'oldGroupId'=>'11', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'CRUMBAR_TYPE', 'oldGroupId'=>'11', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'EDIT_ACCOUNT_TYPE', 'oldGroupId'=>'11', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'MANUFACTURERS_PRODUCTS_LISTING_TYPE', 'oldGroupId'=>'11', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'MANUFACTURERS_TYPE', 'oldGroupId'=>'11', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'ORDER_HISTORY_TYPE', 'oldGroupId'=>'11', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'SHOPPING_CART_TYPE', 'oldGroupId'=>'11', 'newGroupId'=>'15');
+	$keys[]=array('key' => 'ULTRASEARCH_SERVER_TYPE', 'oldGroupId'=>'11', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'ULTRASEARCH_TYPE', 'oldGroupId'=>'11', 'newGroupId'=>'13');
+	$keys[]=array('key' => 'NUMBER_OF_PRODUCT_IMAGES', 'oldGroupId'=>'11', 'newGroupId'=>'3');
+	foreach ($keys as $row) {
+		$filter=array();
+		$filter[]='group_id='.$row['oldGroupId'];
+		if (mslib_befe::ifExists($row['key'],'tx_multishop_configuration','configuration_key',$filter)) {
+			$updateArray=array();
+			$updateArray['group_id']=$row['newGroupId'];
+			$query2=$GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_configuration', 'configuration_key=\''.addslashes($row['key']).'\'', $updateArray);
+			$res2=$GLOBALS['TYPO3_DB']->sql_query($query2);
+			$messages[]=$query2;
+		}
+	}
+	// DELETE UNUSED SETTINGS
+	$keys=array();
+	$keys[]='ACCORDION_MENU';
+	$keys[]='ACCORDION_SETUP_MODULES';
+	$keys[]='AFFILIATE_SHOP';
+	$keys[]='SHOW_INNER_FOOTER_NAV';
+	$keys[]='GEONAMES_USERNAME';
+	$keys[]='ADDTHIS_ACCOUNT';
+	$keys[]='DISABLE_VAT_RATE_WHEN_CROSS_BORDERS';
+	foreach ($keys as $key) {
+		$qry=$GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_multishop_configuration', 'configuration_key=\''.addslashes($key).'\'');
 	}
 	// CREATE / UPDATE MULTISHOP SETTINGS
 	require(t3lib_extMgm::extPath('multishop').'scripts/admin_pages/includes/configuration/tx_multishop_configuration_group.php');

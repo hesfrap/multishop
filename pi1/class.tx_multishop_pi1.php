@@ -26,7 +26,9 @@
  *
  * Hint: use extdeveval to insert/update function index above.
  */
-//require_once(PATH_tslib.'class.tslib_pibase.php');
+if (!class_exists('tslib_pibase')) {
+	require_once(PATH_tslib . 'class.tslib_pibase.php');
+}
 /**
  * Plugin 'multishop' for the 'multishop' extension.
  *
@@ -40,7 +42,6 @@ class tx_multishop_pi1 extends tslib_pibase {
 	var $scriptRelPath = 'pi1/class.tx_multishop_pi1.php';	// Path to this script relative to the extension dir.
 	var $extKey = 'multishop';	// The extension key.
 	var $pi_checkCHash = false;
-	
 	// var to hold user/shop info loaded from tt_address table
 	var $tta_user_info = array();
 	var $tta_shop_info = array();
@@ -63,7 +64,6 @@ class tx_multishop_pi1 extends tslib_pibase {
 	function construct($conf) {	
 		$this->conf = $conf;
 		$this->pi_setPiVarDefaults();
-		$this->pi_loadLL();
 		$this->pi_USER_INT_obj=1; 
 		$this->pi_initPIflexForm();	
 					
@@ -134,17 +134,19 @@ class tx_multishop_pi1 extends tslib_pibase {
 		if (!$GLOBALS['TSFE']->config['config']['locale_all']) {
 			$GLOBALS['TSFE']->config['config']['locale_all']=$this->pi_getLL('locale_all');
 		}
-		$this->lang=$GLOBALS['TSFE']->config['config']['language'];	
+		$this->lang=$GLOBALS['TSFE']->config['config']['language'];
 		setlocale(LC_TIME,$GLOBALS['TSFE']->config['config']['locale_all']);		
 		$this->sys_language_uid=$GLOBALS['TSFE']->config['config']['sys_language_uid'];		
 		if (!isset($this->sys_language_uid)) {
 			$this->sys_language_uid=0;	
-		}		
+		}
+		$this->LOCAL_LANG_loaded = 0;
+		$this->pi_loadLL();
 		// load language cookie for the backend eof		
 		if (!$GLOBALS['TSFE']->config['config']['baseURL']) {
 			echo 'config.baseURL='.$this->FULL_HTTP_URL.' is not set yet. Please go to the TYPO3 template setup field editor and add it.';
 			die();
-		}		
+		}
 		// setting coming from typoscript or from flexform
 		if ($this->conf['method']) {
 			$this->method = $this->conf['method'];
@@ -166,7 +168,7 @@ class tx_multishop_pi1 extends tslib_pibase {
 		// Autoloader works great in TYPO3 4.7.7. But in TYPO3 4.5.X the invalid namespace classes are not autoloaded so lets load it manually then too	
 		// PHP Fatal error:  Access to undeclared static property: t3lib_autoloader::$classNameToFileMapping in /shopcvs/skeleton/typo3_src-4.7.5/t3lib/class.t3lib_autoloader.php on line 151
 		if (!class_exists('Cache_Lite')) {
-			require_once(t3lib_extMgm::extPath('multishop').'res/Cache_Lite-1.7.15/Cache/class.cache_lite.php');
+			require_once(t3lib_extMgm::extPath('multishop').'res/Cache_Lite-1.7.16/Cache/Lite.php');
 		}
 		require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_fe.php');
 		require_once(t3lib_extMgm::extPath('multishop').'pi1/classes/class.mslib_befe.php');

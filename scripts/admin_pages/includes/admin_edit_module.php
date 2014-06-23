@@ -4,25 +4,21 @@ if (!defined('TYPO3_MODE')) {
 }
 $GLOBALS['TSFE']->additionalHeaderData[]='
 <script type="text/javascript">
-window.onload = function(){
-  var text_input = document.getElementById (\'configuration[local]\');
-  text_input.focus ();
-  text_input.select ();
-}
-</script>
-';
-$GLOBALS['TSFE']->additionalHeaderData[]='
-<script type="text/javascript">
 jQuery(document).ready(function($) {
-	jQuery(".tab_content").hide();
-	jQuery("ul.tabs li:first").addClass("active").show();
-	jQuery(".tab_content:first").show();
-	jQuery("ul.tabs li").click(function() {
-		jQuery("ul.tabs li").removeClass("active");
-		jQuery(this).addClass("active");
-		jQuery(".tab_content").hide();
-		var activeTab = jQuery(this).find("a").attr("href");
-		jQuery(activeTab).fadeIn(0);
+	if ($(\'#configuration[local]\').length) {
+		var text_input = $(\'#configuration[local]\');
+  		text_input.focus ();
+  		text_input.select ();
+  	}
+	$(".tab_content").hide();
+	$("ul.tabs li:first").addClass("active").show();
+	$(".tab_content:first").show();
+	$("ul.tabs li").click(function() {
+		$("ul.tabs li").removeClass("active");
+		$(this).addClass("active");
+		$(".tab_content").hide();
+		var activeTab = $(this).find("a").attr("href");
+		$(activeTab).fadeIn(0);
 		return false;
 	});
 });
@@ -80,10 +76,10 @@ if ($this->post and $_REQUEST['action']=='edit_module') {
 	}
 	$string='loadConfiguration_'.$this->shop_pid;
 	if ($this->post['tx_multishop_pi1']['referrer']) {
-		header("Location: ".$this->post['tx_multishop_pi1']['referrer']);
+		header("Location: ".$this->post['tx_multishop_pi1']['referrer']."#module".$this->post['tx_multishop_pi1']['gid']);
 		exit();
 	} else {
-		header("Location: ".$this->FULL_HTTP_URL.mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_modules', 1));
+		header("Location: ".$this->FULL_HTTP_URL.mslib_fe::typolink($this->shop_pid.',2003', 'tx_multishop_pi1[page_section]=admin_modules&gid='.$this->post['gid'], 1));
 		exit();
 	}
 }
@@ -100,21 +96,21 @@ if ($configuration['id'] or $_REQUEST['action']=='edit_module') {
 	$content.=$save_block;
 	$content.='
 		<div class="account-field">
-			<label for="categories_name">Name</label>
+			<label for="categories_name">'.$this->pi_getLL('title').'</label>
 			'.htmlspecialchars($configuration['configuration_title']).'
 		</div>
 		<div class="account-field">		
-			<label>Description</label>
+			<label>'.$this->pi_getLL('description').'</label>
 			'.htmlspecialchars($configuration['description']).'
-		</div>		
-		<div class="account-field">		
-			<label>Key</label>
+		</div>
+		<div class="account-field">
+			<label>'.$this->pi_getLL('name').'</label>
 			'.htmlspecialchars($configuration['configuration_key']).'
-		</div>		
+		</div>
 		';
 	$content.='
 		<div class="account-field configuration_modules">
-			<label for="value">Default value</label>	
+			<label for="value">'.$this->pi_getLL('default_value').'</label>
 ';
 	if ($configuration['set_function']) {
 		eval('$value_field = mslib_fe::'.$configuration['set_function'].'\''.addslashes(htmlspecialchars($this->ms['MODULES']['GLOBAL_MODULES'][$configuration['configuration_key']])).'\',\'global\');');
@@ -122,44 +118,33 @@ if ($configuration['id'] or $_REQUEST['action']=='edit_module') {
 		$value_field=mslib_fe::tep_draw_input_field('configuration[global]', $this->ms['MODULES']['GLOBAL_MODULES'][$configuration['configuration_key']]);
 	}
 	$content.=$value_field.'
-
 		</div>';
 	$content.='
 		<div class="account-field configuration_modules">
-			<label for="value">Current value</label>	
+			<label for="value">'.$this->pi_getLL('current_value').'</label>
 ';
 	if ($configuration['set_function']) {
 		eval('$value_field = mslib_fe::'.$configuration['set_function'].'\''.addslashes(htmlspecialchars($this->ms['MODULES'][$configuration['configuration_key']])).'\',\'local\');');
 	} else {
 		$value_field=mslib_fe::tep_draw_input_field('configuration[local]', $this->ms['MODULES'][$configuration['configuration_key']]);
 	}
-	/*
-		if (tep_not_null($configuration['use_function']))
-		{
-			$cfgValue = $configuration['use_function']($configuration['value']);
-		}
-		else
-		{
-			$cfgValue = $configuration['value'];
-		}
-	*/
 	$content.=$value_field.'
-
 		</div>';
 	$content.='
 	<input name="configuration_key" type="hidden" value="'.$configuration['configuration_key'].'" />
 	<input name="action" type="hidden" value="'.$_REQUEST['action'].'" />
+	<input name="tx_multishop_pi1[gid]" type="hidden" value="'.$this->get['tx_multishop_pi1']['gid'].'" />
 	<input type="hidden" name="tx_multishop_pi1[referrer]" id="msAdminReferrer" value="'.$subpartArray['###VALUE_REFERRER###'].'" >
 	</form>';
 	$content.='
 			<div id="ajax_message_'.$configuration['categories_id'].'" class="ajax_message"></div>
 	';
 	$tabs['module'.$configuration['gid']]=array(
-		'Configuration',
+		$this->pi_getLL('configuration'),
 		$content
 	);
 	$content='';
-	$content='<div class="main-heading"><h2>Admin Modules</h2></div>';
+	$content='<div class="main-heading"><h2>'.$this->pi_getLL('admin_multishop_settings').'</h2></div>';
 	$content.='
 <div id="tab-container">
     <ul class="tabs" id="admin_modules">';

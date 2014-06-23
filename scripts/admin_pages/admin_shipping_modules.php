@@ -113,7 +113,7 @@ if ($_REQUEST['sub']=='add_shipping_method' and $_REQUEST['shipping_method_code'
 	}
 	if ($erno or !$this->post) {
 		$shipping_method=$shipping_methods[$_REQUEST['shipping_method_code']];
-		$tmpcontent.='<form id="add_payment_form" action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page']).'" method="post">';
+		$tmpcontent.='<form id="add_shipping_form" action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page']).'" method="post">';
 		foreach ($this->languages as $key=>$language) {
 			$tmpcontent.='
 				<div class="account-field">
@@ -125,7 +125,7 @@ if ($_REQUEST['sub']=='add_shipping_method' and $_REQUEST['shipping_method_code'
 				</div>	
 				<div class="account-field">
 					<label for="name">'.$this->pi_getLL('admin_name').'</label>
-					<input type="text" class="text" name="name['.$language['uid'].']" id="name['.$language['uid'].']" value="'.htmlspecialchars($lngproduct[$language['uid']]['name']).'">
+					<input type="text" class="text" name="name['.$language['uid'].']" id="name_'.$language['uid'].'" value="'.htmlspecialchars($lngproduct[$language['uid']]['name']).'" required="required">
 				</div>		
 				<div class="account-field">
 					<label for="description">'.t3lib_div::strtoupper($this->pi_getLL('admin_short_description')).'</label>
@@ -136,7 +136,7 @@ if ($_REQUEST['sub']=='add_shipping_method' and $_REQUEST['shipping_method_code'
 		$tmpcontent.='
 		<div class="account-field">
 			<label for="custom_code">'.$this->pi_getLL('code').'</label>
-			<input name="custom_code" id="custom_code" type="text" value="'.htmlspecialchars($_REQUEST['custom_code']).'" />
+			<input name="custom_code" id="custom_code" type="text" value="'.htmlspecialchars($_REQUEST['custom_code']).'" required="required" />
 		</div>';
 		if (count($active_shop)>1) {
 			$tmpcontent.='
@@ -260,7 +260,7 @@ if ($_REQUEST['sub']=='add_shipping_method' and $_REQUEST['shipping_method_code'
 				return Math.round(float*100)/100;
 			}
 								
-			jQuery(document).ready(function($){
+			jQuery(document).ready(function($) {
 				jQuery(".msHandlingCostExcludingVat").keyup(function() {
 					productPrice(true, jQuery(this));
 				});
@@ -276,12 +276,17 @@ if ($_REQUEST['sub']=='add_shipping_method' and $_REQUEST['shipping_method_code'
 				});
 								
 				$("#add_shipping_form").submit(function(e) {
-					if (!$("#custom_code").val())
-					{
-						e.preventDefault();					
+					if (!$("#name_0").val()) {
+						e.preventDefault();
+						$("#name_0").focus();
+						alert("'.$this->pi_getLL('shipping_name_is_required').'!");
+					} else if (!$("#custom_code").val()) {
+						e.preventDefault();
+						$("#custom_code").focus();
 						alert("'.$this->pi_getLL('code_is_required').'!");
+					} else {
+						return true;
 					}
-					else return true;
 				 });							
 			});
 		</script>';
@@ -299,7 +304,7 @@ if ($_REQUEST['sub']=='add_shipping_method' and $_REQUEST['shipping_method_code'
 	$psp=$shipping_methods[$row['provider']];
 	$inner_content=mslib_fe::parseShippingMethodEditForm($psp, unserialize($row['vars']), 1);
 	$tmpcontent.='
-	<form id="add_payment_form" action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page']).'" method="post">
+	<form id="add_shipping_form" action="'.mslib_fe::typolink(',2003', '&tx_multishop_pi1[page_section]='.$this->ms['page']).'" method="post">
 	<input name="sub" type="hidden" value="update_shipping_method" />
 	<input name="shipping_method_id" type="hidden" value="'.$row['id'].'" />';
 	foreach ($this->languages as $key=>$language) {
@@ -309,12 +314,12 @@ if ($_REQUEST['sub']=='add_shipping_method' and $_REQUEST['shipping_method_code'
 		if ($language['flag'] && file_exists($this->DOCUMENT_ROOT_TYPO3.'sysext/cms/tslib/media/flags/flag_'.$language['flag'].'.gif')) {
 			$tmpcontent.='<img src="'.$this->FULL_HTTP_URL_TYPO3.'sysext/cms/tslib/media/flags/flag_'.$language['flag'].'.gif"> ';
 		}
-		$tmpcontent.=''.$language['title'].'
+		$tmpcontent.=$language['title'].'
 			</div>	
 			<div class="account-field">
-				<label for="name">'.$this->pi_getLL('admin_name').'</label>
-				<input type="text" class="text" name="name['.$language['uid'].']" id="name['.$language['uid'].']" value="'.htmlspecialchars($lngproduct[$language['uid']]['name']).'">
-			</div>		
+				<label for="name">'.$this->pi_getLL('admin_name').'</label>';
+		$tmpcontent.='<input type="text" class="text" name="name['.$language['uid'].']" id="name_'.$language['uid'].'" value="'.htmlspecialchars($lngproduct[$language['uid']]['name']).'" required="required">';
+		$tmpcontent.='</div>
 			<div class="account-field">
 				<label for="description">'.t3lib_div::strtoupper($this->pi_getLL('admin_short_description')).'</label>
 				<textarea name="description['.$language['uid'].']" id="description['.$language['uid'].']" class="mceEditor" rows="4">'.htmlspecialchars($lngproduct[$language['uid']]['description']).'</textarea>			
@@ -439,7 +444,7 @@ if ($_REQUEST['sub']=='add_shipping_method' and $_REQUEST['shipping_method_code'
 			//return float;
 			return Math.round(float*100)/100;
 		}
-		jQuery(document).ready(function($){
+		jQuery(document).ready(function($) {
 			jQuery(".msHandlingCostExcludingVat").keyup(function() {
 				productPrice(true, jQuery(this));
 			});

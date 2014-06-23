@@ -44,6 +44,7 @@
 
 #msadmin_section #msadmin_content #tx_multishop_pi1_core .account-field { overflow:hidden; width:100%; border-bottom:1px dotted #e0e0e0; background:#fff; font:12px Arial, Helvetica, sans-serif; color:#333; padding:7px 0; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core .account-field label { clear:left; float:left; display:block; width:180px; color:#333; text-align:right; text-transform:uppercase; padding:3px 20px 0 0; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core .order_total .account-field label { float:none; display:inline-block; width:auto; text-align:right; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core form#add_payment_form .account-field .msAttribute { padding:0 0 0 200px; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core form#add_payment_form .account-field .msAttributesField { overflow:hidden; padding:0px; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core form#add_payment_form .account-field .msAttributesField input[type="text"] { clear:left; float:left; margin:0 10px 0 0; }
@@ -58,7 +59,7 @@
 #msadmin_section #msadmin_content #tx_multishop_pi1_core fieldset table#product_import_table { margin-top:10px; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core table td { font:12px Arial, Helvetica, sans-serif; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core form { overflow:hidden; width:100%; }
-#msadmin_section #msadmin_content #tx_multishop_pi1_core fieldset { border:1px solid #cdcdcd; background:#fbfbfb; margin:0 0 10px; padding:0 10px 10px; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core fieldset { border:1px solid #cdcdcd; background:#fbfbfb; margin:0 0 10px; padding:10px; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core fieldset fieldset { background:#f6f6f6; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core legend { background:#c50000; font:bold 12px Arial, Helvetica, sans-serif; color:#fff; margin:0; padding:5px 10px; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core input[type="checkbox"] { margin:3px 0 0; }
@@ -419,6 +420,9 @@ ul#ui-autocomplete-admin li.ui-menu-item .ui-edit-item a.ui-edit-view { backgrou
 }
 
 .msadmin_balloon_wrapper { position:fixed; bottom:40px; left:20px; z-index:9999; }
+.msadmin_balloon_wrapper *,
+.msadmin_balloon_wrapper *:after,
+.msadmin_balloon_wrapper *:before { box-sizing:content-box; }
 .msadmin_balloon_item { position:relative; clear:left; float:left; background:url(../images/balloon_t.png) left top repeat-x; margin:0 20px 20px 0; padding:14px; border-radius:6px; }
 .msadmin_balloon { width:520px; min-height:64px; height:auto; background:url(../images/alert_64x64.png) left top no-repeat; font:12px Arial, Helvetica, sans-serif; color:#dcdcdc; text-align:left; padding:0 0 0 74px; }
 .msadmin_balloon h2 { font:bold 14px Arial, Helvetica, sans-serif; color:#fff; margin:0; padding:0; }
@@ -574,3 +578,5 @@ filter             :progid:DXImageTransform.Microsoft.gradient(startColorStr='#1
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content table#product_import_table.bvbmedia_netops_data_table td { font-size:14px; font-weight:normal; padding:3px 9px; } */
 
 #netops_domain_action_buttons { text-align:center; }
+
+.cell_orders_id { white-space:nowrap; }

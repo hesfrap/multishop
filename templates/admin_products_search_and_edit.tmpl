@@ -115,7 +115,7 @@
 	</table>
 </div>
 	<script type="text/javascript">
-	jQuery(function($){
+    jQuery(document).ready(function ($) {
 		$('#check_all_1').click(function(){			
 			checkAllPrettyCheckboxes(this,$('.msadmin_orders_listing'));
 		});	
@@ -164,7 +164,7 @@
 				###PRODUCTS_PAGINATION###
 				<div class="hr">
 			</div>
-			###LABEL_UPLOAD_EXCEL_FILE###<input type="file" name="datafile" />
+			###LABEL_UPLOAD_EXCEL_FILE### <input type="file" name="datafile" />
 			<input type="submit" name="Submit" class="msadmin_button" value="###LABEL_ADMIN_UPLOAD###" />
 			<br />
 			<br />
