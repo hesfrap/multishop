@@ -8,8 +8,6 @@ if (!$this->imageWidth) {
 // now parse all the objects in the tmpl file
 if ($this->conf['products_listing_tmpl_path']) {
 	$template=$this->cObj->fileResource($this->conf['products_listing_tmpl_path']);
-} elseif ($this->conf['products_listing_tmpl']) {
-	$template=$this->cObj->fileResource($this->conf['products_listing_tmpl']);
 } else {
 	$template=$this->cObj->fileResource(t3lib_extMgm::siteRelPath($this->extKey).'templates/products_listing.tmpl');
 }
@@ -82,6 +80,7 @@ foreach ($products as $current_product) {
 		$markerArray['ITEM_CLASS']='disabled_product';
 	}
 	$markerArray['PRODUCTS_NAME']=$current_product['products_name'];
+	$markerArray['PRODUCTS_MODEL']=$current_product['products_model'];
 	$markerArray['PRODUCTS_DESCRIPTION']=$current_product['products_description'];
 	$markerArray['PRODUCTS_SHORTDESCRIPTION']=$current_product['products_shortdescription'];
 	$markerArray['PRODUCTS_DETAIL_PAGE_LINK']=$output['link'];
