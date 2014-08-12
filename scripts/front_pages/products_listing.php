@@ -26,9 +26,14 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 	}
 	$subcats=array();
 	// current cat
-	$str="SELECT * from tx_multishop_categories c, tx_multishop_categories_description cd where c.status=1 and c.categories_id='".$parent_id."' and cd.language_id='".$this->sys_language_uid."' and c.page_uid='".$this->showCatalogFromPage."' and c.categories_id=cd.categories_id";
-	$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
-	$current=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
+	if ($parent_id>0) {
+		$str="SELECT * from tx_multishop_categories c, tx_multishop_categories_description cd where c.status=1 and c.categories_id='".addslashes($parent_id)."' and cd.language_id='".$this->sys_language_uid."' and c.page_uid='".$this->showCatalogFromPage."' and c.categories_id=cd.categories_id";
+		$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
+		$current=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
+	} else {
+		// default root has no current category. this is a bad query (bas)
+		//$str="SELECT * from tx_multishop_categories c, tx_multishop_categories_description cd where c.status=1 and c.parent_id='".$parent_id."' and cd.language_id='".$this->sys_language_uid."' and c.page_uid='".$this->showCatalogFromPage."' and c.categories_id=cd.categories_id";
+	}
 	// first check if the meta_title exists
 	$display_listing=false;
 	$output_array=array();
@@ -127,28 +132,30 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or !$output_array=$Cache_Lite->get(
 			}
 			// category listing eof
 			if ($this->ROOTADMIN_USER or ($this->ADMIN_USER and $this->CATALOGADMIN_USER)) {
-				$content.='
-				<script>
-				jQuery(document).ready(function($) {
-				var result = jQuery("#category_listing").sortable({
-				 cursor:     "move",
-					//axis:       "y",
-					update: function(e, ui) {
-						href = "'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=subcatlisting').'";
-						jQuery(this).sortable("refresh");
-						sorted = jQuery(this).sortable("serialize", "id");
-						jQuery.ajax({
-								type:   "POST",
-								url:    href,
-								data:   sorted,
-								success: function(msg) {
-										//do something with the sorted data
-								}
-						});
-					}
-				});
-				});
-				</script>';
+				if (!isset($output_array['meta']['sortables'])) {
+					$output_array['meta']['sortables']='
+					<script>
+					jQuery(document).ready(function($) {
+					var result = jQuery("#category_listing").sortable({
+					 cursor:     "move",
+						//axis:       "y",
+						update: function(e, ui) {
+							href = "'.mslib_fe::typolink(',2002', '&tx_multishop_pi1[page_section]=subcatlisting').'";
+							jQuery(this).sortable("refresh");
+							sorted = jQuery(this).sortable("serialize", "id");
+							jQuery.ajax({
+									type:   "POST",
+									url:    href,
+									data:   sorted,
+									success: function(msg) {
+											//do something with the sorted data
+									}
+							});
+						}
+					});
+					});
+					</script>';
+				}
 			}
 		} else {
 			if ($this->productsLimit) {

@@ -28,6 +28,8 @@ div.tooltip .msAdminTooltipBillingAddressDetails,
 div.tooltip .msAdminTooltipDeliveryAddressDetails { float:left; width:49.8%; font:12px Arial, Helvetica, sans-serif; }
 div.tooltip .msAdminTooltipOrderDetailsAddressWrapper h3 { font:bold 12px Arial, Helvetica, sans-serif; padding:0 0 3px; }
 
+div.tooltip.fade { position:absolute !important; overflow:visible; margin-left:300px; max-width:100px; margin-top:-10px; border:none; box-shadow:0 4px 10px #999; }
+div.tooltip.fade:after { position:absolute; left:10px; bottom:-7px; border-top:7px solid #e6e6e6; border-left:7px solid transparent; border-right:7px solid transparent; content:""; }
 
 .align_left { text-align:left; }
 .align_right { text-align:right; }
@@ -281,17 +283,26 @@ form#admin_categories_edit_ .account-field option { padding:0 10px 0 0; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox ul li h2 span,
 #msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox ul li h2 .option_id { color:#fff; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox ul li h2 span { float:none; display:inline-block; vertical-align:middle; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox ul li h2 span a { vertical-align:middle !important; margin:0 3px; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox ul li h2 .option_id { padding-top:0; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox ul li h2 span input[type="checkbox"] { display:inline-block; margin:0; vertical-align:middle; }
 #tx_multishop_pi1_core #tab-container .tab_container #product_attributes.tab_content #product_attributes_table .wrap-attributes-item.odd_item_row,
-#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox > ul > li li.odd { background:#dedede; padding-left:10px; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox > ul > li li.odd,
+#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox .option_settings { background:#dedede; padding-left:10px; }
 #tx_multishop_pi1_core #tab-container .tab_container #product_attributes.tab_content #product_attributes_table .wrap-attributes-item.even_item_row,
 #msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox > ul > li li.even { background:#f0f0f0; padding-left:10px; }
-#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox > ul > li li { padding-top:8px; padding-bottom:8px; }  
+#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox > ul > li li,
+#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox .option_settings { padding-top:8px; padding-bottom:8px; }  
+#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox .option_settings * { display:inline-block; padding-right:10px; vertical-align:middle;}
+#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox .option_settings input[type="checkbox"] { margin:0; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox .option_settings select { margin-left:10px; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox > ul > li li input { margin-bottom:0 !important; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox ul li h3 { background:#999; color:#fff; padding-left:10px; padding-top:10px; }
 #msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox ul li .admin_menu_remove { vertical-align:middle; line-height: 28px; margin-bottom:1px; }
-#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox ul ul > a.msadmin_button { margin-top:10px; margin-bottom:10px; margin-left:10px; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox ul ul > a.msadmin_button,
+#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox ul .option_values a.msadmin_button.fetch_attributes_values { margin-top:10px; margin-bottom:10px; margin-left:10px; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox ul .option_values a { vertical-align:middle; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core form.msadminFromFancybox ul .option_values a.edit_options_values.admin_menu_edit { margin-left:10px; }
 
 #tx_multishop_pi1_core #tab-container .tab_container #product_attributes.tab_content #product_attributes_table ul li.products_attributes_item .add_new_attributes { margin-top:10px; margin-bottom:10px; margin-left:10px; }
 #tx_multishop_pi1_core #tab-container .tab_container #product_attributes.tab_content #product_attributes_table ul li.products_attributes_item .add_new_attributes input {
@@ -568,9 +579,11 @@ ul#ui-menu-manual-option li.ui-menu-item span#more-results:hover { background:#0
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content .innerbox_methods { padding-left:200px; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content .innerbox_methods h4 { margin:0 0 10px; padding:3px 0 0; }
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content .innerbox_methods ul { margin:0 0 10px; padding:0; list-style:none; }
-#tx_multishop_pi1_core #tab-container .tab_container .tab_content .innerbox_methods ul li { overflow:hidden; width:100%; background:none; margin:0; padding:0 0 5px; line-height:15px; }
-#tx_multishop_pi1_core #tab-container .tab_container .tab_content .innerbox_methods ul li input { float:left; margin:0 5px 0 0; }
-#tx_multishop_pi1_core #tab-container .tab_container .tab_content .innerbox_methods ul li span { float:left; color:#dedede; }
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content .innerbox_methods ul li { overflow:hidden; width:100%; border-bottom:none; background:none; line-height:15px; margin:0; padding:0 0 7px; }
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content .innerbox_methods ul li:hover { border-bottom:none; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core #tx_multishop_pi1_core #tab-container .tab_container .tab_content .innerbox_methods ul li label { clear:none; float:left; display:block; width:auto; text-align:left; padding:0 20px 0 0; }
+#msadmin_section #msadmin_content #tx_multishop_pi1_core #tx_multishop_pi1_core #tab-container .tab_container .tab_content .innerbox_methods ul li input[type="checkbox"] { clear:none; float:left; margin:1px 5px 0 0; }
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content .innerbox_methods ul li span { float:left; display:block; width:250px; font-weight:bold; padding:0 0 0; }
 
 #tx_multishop_pi1_core #tab-container .tab_container form#admin_product_edit_ table.msadmin_border td table { margin:0; }
 #tx_multishop_pi1_core #tab-container .tab_container form#admin_product_edit_ table.msadmin_border td table td { padding:0; }
@@ -753,7 +766,10 @@ span.viewfront a:hover { background:#e2e2e2; }
 .redactor_box { float:left; width:639px; }
 
 #tx_multishop_pi1_core #tab-container .tab_container .tab_content ul { list-style:none; margin:10px 0; padding:0; }
-#tx_multishop_pi1_core #tab-container .tab_container .tab_content ul li { background:none; margin:0; padding:0 0 5px; } 
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content ul li { background:none; margin:0; padding:0 0 5px; }
+
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content .redactor_mceEditor.redactor_editor ul { margin:0; }
+#tx_multishop_pi1_core #tab-container .tab_container .tab_content .redactor_mceEditor.redactor_editor ul li { list-style-type:disc; padding:0; line-height: 1.6em; }
 
 #tx_multishop_pi1_core #tab-container .tab_container #product_relatives_2 ul { margin:10px 0 0; list-style:none; }
 #tx_multishop_pi1_core #tab-container .tab_container #product_relatives_2 ul li { background:none; margin:0; padding:0; line-height:20px; }

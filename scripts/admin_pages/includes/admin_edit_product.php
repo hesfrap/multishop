@@ -59,7 +59,7 @@ if ($this->post and $_FILES) {
 								}
 							}
 						}
-						// digital download eof					
+						// digital download eof
 						break;
 					default:
 						// product image
@@ -109,7 +109,7 @@ if ($this->post and $_FILES) {
 										}
 									}
 								}
-								// products image eof								
+								// products image eof
 							}
 						}
 						break;
@@ -305,21 +305,23 @@ if ($this->post) {
 			$query=$GLOBALS['TYPO3_DB']->DELETEquery('tx_multishop_products_method_mappings', 'products_id=\''.$prodid.'\'');
 			$res=$GLOBALS['TYPO3_DB']->sql_query($query);
 			if (is_array($this->post['payment_method']) and count($this->post['payment_method'])) {
-				foreach ($this->post['payment_method'] as $value) {
+				foreach ($this->post['payment_method'] as $payment_method_id => $value) {
 					$updateArray=array();
 					$updateArray['products_id']=$prodid;
-					$updateArray['method_id']=$value;
+					$updateArray['method_id']=$payment_method_id;
 					$updateArray['type']='payment';
+					$updateArray['negate']=$value;
 					$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_method_mappings', $updateArray);
 					$res=$GLOBALS['TYPO3_DB']->sql_query($query);
 				}
 			}
 			if (is_array($this->post['shipping_method']) and count($this->post['shipping_method'])) {
-				foreach ($this->post['shipping_method'] as $value) {
+				foreach ($this->post['shipping_method'] as $shipping_method_id => $value) {
 					$updateArray=array();
 					$updateArray['products_id']=$prodid;
-					$updateArray['method_id']=$value;
+					$updateArray['method_id']=$shipping_method_id;
 					$updateArray['type']='shipping';
+					$updateArray['negate']=$value;
 					$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_products_method_mappings', $updateArray);
 					$res=$GLOBALS['TYPO3_DB']->sql_query($query);
 				}
@@ -355,13 +357,13 @@ if ($this->post) {
 						$updateArray['products_description_tab_content_'.$i]=$this->post['products_description_tab_content_'.$i][$key];
 					}
 				}
-				// EXTRA TAB CONTENT EOF				
+				// EXTRA TAB CONTENT EOF
 				if ($GLOBALS['TYPO3_DB']->sql_num_rows($qry)>0) {
 					// if product is originally coming from products importer we have to define that the merchant changed it
 					$filter=array();
 					$filter[]='products_id='.$prodid;
 					if (mslib_befe::ifExists('1', 'tx_multishop_products', 'imported_product', $filter)) {
-						// lock changed columns				
+						// lock changed columns
 						mslib_befe::updateImportedProductsLockedFields($prodid, 'tx_multishop_products_description', $updateArray);
 					}
 					$query=$GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_products_description', 'products_id=\''.$prodid.'\' and language_id=\''.$key.'\'', $updateArray);
@@ -389,11 +391,19 @@ if ($this->post) {
 		if ($this->post['specials_new_products_price']) {
 			$specials_start_date=0;
 			$specials_expired_date=0;
+			$current_tstamp=time();
+			$special_status='1';
 			if ($this->post['specials_price_start']>0) {
 				$specials_start_date=strtotime($this->post['specials_price_start']);
+				if ($specials_start_date>$current_tstamp) {
+					$special_status='0';
+				}
 			}
 			if ($this->post['specials_price_expired']>0) {
 				$specials_expired_date=strtotime($this->post['specials_price_expired']);
+				if ($specials_expired_date<=$current_tstamp) {
+					$special_status='0';
+				}
 			}
 			$str="SELECT * from tx_multishop_specials where products_id='".$prodid."'";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
@@ -408,9 +418,9 @@ if ($this->post) {
 				{
 					// we have to substract the vat so the price is excl. vat
 					$tax_rate=mslib_fe::getTaxRate($this->post['tax_id']);
-					$updateArray['specials_new_products_price']=round($updateArray['specials_new_products_price']/(1+$tax_rate),4);		
+					$updateArray['specials_new_products_price']=round($updateArray['specials_new_products_price']/(1+$tax_rate),4);
 				}	 */
-				$updateArray['status']=1;
+				$updateArray['status']=$special_status;
 				$query=$GLOBALS['TYPO3_DB']->UPDATEquery('tx_multishop_specials', 'products_id=\''.$prodid.'\'', $updateArray);
 				$res=$GLOBALS['TYPO3_DB']->sql_query($query);
 			} else {
@@ -423,9 +433,9 @@ if ($this->post) {
 				{
 					// we have to substract the vat so the price is excl. vat
 					$tax_rate=mslib_fe::getTaxRate($this->post['tax_id']);
-					$updateArray['specials_new_products_price']=round($updateArray['specials_new_products_price']/(1+$tax_rate),4);								
+					$updateArray['specials_new_products_price']=round($updateArray['specials_new_products_price']/(1+$tax_rate),4);
 				} */
-				$updateArray['status']=1;
+				$updateArray['status']=$special_status;
 				$updateArray['page_uid']=$this->showCatalogFromPage;
 				$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_specials', $updateArray);
 				$res=$GLOBALS['TYPO3_DB']->sql_query($query);
@@ -689,7 +699,7 @@ if ($this->post) {
 					t3lib_div::callUserFunction($funcRef, $params, $this);
 				}
 			}
-			// custom hook that can be controlled by third-party plugin eof			
+			// custom hook that can be controlled by third-party plugin eof
 		} else {
 			// custom hook that can be controlled by third-party plugin
 			if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/includes/admin_edit_product.php']['insertProductPostHook'])) {
@@ -700,7 +710,7 @@ if ($this->post) {
 					t3lib_div::callUserFunction($funcRef, $params, $this);
 				}
 			}
-			// custom hook that can be controlled by third-party plugin eof				
+			// custom hook that can be controlled by third-party plugin eof
 		}
 		// OLD OBSOLUTE HOOK
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/admin_pages/admin_edit_product.php']['saveProductPostHook'])) {
@@ -911,7 +921,7 @@ if ($this->post) {
 		}
 		$input_vat_rate.='</select>';
 		if ($_REQUEST['action']=='edit_product') {
-			$str="SELECT * from tx_multishop_specials where products_id='".$_REQUEST['pid']."' and status=1";
+			$str="SELECT * from tx_multishop_specials where products_id='".$_REQUEST['pid']."'";
 			$qry=$GLOBALS['TYPO3_DB']->sql_query($str);
 			$specials_price=$GLOBALS['TYPO3_DB']->sql_fetch_assoc($qry);
 			if ($specials_price['specials_new_products_price']) {
@@ -938,7 +948,7 @@ if ($this->post) {
 					jQuery("#add_staffel_input").click(function(event) {
 						var counter_data = parseInt(jQuery(\'#sp_row_counter\').val());
 						var counter_col = parseInt(jQuery(\'#sp_row_counter\').val());
-		
+
 						//if (document.getElementById(\'sp_\' + counter_col + \'_qty_2\').value == \'\') {
 						//	var next_qty_col_1 = 0;
 						//} else {
@@ -1021,7 +1031,7 @@ if ($this->post) {
 							<table cellpadding="0" cellspacing="0">
 								<tr id="sp_end_row"><td align="right" colspan=4"><input type="hidden" id="sp_row_counter" value="0" /></td></tr>
 							</table>
-				
+
 						</div>';
 			} else {
 				$staffel_price_block.='
@@ -1109,6 +1119,8 @@ if ($this->post) {
 			// loading shipping methods eof
 			$shipping_methods=mslib_fe::loadShippingMethods();
 			if (count($payment_methods) or count($shipping_methods)) {
+				// the value is are the negate value
+				// negate 1 mean the shipping/payment are excluded
 				$shipping_payment_method.='
 						<div class="account-field div_products_mappings toggle_advanced_option" id="msEditProductInputPaymentMethod">
 							<label>'.$this->pi_getLL('admin_mapped_methods').'</label>
@@ -1130,11 +1142,13 @@ if ($this->post) {
 							$tr_type='even';
 						}
 						$count++;
-						$shipping_payment_method.='<li class="'.$tr_type.'"  id="multishop_payment_method_'.$item['id'].'">';
+						$shipping_payment_method.='<li class="'.$tr_type.'"  id="multishop_payment_method_'.$item['id'].'"><span>'.$item['name'].'</span>';
 						if ($price_wrap) {
 							$tmpcontent.=$price_wrap;
 						}
-						$shipping_payment_method.='<input name="payment_method[]" id="payment_method_'.$item['id'].'" type="checkbox" value="'.htmlspecialchars($item['id']).'"'.((is_array($method_mappings['payment']) and in_array($item['id'], $method_mappings['payment'])) ? ' checked' : '').' /><span>'.$item['name'].'</span></li>';
+						$shipping_payment_method.='<input name="payment_method['.htmlspecialchars($item['id']).']" class="payment_method_cb" id="enable_payment_method_'.$item['id'].'" type="checkbox" rel="'.$item['id'].'" value="0"'.((is_array($method_mappings['payment']) && in_array($item['id'], $method_mappings['payment']) && !$method_mappings['payment']['method_data'][$item['id']]['negate']) ? ' checked' : '').' /><label for="enable_payment_method_'.$item['id'].'">'.$this->pi_getLL('enable').'</label>';
+						$shipping_payment_method.='<input name="payment_method['.htmlspecialchars($item['id']).']" class="payment_method_cb" id="disable_payment_method_'.$item['id'].'" type="checkbox" rel="'.$item['id'].'" value="1"'.((is_array($method_mappings['payment']) && in_array($item['id'], $method_mappings['payment']) && $method_mappings['payment']['method_data'][$item['id']]['negate']>0) ? ' checked' : '').' /><label for="disable_payment_method_'.$item['id'].'">'.$this->pi_getLL('disable').'</label>';
+						$shipping_payment_method.='</li>';
 					}
 				}
 				$shipping_payment_method.='
@@ -1148,11 +1162,12 @@ if ($this->post) {
 				if (count($shipping_methods)) {
 					foreach ($shipping_methods as $code=>$item) {
 						$count++;
-						$shipping_payment_method.='<li>';
+						$shipping_payment_method.='<li><span>'.$item['name'].'</span>';
 						if ($price_wrap) {
 							$shipping_payment_method.=$price_wrap;
 						}
-						$shipping_payment_method.='<input name="shipping_method[]" id="shipping_method_'.$item['id'].'" type="checkbox" value="'.htmlspecialchars($item['id']).'"'.((is_array($method_mappings['shipping']) and in_array($item['id'], $method_mappings['shipping'])) ? ' checked' : '').'  /><span>'.$item['name'].'</span>';
+						$shipping_payment_method.='<input name="shipping_method['.htmlspecialchars($item['id']).']" class="shipping_method_cb" id="enable_shipping_method_'.$item['id'].'" type="checkbox" rel="'.$item['id'].'" value="0"'.((is_array($method_mappings['shipping']) && in_array($item['id'], $method_mappings['shipping']) && !$method_mappings['shipping']['method_data'][$item['id']]['negate']) ? ' checked' : '').'  /><label for="enable_shipping_method_'.$item['id'].'">'.$this->pi_getLL('enable').'</label>';
+						$shipping_payment_method.='<input name="shipping_method['.htmlspecialchars($item['id']).']" class="shipping_method_cb" id="disable_shipping_method_'.$item['id'].'" type="checkbox" rel="'.$item['id'].'" value="1"'.((is_array($method_mappings['shipping']) && in_array($item['id'], $method_mappings['shipping']) && $method_mappings['shipping']['method_data'][$item['id']]['negate']>0) ? ' checked' : '').'  /><label for="enable_shipping_method_'.$item['id'].'">'.$this->pi_getLL('disable').'</label>';
 						$shipping_payment_method.='</li>';
 					}
 				}
@@ -1284,11 +1299,13 @@ if ($this->post) {
 					new_attributes_html+=\'<input type="hidden" name="tx_multishop_pi1[options][]" id="tmp_options_sb" style="width:200px" />\';
 					new_attributes_html+=\'<input type="hidden" name="tx_multishop_pi1[is_manual_options][]" value="0" />\';
 					new_attributes_html+=\'<input type="hidden" name="tx_multishop_pi1[pa_id][]" value="0" />\';
+					new_attributes_html+=\'<br/><small class="information_select2_label">'.$this->pi_getLL('admin_label_select_value_or_type_new_value').'</small>\';
 					new_attributes_html+=\'</td>\';
 
 					new_attributes_html+=\'<td class="product_attribute_value">\';
 					new_attributes_html+=\'<input type="hidden" name="tx_multishop_pi1[attributes][]" id="tmp_attributes_sb" style="width:200px" />\';
 					new_attributes_html+=\'<input type="hidden" name="tx_multishop_pi1[is_manual_attributes][]" value="0" />\';
+					new_attributes_html+=\'<br/><small class="information_select2_label">'.$this->pi_getLL('admin_label_select_value_or_type_new_value').'</small>\';
 					new_attributes_html+=\'</td>\';
 
 					new_attributes_html+=\'<td class="product_attribute_prefix">\';
@@ -1314,7 +1331,7 @@ if ($this->post) {
 					new_attributes_html+=\'</td>\';
 
 					new_attributes_html+=\'<td>\';
-					new_attributes_html+=\'<input type="button" value="'.htmlspecialchars($this->pi_getLL('save')).'" class="msadmin_button save_new_attributes">&nbsp;<input type="button" value="'.htmlspecialchars($this->pi_getLL('cancel')).'" class="msadmin_button delete_tmp_product_attributes">\';
+					new_attributes_html+=\'<input type="button" value="'.htmlspecialchars($this->pi_getLL('admin_label_save_attribute')).'" class="msadmin_button save_new_attributes">&nbsp;<input type="button" value="'.htmlspecialchars($this->pi_getLL('cancel')).'" class="msadmin_button delete_tmp_product_attributes">\';
 					new_attributes_html+=\'</td>\';
 					new_attributes_html+=\'</tr>\';
 
@@ -1643,7 +1660,7 @@ if ($this->post) {
 						} else {
 							$(this).next().val("0");
 						}
-					});;
+					});
 				}
 				var sort_li = function () {
 					jQuery("#products_attributes_items").sortable({
@@ -1852,8 +1869,8 @@ if ($this->post) {
 						$options_data[$row['products_options_id']]=$row['products_options_name'];
 						$attributes_data[$row['products_options_id']][]=$row;
 						// js cache
-						$js_select2_cache_options[$row['products_options_id']]='attributesOptions['.$row['products_options_id'].']={id:"'.$row['products_options_id'].'", text:"'.$row['products_options_name'].'"}';
-						$js_select2_cache_values[$row['options_values_id']]='attributesValues['.$row['options_values_id'].']={id:"'.$row['options_values_id'].'", text:"'.$row['options_values_name'].'"}';
+						$js_select2_cache_options[$row['products_options_id']]='attributesOptions['.$row['products_options_id'].']={id:"'.$row['products_options_id'].'", text:"'.htmlentities($row['products_options_name'], ENT_QUOTES).'"}';
+						$js_select2_cache_values[$row['options_values_id']]='attributesValues['.$row['options_values_id'].']={id:"'.$row['options_values_id'].'", text:"'.htmlentities($row['options_values_name'], ENT_QUOTES).'"}';
 					}
 					if (count($options_data)) {
 						$attributes_tab_block.='<tr id="product_attributes_content_row">';
@@ -1881,6 +1898,7 @@ if ($this->post) {
 								$attributes_tab_block.='<input type="hidden" name="tx_multishop_pi1[options][]" id="option_'.$attribute_data['products_attributes_id'].'" class="product_attribute_options" value="'.$option_id.'" style="width:200px" />';
 								$attributes_tab_block.='<input type="hidden" name="tx_multishop_pi1[is_manual_options][]" id="manual_option_'.$attribute_data['products_attributes_id'].'" value="0" />';
 								$attributes_tab_block.='<input type="hidden" name="tx_multishop_pi1[pa_id][]" value="'.$attribute_data['products_attributes_id'].'" />';
+								$attributes_tab_block.='<br/><small class="information_select2_label">'.$this->pi_getLL('admin_label_select_value_or_type_new_value').'</small>';
 								/*$attributes_tab_block.='<select name="tx_multishop-pi1[options][]" id="option_'.$attribute_data['products_attributes_id'].'" class="product_attribute_options">';
 								$attributes_tab_block.='<option value="">'.$this->pi_getLL('admin_label_choose_option').'</option>';
 								// fetch attributes options
@@ -1904,6 +1922,7 @@ if ($this->post) {
 								$attributes_tab_block.='<td class="product_attribute_value">';
 								$attributes_tab_block.='<input type="hidden" name="tx_multishop_pi1[attributes][]" id="attribute_'.$attribute_data['products_attributes_id'].'" class="product_attribute_values" value="'.$attribute_data['options_values_id'].'" style="width:200px" />';
 								$attributes_tab_block.='<input type="hidden" name="tx_multishop_pi1[is_manual_attributes][]" id="manual_attributes_'.$attribute_data['products_attributes_id'].'" value="0" />';
+								$attributes_tab_block.='<br/><small class="information_select2_label">'.$this->pi_getLL('admin_label_select_value_or_type_new_value').'</small>';
 								/*$attributes_tab_block.='<select name="tx_multishop_pi1[attributes][]" id="attribute_'.$attribute_data['products_attributes_id'].'" class="product_attribute_values">';
 								$attributes_tab_block.='<option value="">'.$this->pi_getLL('admin_label_choose_attribute').'</option>';
 								// fetch values
@@ -2004,7 +2023,7 @@ if ($this->post) {
 					<td>
 						<input type="button" id="filter" value="'.$this->pi_getLL('admin_search').'" />
 					<td>
-			
+
 				</tr>
 			</table>';
 			$product_relatives_block='<h1>'.$this->pi_getLL('admin_related_products').'</h1>'.$form_category_search.'<div id="load"><img src="'.$this->FULL_HTTP_URL_MS.'templates/images/loading2.gif"><strong>Loading....</strong></div><div id="related_product_placeholder"></div>';
@@ -2017,7 +2036,6 @@ if ($this->post) {
 			$product_copy_block.='
 				<h1>'.$this->pi_getLL('admin_copy_duplicate_product').'</h1>
 				<div class="account-field" id="msEditProductInputDuplicateProduct">
-		
 				<label for="cid">'.$this->pi_getLL('admin_select_category').'</label>
 				'.mslib_fe::tx_multishop_draw_pull_down_menu('cid', mslib_fe::tx_multishop_get_category_tree('', '', ''), $this->get['cid'], 'class="select2BigDropWider"').'
 				</div>
@@ -2077,6 +2095,7 @@ if ($this->post) {
 		$subpartArray['###LABEL_PRODUCT_CATEGORY###']=$this->pi_getLL('admin_category');
 		$subpartArray['###VALUE_OLD_CATEGORY_ID###']=$product['categories_id'];
 		$subpartArray['###INPUT_CATEGORY_TREE###']=mslib_fe::tx_multishop_draw_pull_down_menu('categories_id" id="categories_id', mslib_fe::tx_multishop_get_category_tree('', '', ''), $this->get['cid'], 'class="select2BigDropWider"');
+		$subpartArray['###INFORMATION_SELECT2_LABEL0###']=$this->pi_getLL('admin_label_select_value_or_type_new_value');
 		$subpartArray['###DETAILS_CONTENT###']=$details_content;
 		//exclude list products
 		$feed_checkbox='';
@@ -2124,15 +2143,15 @@ if ($this->post) {
 			$product['specials_start_date_sys']='';
 			$product['specials_start_date_visual']='';
 		} else {
-			$product['specials_start_date_visual']=date($this->pi_getLL('locale_date_format'), $product['specials_start_date']);
-			$product['specials_start_date_sys']=date("Y-m-d", $product['specials_start_date']);
+			$product['specials_start_date_visual']=date($this->pi_getLL('locale_datetime_format'), $product['specials_start_date']);
+			$product['specials_start_date_sys']=date("Y-m-d H:i:s", $product['specials_start_date']);
 		}
 		if ($product['specials_expired_date']==0 || empty($product['specials_expired_date'])) {
 			$product['specials_expired_date_sys']='';
 			$product['specials_expired_date_visual']='';
 		} else {
-			$product['specials_expired_date_visual']=date($this->pi_getLL('locale_date_format'), $product['specials_expired_date']);
-			$product['specials_expired_date_sys']=date("Y-m-d", $product['specials_expired_date']);
+			$product['specials_expired_date_visual']=date($this->pi_getLL('locale_datetime_format'), $product['specials_expired_date']);
+			$product['specials_expired_date_sys']=date("Y-m-d H:i:s", $product['specials_expired_date']);
 		}
 		$subpartArray['###LABEL_HEADING_TAB_OPTION###']=$this->pi_getLL('admin_product_options');
 		$subpartArray['###LABEL_VAT_RATE###']=$this->pi_getLL('admin_vat_rate');
@@ -2267,6 +2286,7 @@ if ($this->post) {
 		 * product copy tab marker
 		*/
 		$subpartArray['###INPUT_PRODUCT_COPY_BLOCK###']=$product_copy_block;
+		$subpartArray['###INFORMATION_SELECT2_LABEL1###']=$this->pi_getLL('admin_label_select_value_or_type_new_value');
 		// plugin marker place holder
 		$plugins_extra_tab=array();
 		$plugins_extra_tab['tabs_header']=array();

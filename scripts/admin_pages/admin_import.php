@@ -106,6 +106,7 @@ for ($x=0; $x<$this->ms['MODULES']['NUMBER_OF_PRODUCT_IMAGES']; $x++) {
 	$coltypes['products_image'.$x2]='Products image '.($x+1);
 }
 for ($x=1; $x<=$max_category_level; $x++) {
+	$coltypes['categories_id'.$x]='Categories id (level: '.$x.')';
 	$coltypes['categories_name'.$x]='Categories name (level: '.$x.')';
 	$coltypes['categories_image'.$x]='Categories image (level: '.$x.')';
 	$coltypes['categories_content'.$x]='Categories content (level: '.$x.')';
@@ -699,13 +700,7 @@ if ($this->post['action']=='category-insert') {
 		<input name="database_name" type="hidden" value="'.$this->post['database_name'].'" />
 		<input name="cron_data" type="hidden" value="'.htmlspecialchars(serialize($this->post)).'" />
 		</fieldset>
-		<table cellspacing="0" id="nositenav" width="100%">
-			<tr>
-				<td align="right">
-					<input type="submit" class="msadmin_button" name="AdSubmit" value="'.($this->get['action']=='edit_job' ? $this->pi_getLL('save') : $this->pi_getLL('import')).'">
-				</td>
-			</tr>
-		</table>
+		<span class="float_right msBackendButton continueState arrowRight arrowPosLeft"><input type="submit" class="msadmin_button" name="AdSubmit" value="'.($this->get['action']=='edit_job' ? $this->pi_getLL('save') : $this->pi_getLL('import')).'"></span>
 		<p class="extra_padding_bottom"></p>
 		';
 	$combinedContent.='</form>';
@@ -1880,13 +1875,21 @@ if ($this->post['action']=='category-insert') {
 										$res2=$GLOBALS['TYPO3_DB']->sql_query($query2);
 									}
 									if ($item['products_specials_section'] and $specials_id) {
-										$updateArray=array();
-										$updateArray['specials_id']=$specials_id;
-										$updateArray['date']=time();
-										$updateArray['name']=$item['products_specials_section'];
-										$updateArray['status']=1;
-										$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_specials_sections', $updateArray);
-										$res=$GLOBALS['TYPO3_DB']->sql_query($query);
+										$sections=array();
+										if ($this->post['input'][$i] && strstr($item['products_specials_section'],$this->post['input'][$i])) {
+											$sections=explode($this->post['input'][$i],$item['products_specials_section']);
+										} else {
+											$sections[]=$item['products_specials_section'];
+										}
+										foreach ($sections as $section) {
+											$updateArray=array();
+											$updateArray['specials_id']=$specials_id;
+											$updateArray['date']=time();
+											$updateArray['name']=$section;
+											$updateArray['status']=1;
+											$query=$GLOBALS['TYPO3_DB']->INSERTquery('tx_multishop_specials_sections', $updateArray);
+											$res=$GLOBALS['TYPO3_DB']->sql_query($query);
+										}
 									}
 								}
 							} elseif ($item['products_price'] && $item['updated_products_id']) {

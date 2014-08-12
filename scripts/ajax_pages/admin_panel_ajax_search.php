@@ -3,7 +3,10 @@ if (!defined('TYPO3_MODE')) {
 	die ('Access denied.');
 }
 if ($this->ADMIN_USER) {
-	$page=($this->get['context']['next_page']);
+	$page='';
+	if (isset($this->get['context']['next_page'])) {
+		$page=($this->get['context']['next_page']);
+	}
 	$p=!$page ? 0 : $this->get['context']['next_page'];
 	if ($this->ms['MODULES']['CACHE_FRONT_END'] and !$this->ms['MODULES']['CACHE_TIME_OUT_SEARCH_PAGES']) {
 		$this->ms['MODULES']['CACHE_FRONT_END']=0;
@@ -19,7 +22,7 @@ if ($this->ADMIN_USER) {
 	}
 	if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRONT_END'] and !$content=$Cache_Lite->get($string))) {
 		$data=array();
-		if ($_REQUEST['q']) {
+		if (isset($_REQUEST['q'])) {
 			$this->get['q']=$_REQUEST['q'];
 			$this->get['q']=trim($this->get['q']);
 			$this->get['q']=$GLOBALS['TSFE']->csConvObj->utf8_encode($this->get['q'], $GLOBALS['TSFE']->metaCharset);
@@ -202,8 +205,8 @@ if ($this->ADMIN_USER) {
 			}
 		}
 		// admin_settings search
-		if ($modules[$section] && $section=='admin_settings') {
-			if ($move_next_section && ($this->get['context']['section']!=$section || !isset($this->get['context']['section']))) {
+		if (isset($section) && $modules[$section] && $section=='admin_settings') {
+			if (isset($move_next_section) && ((isset($this->get['context']['section']) && $this->get['context']['section']!=$section) || !isset($this->get['context']['section']))) {
 				$p=0;
 				$offset=$p*$limit;
 			}
@@ -651,10 +654,6 @@ if ($this->ADMIN_USER) {
 		}
 		// product search eof
 		// now build up the listing
-		$page_marker=array();
-		$page_marker['context']['section']=$section;
-		$page_marker['context']['next_page']=$p+1;
-		$page_marker['context']['next']=$next_page;
 		$data_json=array();
 		if (count($data['listing']['cms'])>0) {
 			$data_json[]=array(
@@ -698,6 +697,21 @@ if ($this->ADMIN_USER) {
 				'children'=>$data['listing']['products']
 			);
 		}
+		// custom page hook that can be controlled by third-party plugin
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/admin_panel_ajax_search.php']['json_encode_preProc'])) {
+			$params=array(
+				'data_json'=>&$data_json,
+				'next_page'=>&$next_page
+			);
+			foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['ext/multishop/scripts/ajax_pages/admin_panel_ajax_search.php']['json_encode_preProc'] as $funcRef) {
+				t3lib_div::callUserFunction($funcRef, $params, $this);
+			}
+		}
+		$page_marker=array();
+		$page_marker['context']['section']=$section;
+		$page_marker['context']['next_page']=$p+1;
+		$page_marker['context']['next']=$next_page;
+		// custom page hook that can be controlled by third-party plugin eof
 		$content=array(
 			"products"=>$data_json,
 			"total_rows"=>$results_counter,

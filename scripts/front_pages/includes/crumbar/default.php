@@ -29,7 +29,11 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 	}
 	if ($categories_id) {
 		$output['label_you_are_currently_here']=$this->pi_getLL('you_are_currently_here');
-		$output['homepage_link']=mslib_fe::typolink($this->shop_pid, 'tx_multishop_pi1[page_section]=home');
+		if ($this->conf['crumbar_rootline_pid'] && is_numeric($this->conf['crumbar_rootline_pid'])) {
+			$output['homepage_link']=mslib_fe::typolink($this->conf['crumbar_rootline_pid']);
+		} else {
+			$output['homepage_link']=mslib_fe::typolink($this->shop_pid, 'tx_multishop_pi1[page_section]=home');
+		}
 		if ($this->conf['crumbar_rootline_title']) {
 			$output['homepage_title']=$this->conf['crumbar_rootline_title'];
 		} else {
@@ -87,7 +91,7 @@ if (!$this->ms['MODULES']['CACHE_FRONT_END'] or ($this->ms['MODULES']['CACHE_FRO
 			}
 		}
 		if (!empty($product['products_name'])) {
-			$output['product_name']='<li class="crumbar_product_level"><strong>'.substr($product['products_name'], 0, 60).'</strong></li>';
+			$output['product_name']='<li class="crumbar_product_level"><strong>'.$product['products_name'].'</strong></li>';
 		}
 		// fill the row marker with the expanded rows
 		$subpartArray['###LABEL_YOU_ARE_CURRENTLY_HERE###']=$output['label_you_are_currently_here'];

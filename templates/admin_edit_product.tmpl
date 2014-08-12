@@ -263,23 +263,31 @@ jQuery(document).ready(function ($) {
         altFormat: "yy-mm-dd",
         altTimeFormat: "HH:mm:ss"
     });
-    $("#specials_price_start_visitor").datepicker({
+    $("#specials_price_start_visitor").datetimepicker({
         dateFormat: "###DATE_FORMAT###",
         altField: "#specials_price_start",
         altFormat: "yy-mm-dd",
         changeMonth: true,
         changeYear: true,
         showOtherMonths: true,
-        yearRange: "###YEAR_RANGE###"
+        yearRange: "###YEAR_RANGE###",
+        timeFormat: 'HH:mm:ss',
+        altFieldTimeOnly: false,
+        altFormat: "yy-mm-dd",
+        altTimeFormat: "HH:mm:ss"
     });
-    $("#specials_price_expired_visitor").datepicker({
+    $("#specials_price_expired_visitor").datetimepicker({
         dateFormat: "###DATE_FORMAT###",
         altField: "#specials_price_expired",
         altFormat: "yy-mm-dd",
         changeMonth: true,
         changeYear: true,
         showOtherMonths: true,
-        yearRange: "###YEAR_RANGE###"
+        yearRange: "###YEAR_RANGE###",
+        timeFormat: 'HH:mm:ss',
+        altFieldTimeOnly: false,
+        altFormat: "yy-mm-dd",
+        altTimeFormat: "HH:mm:ss"
     });
     // related product ajax server
     var url_relatives = "###AJAX_URL_PRODUCT_RELATIVE###";
@@ -377,7 +385,6 @@ jQuery(document).ready(function ($) {
 <div class="tab_container">
 <form class="admin_product_edit" name="admin_product_edit_###PRODUCT_PID###" id="admin_product_edit_###PRODUCT_PID###" method="post" action="###FORM_ACTION_URL###" enctype="multipart/form-data">
 <input type="hidden" name="tx_multishop_pi1[referrer]" id="msAdminReferrer" value="###VALUE_REFERRER###">
-
 <div style="display: block;" id="product_details" class="tab_content">
     <div style="float:right;">
         <div class="save_block">
@@ -429,41 +436,22 @@ jQuery(document).ready(function ($) {
 </div>
 <div style="display: block;" id="product_options" class="tab_content">
     <h1>###LABEL_HEADING_TAB_OPTION###</h1>
-    <div class="account-field" id="msEditProductInputExcludeFromFeeds">
-        <label>###LABEL_EXCLUDE_FROM_FEED###</label>
-        ###FEEDS_LIST###
-    </div>
-    <div class="account-field toggle_advanced_option" id="msEditProductInputStartEndTime">
-        <label for="starttime" class="starttime">Starttime</label>
-        <input type="text" name="starttime_visitor" class="starttime" id="starttime_visitor" value="###VALUE_STARTTIME_VISUAL###">
-        <input type="hidden" name="starttime" class="starttime" id="starttime" value="###VALUE_STARTTIME_SYS###">
-        <label for="endtime" class="endtime">Endtime</label>
-        <input type="text" name="endtime_visitor" class="endtime" id="endtime_visitor" value="###VALUE_ENDTIME_VISUAL###">
-        <input type="hidden" name="endtime" class="endtime" id="endtime" value="###VALUE_ENDTIME_SYS###">
-    </div>
     <div class="account-field">
         <label for="tax_id">###LABEL_VAT_RATE###</label>
         ###INPUT_VATE_RATE###
     </div>
     <div class="account-field" id="msEditProductInputPrice">
         <label>###LABEL_PRICE###</label>
-
         <div class="msAdminFormFieldValueFloatContainer" id="msEditProductInputNormalPrice">
             <label for="products_price">###LABEL_NORMAL_PRICE###</label>
-
-            <div class="msAttributesField">###LABEL_CURRENCY0### <input type="text" name="products_price_excl_vat" class="price small_input msPriceExcludingVat" id="products_price_excl_vat" value="###VALUE_EXCL_VAT_PRICE###"><label
-                    for="products_price_excl_vat">Excl. VAT</label></div>
-            <div class="msAttributesField">###LABEL_CURRENCY1### <input type="text" name="products_price_incl_vat" class="price small_input msPriceIncludingVat" id="products_price_incl_vat" value="###VALUE_INCL_VAT_PRICE###"><label
-                    for="products_price_incl_vat">Incl. VAT</label></div>
+            <div class="msAttributesField">###LABEL_CURRENCY0### <input type="text" name="products_price_excl_vat" class="price small_input msPriceExcludingVat" id="products_price_excl_vat" value="###VALUE_EXCL_VAT_PRICE###"><label for="products_price_excl_vat">Excl. VAT</label></div>
+            <div class="msAttributesField">###LABEL_CURRENCY1### <input type="text" name="products_price_incl_vat" class="price small_input msPriceIncludingVat" id="products_price_incl_vat" value="###VALUE_INCL_VAT_PRICE###"><label for="products_price_incl_vat">Incl. VAT</label></div>
             <div class="msAttributesField hidden"><input type="hidden" class="msFinalPriceExcludingVat" name="products_price" value="###VALUE_ORIGINAL_PRICE###" /></div>
         </div>
         <div class="msAdminFormFieldValueFloatContainer" id="msEditProductInputSpecialPrice">
             <label for="products_price">###LABEL_SPECIAL_PRICE###</label>
-
-            <div class="msAttributesField">###LABEL_CURRENCY2### <input type="text" name="specials_new_products_price_excl_vat" class="price small_input msPriceExcludingVat" id="specials_new_products_price_excl_vat"
-                                                                        value="###VALUE_EXCL_VAT_SPECIAL_PRICE###"><label for="specials_new_products_price_excl_vat">Excl. VAT</label></div>
-            <div class="msAttributesField">###LABEL_CURRENCY3### <input type="text" name="specials_new_products_price_incl_vat" class="price small_input msPriceIncludingVat" id="specials_new_products_price_incl_vat"
-                                                                        value="###VALUE_INCL_VAT_SPECIAL_PRICE###"><label for="specials_new_products_price_incl_vat">Incl. VAT</label></div>
+            <div class="msAttributesField">###LABEL_CURRENCY2### <input type="text" name="specials_new_products_price_excl_vat" class="price small_input msPriceExcludingVat" id="specials_new_products_price_excl_vat" value="###VALUE_EXCL_VAT_SPECIAL_PRICE###"><label for="specials_new_products_price_excl_vat">Excl. VAT</label></div>
+            <div class="msAttributesField">###LABEL_CURRENCY3### <input type="text" name="specials_new_products_price_incl_vat" class="price small_input msPriceIncludingVat" id="specials_new_products_price_incl_vat" value="###VALUE_INCL_VAT_SPECIAL_PRICE###"><label for="specials_new_products_price_incl_vat">Incl. VAT</label></div>
             <div class="msAttributesField hidden"><input type="hidden" class="msFinalPriceExcludingVat" name="specials_new_products_price" id="specials_new_products_price" value="###VALUE_ORIGINAL_SPECIAL_PRICE###" /></div>
             <div class="special_price_timer">
                 <label for="specials_price_start">###LABEL_SPECIAL_PRICE_START###</label>
@@ -476,11 +464,8 @@ jQuery(document).ready(function ($) {
         </div>
         <div class="msAdminFormFieldValueFloatContainer" id="msEditProductInputCapitalPrice">
             <label for="product_capital_price">###LABEL_CAPITAL_PRICE###</label>
-
-            <div class="msAttributesField">###LABEL_CURRENCY4### <input type="text" name="product_capital_price_excl_vat" class="price small_input msPriceExcludingVat" id="product_capital_price_excl_vat"
-                                                                        value="###VALUE_EXCL_VAT_CAPITAL_PRICE###"><label for="product_capital_price_excl_vat">Excl. VAT</label></div>
-            <div class="msAttributesField">###LABEL_CURRENCY5### <input type="text" name="product_capital_price_incl_vat" class="price small_input msPriceIncludingVat" id="product_capital_price_incl_vat"
-                                                                        value="###VALUE_INCL_VAT_CAPITAL_PRICE###"><label for="product_capital_price_incl_vat">Incl. VAT</label></div>
+            <div class="msAttributesField">###LABEL_CURRENCY4### <input type="text" name="product_capital_price_excl_vat" class="price small_input msPriceExcludingVat" id="product_capital_price_excl_vat" value="###VALUE_EXCL_VAT_CAPITAL_PRICE###"><label for="product_capital_price_excl_vat">Excl. VAT</label></div>
+            <div class="msAttributesField">###LABEL_CURRENCY5### <input type="text" name="product_capital_price_incl_vat" class="price small_input msPriceIncludingVat" id="product_capital_price_incl_vat" value="###VALUE_INCL_VAT_CAPITAL_PRICE###"><label for="product_capital_price_incl_vat">Incl. VAT</label></div>
             <div class="msAttributesField hidden"><input type="hidden" class="msFinalPriceExcludingVat" name="product_capital_price" value="###VALUE_ORIGINAL_CAPITAL_PRICE###" /></div>
         </div>
         <div class="account-field" id="specials_sections"></div>
@@ -492,9 +477,13 @@ jQuery(document).ready(function ($) {
         ###LABEL_THRESHOLD_QTY###
         <input type="text" name="alert_quantity_threshold" class="alert_quantity_threshold" id="alert_quantity_threshold" value="###VALUE_THRESHOLD_QTY###">
     </div>
-    <div class="account-field" id="msEditProductInputExcludeStockFromFeeds">
-        <label>###LABEL_EXCLUDE_STOCK_FROM_FEED###</label>
-        ###STOCK_FEEDS_LIST###
+    <div class="account-field toggle_advanced_option" id="msEditProductInputStartEndTime">
+        <label for="starttime" class="starttime">Starttime</label>
+        <input type="text" name="starttime_visitor" class="starttime" id="starttime_visitor" value="###VALUE_STARTTIME_VISUAL###">
+        <input type="hidden" name="starttime" class="starttime" id="starttime" value="###VALUE_STARTTIME_SYS###">
+        Endtime&nbsp;
+        <input type="text" name="endtime_visitor" class="endtime" id="endtime_visitor" value="###VALUE_ENDTIME_VISUAL###">
+        <input type="hidden" name="endtime" class="endtime" id="endtime" value="###VALUE_ENDTIME_SYS###">
     </div>
     <div class="account-field toggle_advanced_option" id="msEditProductInputDateAvailable">
         <label for="products_date_available">###LABEL_DATE_AVAILABLE###</label>
@@ -520,12 +509,9 @@ jQuery(document).ready(function ($) {
     <div class="account-field toggle_advanced_option" id="msEditProductInputCondition">
         <label for="products_condition">###LABEL_PRODUCT_CONDITION###</label>
         <select name="products_condition">
-            <option value="new"
-            ###CONDITION_NEW_SELECTED###>###LABEL_CONDITION_NEW###</option>
-            <option value="used"
-            ###CONDITION_USED_SELECTED###>###LABEL_CONDITION_USED###</option>
-            <option value="refurbished"
-            ###CONDITION_REFURBISHED_SELECTED###>###LABEL_CONDITION_REFURBISHED###</option>
+            <option value="new" ###CONDITION_NEW_SELECTED###>###LABEL_CONDITION_NEW###</option>
+            <option value="used" ###CONDITION_USED_SELECTED###>###LABEL_CONDITION_USED###</option>
+            <option value="refurbished" ###CONDITION_REFURBISHED_SELECTED###>###LABEL_CONDITION_REFURBISHED###</option>
         </select>
     </div>
     <div class="account-field toggle_advanced_option" id="msEditProductInputEANCode">
@@ -539,6 +525,14 @@ jQuery(document).ready(function ($) {
     <div class="account-field toggle_advanced_option" id="msEditProductInputManufacturerCode">
         <label for="manufacturers_products_id">###LABEL_MANUFACTURER_CODE###</label>
         <input type="text" class="text" name="manufacturers_products_id" id="manufacturers_products_id" value="###VALUE_MANUFACTURER_CODE###">
+    </div>
+    <div class="account-field" id="msEditProductInputExcludeStockFromFeeds">
+        <label>###LABEL_EXCLUDE_STOCK_FROM_FEED###</label>
+        ###STOCK_FEEDS_LIST###
+    </div>
+    <div class="account-field" id="msEditProductInputExcludeFromFeeds">
+        <label>###LABEL_EXCLUDE_FROM_FEED###</label>
+        ###FEEDS_LIST###
     </div>
     <div class="account-field toggle_advanced_option" id="msEditProductInputUnit">
         <strong>###LABEL_PRODUCT_UNIT###</strong>
@@ -630,7 +624,7 @@ jQuery(document).ready(function ($) {
             $(".qq-uploader").before('<span class="file-upload-hidden">###ADMIN_LABEL_JS_DEFINE_PRODUCT_NAME_FIRST_IN_DETAILS_TABS###</span>');
             $(".qq-uploader").hide();
         }
-        $("#products_name_0").keyup(function () {
+        $(document).on("keyup", "#products_name_0", function () {
             if ($("#products_name_0").val() != "") {
                 $(".file-upload-hidden").hide();
                 $(".qq-uploader").show();
@@ -639,7 +633,25 @@ jQuery(document).ready(function ($) {
                 $(".file-upload-hidden").show();
             }
         });
-	###JS_ADVANCED_OPTION_TOGGLE###
+        $(document).on("click", ".payment_method_cb", function() {
+            var current_cb_id=$(this).attr("id");
+            var current_id=$(this).attr("rel");
+            var target_cb="#disable_payment_method_" + current_id;
+            if (current_cb_id.indexOf("disable")>-1) {
+                target_cb="#enable_payment_method_" + current_id;
+            }
+            $(target_cb).prop("checked", false);
+        });
+        $(document).on("click", ".shipping_method_cb", function() {
+            var current_cb_id=$(this).attr("id");
+            var current_id=$(this).attr("rel");
+            var target_cb="#disable_shipping_method_" + current_id;
+            if (current_cb_id.indexOf("disable")>-1) {
+                target_cb="#enable_shipping_method_" + current_id;
+            }
+            $(target_cb).prop("checked", false);
+        });
+	    ###JS_ADVANCED_OPTION_TOGGLE###
     });
 </script>
 <!-- ###TEMPLATE### end -->
